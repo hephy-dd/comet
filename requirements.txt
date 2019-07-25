@@ -1,0 +1,4 @@
+python-statemachine
+pyvisa
+pyvisa-py
+pyvisa-sim
