@@ -1,6 +1,6 @@
-from lantz import Action, Feat, DictFeat, ureg
-from lantz.messagebased import MessageBasedDriver
-from lantz.errors import InstrumentError
+from lantz.core import Action, Feat, DictFeat, ureg
+from lantz.core.messagebased import MessageBasedDriver
+from lantz.core.errors import InstrumentError
 
 class ITC(MessageBasedDriver):
     """Lantz driver for interfacing with ITS devices from CTS."""
@@ -118,10 +118,11 @@ class ITC(MessageBasedDriver):
             'digital_channels': channel_states,
         }
 
-    @DictFeat(keys=list(range(1, 9)), values={False: 0, True: 1})
+    @DictFeat(values={False: 0, True: 1}, keys=list(range(1, 7)))
     def digital_channel(self, key):
-        result = self.query_bytes('S', 4)
-        return result
+        result = self.query_bytes('S', 10)
+        channel_states = {channel + 1: int(state) for channel, state in enumerate(result[3:9])}
+        return channel_states[key]
 
     @digital_channel.setter
     def digital_channel(self, key, value):
@@ -138,7 +139,7 @@ class ITC(MessageBasedDriver):
         value = int(result[1:])
         return value if value else None
 
-    @Action(keys=list(range(1, 999)))
+    @Action()
     def start_program(self, key):
         """Starts a program. Returns program number or None for no program.
         >>> device.start_program(42)
