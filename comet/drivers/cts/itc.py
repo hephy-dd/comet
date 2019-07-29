@@ -1,6 +1,10 @@
-from lantz.core import Action, Feat, DictFeat, ureg
-from lantz.core.messagebased import MessageBasedDriver
-from lantz.core.errors import InstrumentError
+import datetime
+
+from lantz import Action, Feat, DictFeat, ureg
+from lantz.messagebased import MessageBasedDriver
+from lantz.errors import InstrumentError
+
+__all__ = ['ITC']
 
 class ITC(MessageBasedDriver):
     """Lantz driver for interfacing with ITS devices from CTS."""
@@ -50,14 +54,17 @@ class ITC(MessageBasedDriver):
     }
 
     def write_bytes(self, message):
+        """Write bytes to device. If message is a string it is encoded to a byte string."""
         if not isinstance(message, bytes):
             message = message.encode()
         return self.resource.write_raw(message)
 
     def read_bytes(self, count):
+        """Read bytes from device."""
         return self.resource.read_bytes(count).decode()
 
     def query_bytes(self, message, count):
+        """Query bytes from device."""
         self.write_bytes(message)
         return self.read_bytes(count)
 
@@ -85,6 +92,7 @@ class ITC(MessageBasedDriver):
         >>> device.analog_channel[1]
         (42.1, 45.0)
         """
+        key = self.analog_channel_codes[key]
         result = self.query_bytes(key, 14)
         _, actual, target = result.split()
         return float(actual), float(target)
@@ -94,20 +102,21 @@ class ITC(MessageBasedDriver):
         """Set target value for analog channel.
         >>> device.analog_channel[1] = 42.0
         """
-        result = self.query_bytes('a{}_{:05.1f}'.format(key, value), 1)
+        key = self.analog_channel_codes[key].lower()
+        result = self.query_bytes(f'{key}_{value:05.1f}', 1)
         if result != 'a':
             raise InstrumentError("Invalid channel: '{}'".format(key))
 
     @Feat()
     def status(self):
-        """Returns device status as dictionary.
+        """Returns device status as dictionary. For digital channel states read
+        from dictionary feature `digital_channels`.
         >>> device.status
         {'running': False, 'warning': None, 'error': None, '', }
         """
         result = self.query_bytes('S', 10)
         running = bool(int(result[1]))
         is_error = bool(int(result[2]))
-        channel_states = {channel: bool(int(state)) for channel, state in enumerate(result[3:9])}
         error_nr = result[9]
         warning = self.warning_messages[error_nr] if is_error and error_nr in self.warning_messages else None
         error = self.error_messages[error_nr] if is_error and error_nr in self.error_messages else None
@@ -115,19 +124,24 @@ class ITC(MessageBasedDriver):
             'running': running,
             'warning': warning,
             'error': error,
-            'digital_channels': channel_states,
         }
 
     @DictFeat(values={False: 0, True: 1}, keys=list(range(1, 7)))
     def digital_channel(self, key):
+        """Returns digital channel state.
+        >>> device.digital_channel[2]
+        True
+        """
         result = self.query_bytes('S', 10)
         channel_states = {channel + 1: int(state) for channel, state in enumerate(result[3:9])}
         return channel_states[key]
 
     @digital_channel.setter
     def digital_channel(self, key, value):
-        result = self.query_bytes('s{}_{}'.format(key, value), 4)
-        return result
+        """Set digital channel state.
+        >>> device.digital_channel[2] = False
+        """
+        self.query_bytes(f's{key}_{value}', 4)
 
     @Feat()
     def program(self):
@@ -145,14 +159,14 @@ class ITC(MessageBasedDriver):
         >>> device.start_program(42)
         42
         """
-        self.write_bytes('P{:03d}'.format(key))
+        self.write_bytes(f'P{key:03d}')
 
     @Action()
     def stop_program(self):
         """Stops a running program. Returns program number or None for no program.
         >>> device.stop_program()
         """
-        self.write_bytes('P{:03d}'.format(key))
+        self.write_bytes(f'P{key:03d}')
 
     # TODO
 
@@ -164,11 +178,13 @@ class ITC(MessageBasedDriver):
 
     # TODO
 
-    @Feat(limits=(0, 2))
+    @Feat(limits=(0, 2, 1))
     def keyboard_lock(self):
+        """Get keyboard lock state."""
         result = self.query_bytes('L', 2)
         return int(result[1:])
 
     @keyboard_lock.setter
     def keyboard_lock(self, value):
-        self.query_bytes('l{}'.format(value), 2)
+        """Set keyboard lock state."""
+        self.query_bytes(f'l{value}', 2)

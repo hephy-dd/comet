@@ -14,9 +14,7 @@ setup(
         'pyvisa',
         'pyvisa-py',
         'pyvisa-sim',
-        'lantz-core',
-        'lantz-sims',
-        'lantz-drivers',
+        'lantzdev>=0.5',
     ],
     license="GPLv3",
 )

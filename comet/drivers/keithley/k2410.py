@@ -1,8 +1,11 @@
-from lantz.core import Action, Feat, DictFeat, ureg
-from lantz.core.messagebased import MessageBasedDriver
-from lantz.core.errors import InstrumentError
+from lantz import Action, Feat, DictFeat, ureg
+from lantz.messagebased import MessageBasedDriver
+from lantz.errors import InstrumentError
+from lantz.drivers.ieee4882 import IEEE4882Driver
 
-class K2410(SCPIDriver):
+__all__ = ['K2410']
+
+class K2410(MessageBasedDriver, IEEE4882Driver):
     """Lantz driver for interfacing with Keithley Model 2410 Source Meter."""
 
     DEFAULTS = {

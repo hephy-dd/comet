@@ -1,8 +1,11 @@
-from lantz.core import Action, Feat, DictFeat, ureg
-from lantz.core.messagebased import MessageBasedDriver
-from lantz.core.errors import InstrumentError
+from lantz import Action, Feat, DictFeat, ureg
+from lantz.messagebased import MessageBasedDriver
+from lantz.errors import InstrumentError
+from lantz.drivers.ieee4882 import IEEE4882Driver
 
-class K2700(SCPIDriver):
+__all__ = ['K2700']
+
+class K2700(MessageBasedDriver, IEEE4882Driver):
     """Lantz driver for interfacing with Keithley Model 2700 Digital Multimeter."""
 
     DEFAULTS = {
@@ -11,3 +14,7 @@ class K2700(SCPIDriver):
             'read_termination': '\n',
         }
     }
+
+    @Action()
+    def fetch(self):
+        return self.query('FETCh?')
