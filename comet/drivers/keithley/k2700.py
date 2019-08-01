@@ -1,20 +1,20 @@
-from lantz import Action, Feat, DictFeat, ureg
-from lantz.messagebased import MessageBasedDriver
-from lantz.errors import InstrumentError
-from lantz.drivers.ieee4882 import IEEE4882Driver
+from slave.driver import Command, Driver
+from slave.iec60488 import IEC60488
+from slave.types import Boolean, Float, Integer, Mapping, Set
 
 __all__ = ['K2700']
 
-class K2700(MessageBasedDriver, IEEE4882Driver):
-    """Lantz driver for interfacing with Keithley Model 2700 Digital Multimeter."""
+class K2700(IEC60488):
 
-    DEFAULTS = {
-        'COMMON': {
-            'write_termination': '\n',
-            'read_termination': '\n',
-        }
-    }
-
-    @Action()
     def fetch(self):
-        return self.query('FETCh?')
+        """Returns the latest available reading
+        .. note:: It does not perform a measurement.
+        """
+        return self._query((':FETC?', Float))
+
+    def read(self):
+        """A high level command to perform a singleshot measurement.
+        It resets the trigger model(idle), initiates it, and fetches a new
+        value.
+        """
+        return self._query((':READ?', Float))

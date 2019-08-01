@@ -1,0 +1,8 @@
+include README.md
+include LICENSE
+
+include docs/make.bat
+include docs/Makefile
+recursive-include docs/source *
+
+include comet/widgets/ui/*.ui

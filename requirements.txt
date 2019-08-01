@@ -1,5 +1,8 @@
-python-statemachine
-pyvisa
-pyvisa-py
-pyvisa-sim
-lantzdev>=0.5
+PyVISA
+PyVISA-py
+PyVISA-sim
+Pint>=0.9
+slave>=0.4
+PyQt5
+PyQt5-sip
+pyqtgraph

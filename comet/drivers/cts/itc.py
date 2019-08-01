@@ -1,23 +1,33 @@
 import datetime
 
-from lantz import Action, Feat, DictFeat, ureg
-from lantz.messagebased import MessageBasedDriver
-from lantz.errors import InstrumentError
+from slave.driver import Command, Driver
+from slave.types import Boolean, Float, Integer, Mapping, Set
 
 __all__ = ['ITC']
 
-class ITC(MessageBasedDriver):
-    """Lantz driver for interfacing with ITS devices from CTS."""
+class ITC(Driver):
 
-    analog_channel_codes = {
-        1: 'A0', 2: 'A1', 3: 'A2', 4: 'A3',
-        5: 'A4', 6: 'A5', 7: 'A6', 8: 'A7',
-        9: 'A8', 10: 'A9', 11: 'A:', 12: 'A;',
-        13: 'A<', 14: 'A=', 15: 'A>', 16: 'A?',
+    ANALOG_CHANNELS = {
+        1: '0',
+        2: '1',
+        3: '2',
+        4: '3',
+        5: '4',
+        6: '5',
+        7: '6',
+        8: '7',
+        9: '8',
+        10: '9',
+        11: ':',
+        12: ';',
+        13: '<',
+        14: '=',
+        15: '>',
+        16: '?',
     }
-    """Mapping analog channel numbers to channel IDs."""
+    """Mapping analog channel index to channel code."""
 
-    warning_messages = {
+    WARNING_MESSAGES = {
         '\x01': "Wassernachfüllen",
         '\x02': "Temp. Toleranzband Oben",
         '\x03': "Temp. Toleranzband Unten",
@@ -25,8 +35,9 @@ class ITC(MessageBasedDriver):
         '\x05': "Feuchte Toleranzband Unten",
         '\x06': "Wasserbad Abschlaemmen",
     }
+    """Warning messages."""
 
-    error_messages = {
+    ERROR_MESSAGES = {
         '\x31': "Temperatur Grenze Min 08-B1",
         '\x32': "Temperatur Grenze Max 08-B1",
         '\x33': "Temp. Begrenzer Pruefr. 01-F1.1",
@@ -52,29 +63,19 @@ class ITC(MessageBasedDriver):
         '\x5e': "Siededrucksensor K 03-B43",
         '\x62': "Leistungsschalter Einspeisung 00-Q1",
     }
+    """Error messages."""
 
-    def write_bytes(self, message):
-        """Write bytes to device. If message is a string it is encoded to a byte string."""
-        if not isinstance(message, bytes):
-            message = message.encode()
-        return self.resource.write_raw(message)
+    def __init__(self, transport, protocol=None):
+        super().__init__(transport, protocol)
 
-    def read_bytes(self, count):
-        """Read bytes from device."""
-        return self.resource.read_bytes(count).decode()
-
-    def query_bytes(self, message, count):
-        """Query bytes from device."""
-        self.write_bytes(message)
-        return self.read_bytes(count)
-
-    @Feat()
+    @property
     def time(self):
         """Returns current date and time of device as datetime object.
         >>> device.time
         datetime.datetime(2019, 6, 12, 13, 01, 21)
         """
-        result = self.query_bytes('T', 13)
+        self._transport.write_raw(b'T')
+        result = self._transport.read_bytes(13).decode()
         return datetime.datetime.strptime(result, 'T%d%m%y%H%M%S')
 
     @time.setter
@@ -83,108 +84,13 @@ class ITC(MessageBasedDriver):
         >>> device.time = datetime.now()
         datetime.datetime(2019, 6, 12, 13, 12, 35)
         """
-        result = self.query_bytes(dt.strftime('t%d%m%y%H%M%S'), 13)
+        self._transport.write_raw(dt.strftime('t%d%m%y%H%M%S').encode())
+        result = self._transport.read_bytes(13)
         return datetime.datetime.strptime(result, 't%d%m%y%H%M%S')
 
-    @DictFeat(keys=analog_channel_codes.keys())
-    def analog_channel(self, key):
-        """Read analog channel, returns tuple containing actual value and target value.
-        >>> device.analog_channel[1]
-        (42.1, 45.0)
-        """
-        key = self.analog_channel_codes[key]
-        result = self.query_bytes(key, 14)
-        _, actual, target = result.split()
-        return float(actual), float(target)
-
-    @analog_channel.setter
-    def analog_channel(self, key, value):
-        """Set target value for analog channel.
-        >>> device.analog_channel[1] = 42.0
-        """
-        key = self.analog_channel_codes[key].lower()
-        result = self.query_bytes(f'{key}_{value:05.1f}', 1)
-        if result != 'a':
-            raise InstrumentError("Invalid channel: '{}'".format(key))
-
-    @Feat()
-    def status(self):
-        """Returns device status as dictionary. For digital channel states read
-        from dictionary feature `digital_channels`.
-        >>> device.status
-        {'running': False, 'warning': None, 'error': None, '', }
-        """
-        result = self.query_bytes('S', 10)
-        running = bool(int(result[1]))
-        is_error = bool(int(result[2]))
-        error_nr = result[9]
-        warning = self.warning_messages[error_nr] if is_error and error_nr in self.warning_messages else None
-        error = self.error_messages[error_nr] if is_error and error_nr in self.error_messages else None
-        return {
-            'running': running,
-            'warning': warning,
-            'error': error,
-        }
-
-    @DictFeat(values={False: 0, True: 1}, keys=list(range(1, 7)))
-    def digital_channel(self, key):
-        """Returns digital channel state.
-        >>> device.digital_channel[2]
-        True
-        """
-        result = self.query_bytes('S', 10)
-        channel_states = {channel + 1: int(state) for channel, state in enumerate(result[3:9])}
-        return channel_states[key]
-
-    @digital_channel.setter
-    def digital_channel(self, key, value):
-        """Set digital channel state.
-        >>> device.digital_channel[2] = False
-        """
-        self.query_bytes(f's{key}_{value}', 4)
-
-    @Feat()
-    def program(self):
-        """Returns number of running program or None if no program is running.
-        >>> device.program
-        3
-        """
-        result = self.query_bytes('P', 4)
-        value = int(result[1:])
-        return value if value else None
-
-    @Action()
-    def start_program(self, key):
-        """Starts a program. Returns program number or None for no program.
-        >>> device.start_program(42)
-        42
-        """
-        self.write_bytes(f'P{key:03d}')
-
-    @Action()
-    def stop_program(self):
-        """Stops a running program. Returns program number or None for no program.
-        >>> device.stop_program()
-        """
-        self.write_bytes(f'P{key:03d}')
-
-    # TODO
-
-    @Feat()
+    @property
     def error_message(self):
         """Returns current error message."""
-        result = self.query_bytes('F', 33)
+        self._transport.write_raw(b'F')
+        result = self.read_bytes(33).decode()
         return result[1:].strip()
-
-    # TODO
-
-    @Feat(limits=(0, 2, 1))
-    def keyboard_lock(self):
-        """Get keyboard lock state."""
-        result = self.query_bytes('L', 2)
-        return int(result[1:])
-
-    @keyboard_lock.setter
-    def keyboard_lock(self, value):
-        """Set keyboard lock state."""
-        self.query_bytes(f'l{value}', 2)

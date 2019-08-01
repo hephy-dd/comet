@@ -1,16 +1,20 @@
-from lantz import Action, Feat, DictFeat, ureg
-from lantz.messagebased import MessageBasedDriver
-from lantz.errors import InstrumentError
-from lantz.drivers.ieee4882 import IEEE4882Driver
+from slave.driver import Command, Driver
+from slave.iec60488 import IEC60488
+from slave.types import Boolean, Float, Integer, Mapping, Set
 
 __all__ = ['K2410']
 
-class K2410(MessageBasedDriver, IEEE4882Driver):
-    """Lantz driver for interfacing with Keithley Model 2410 Source Meter."""
+class K2410(IEC60488):
 
-    DEFAULTS = {
-        'COMMON': {
-            'write_termination': '\n',
-            'read_termination': '\n',
-        }
-    }
+    def fetch(self):
+        """Returns the latest available reading
+        .. note:: It does not perform a measurement.
+        """
+        return self._query((':FETC?', Float))
+
+    def read(self):
+        """A high level command to perform a singleshot measurement.
+        It resets the trigger model(idle), initiates it, and fetches a new
+        value.
+        """
+        return self._query((':READ?', Float))

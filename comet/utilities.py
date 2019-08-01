@@ -1,5 +1,9 @@
-import re
+"""Utility functions and paths."""
+
 import os
+import re
+
+__all__ = ['PACKAGE_PATH', 'make_path', 'make_label', 'make_id']
 
 PACKAGE_PATH = os.path.abspath(os.path.dirname(__file__))
 """Absolute path to comet package directory."""
@@ -27,3 +31,4 @@ def make_id(name):
     'no_body_expects_the_spanish_inquisition'
     """
     return re.sub(r'[^a-z0-9]+', '_', name.lower()).rstrip("_")
+
