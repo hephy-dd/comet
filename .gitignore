@@ -1,5 +1,6 @@
 # Ignore auto generated ui modules
 comet/widgets/ui/*.py
+!comet/widgets/ui/__init__.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
