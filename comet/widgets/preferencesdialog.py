@@ -15,16 +15,17 @@ class PreferencesDialog(QtWidgets.QDialog):
     def loadSettings(self):
         settings = QtCore.QSettings()
         settings.beginGroup('preferences')
-        invertPlots = settings.value('invertPlots', False)
-        operators = settings.value('operators', [])
-        devices = settings.value('devices', [])
+        invertPlots = settings.value('invertPlots', False, type=bool)
+        operators = settings.value('operators', [], type=list)
+        devices = settings.value('devices', [], type=list)
         settings.endGroup()
-        self.ui.invertPlotsCheckBox.setChecked(invertPlots)
+        self.ui.invertPlotsCheckBox.setChecked((invertPlots))
         self.ui.operatorListWidget.clear()
         self.ui.operatorListWidget.addItems(operators)
         self.ui.devicesTableWidget.clearContents()
         self.ui.devicesTableWidget.setRowCount(len(devices));
         for i, device in enumerate(devices):
+            name, resource = device.split(';')
             self.ui.devicesTableWidget.setItem(i, 0, QtWidgets.QTableWidgetItem(device[0]))
             self.ui.devicesTableWidget.setItem(i, 1, QtWidgets.QTableWidgetItem(device[1]))
 
