@@ -15,26 +15,42 @@ class PreferencesDialog(QtWidgets.QDialog):
     def loadSettings(self):
         settings = QtCore.QSettings()
         settings.beginGroup('preferences')
+        invertPlots = settings.value('invertPlots', False)
         operators = settings.value('operators', [])
+        devices = settings.value('devices', [])
         settings.endGroup()
+        self.ui.invertPlotsCheckBox.setChecked(invertPlots)
         self.ui.operatorListWidget.clear()
         self.ui.operatorListWidget.addItems(operators)
+        self.ui.devicesTableWidget.clearContents()
+        self.ui.devicesTableWidget.setRowCount(len(devices));
+        for i, device in enumerate(devices):
+            self.ui.devicesTableWidget.setItem(i, 0, QtWidgets.QTableWidgetItem(device[0]))
+            self.ui.devicesTableWidget.setItem(i, 1, QtWidgets.QTableWidgetItem(device[1]))
 
     def saveSettings(self):
         settings = QtCore.QSettings()
         settings.beginGroup('preferences')
+        settings.setValue('invertPlots', self.invertPlots())
         settings.setValue('operators', self.operators())
+        settings.setValue('devices', self.devices())
         settings.endGroup()
 
     def accept(self):
         self.saveSettings()
         super().accept()
 
+    def invertPlots(self):
+        return self.ui.invertPlotsCheckBox.isChecked()
+
     def operators(self):
         operators = []
         for row in range(self.ui.operatorListWidget.count()):
             operators.append(self.ui.operatorListWidget.item(row).text())
         return operators
+
+    def devices(self):
+        return []
 
     def addOperator(self):
         text, ok = QtWidgets.QInputDialog.getText(self,
@@ -62,4 +78,3 @@ class PreferencesDialog(QtWidgets.QDialog):
         row = self.ui.operatorListWidget.currentRow()
         if row is not None:
             self.ui.operatorListWidget.takeItem(row)
-
