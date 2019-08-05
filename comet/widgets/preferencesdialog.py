@@ -41,18 +41,22 @@ class PreferencesDialog(QtWidgets.QDialog):
         super().accept()
 
     def invertPlots(self):
+        """Returns selected state of invert plot check box."""
         return self.ui.invertPlotsCheckBox.isChecked()
 
     def operators(self):
+        """Returns current list of operators."""
         operators = []
         for row in range(self.ui.operatorListWidget.count()):
             operators.append(self.ui.operatorListWidget.item(row).text())
         return operators
 
     def devices(self):
+        """Returns list of devices containing name and resource."""
         return []
 
     def addOperator(self):
+        """Add operator slot."""
         text, ok = QtWidgets.QInputDialog.getText(self,
                 self.tr("Operator"),
                 self.tr("Name:"),
@@ -63,6 +67,7 @@ class PreferencesDialog(QtWidgets.QDialog):
             self.ui.operatorListWidget.setCurrentItem(item)
 
     def editOperator(self):
+        """Edit operator slot."""
         item = self.ui.operatorListWidget.currentItem()
         if item is not None:
             text, ok = QtWidgets.QInputDialog.getText(self,
@@ -75,6 +80,7 @@ class PreferencesDialog(QtWidgets.QDialog):
                 self.ui.operatorListWidget.currentItem().setText(text)
 
     def removeOperator(self):
+        """Remove operator slot."""
         row = self.ui.operatorListWidget.currentRow()
         if row is not None:
             self.ui.operatorListWidget.takeItem(row)
