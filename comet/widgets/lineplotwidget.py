@@ -1,11 +1,13 @@
-from PyQt5 import QtWidgets
+import os
+
+from PyQt5 import QtWidgets, uic
 import pyqtgraph as pg
 
-from .ui.lineplotwidget import Ui_linePlotWidget
+Ui_LinePlotWidget, LinePlotWidgetBase = uic.loadUiType(os.path.join(os.path.dirname(__file__), 'ui', 'lineplotwidget.ui'))
 
-class LinePlotWidget(QtWidgets.QWidget):
+class LinePlotWidget(LinePlotWidgetBase):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.ui = Ui_linePlotWidget()
+        self.ui = Ui_LinePlotWidget()
         self.ui.setupUi(self)

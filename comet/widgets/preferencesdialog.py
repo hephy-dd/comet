@@ -1,10 +1,11 @@
-from PyQt5 import QtCore, QtWidgets
+import os
+from PyQt5 import QtCore, QtWidgets, uic
 
-from .ui.preferencesdialog import Ui_PreferencesDialog
+Ui_PreferencesDialog, PreferencesDialogBase = uic.loadUiType(os.path.join(os.path.dirname(__file__), 'ui', 'preferencesdialog.ui'))
 
 __all__ = ['PreferencesDialog']
 
-class PreferencesDialog(QtWidgets.QDialog):
+class PreferencesDialog(PreferencesDialogBase):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

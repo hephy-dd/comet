@@ -1,18 +1,18 @@
 import logging
 import signal
-import sys
+import sys, os
 import webbrowser
 
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtCore, QtWidgets, uic
 
 from .preferencesdialog import PreferencesDialog
 from .aboutdialog import AboutDialog
 
-from .ui.mainwindow import Ui_MainWindow
+Ui_MainWindow, MainWindowBase = uic.loadUiType(os.path.join(os.path.dirname(__file__), 'ui', 'mainwindow.ui'))
 
 __all__ = ['MainWindow', 'bootstrap']
 
-class MainWindow(QtWidgets.QMainWindow):
+class MainWindow(MainWindowBase):
 
     ContentsUrl = 'https://github.com/hephy-dd/comet/'
 

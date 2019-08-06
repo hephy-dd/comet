@@ -56,4 +56,3 @@ class SpinBox(QtWidgets.QDoubleSpinBox):
     def value(self):
         """Retrurns value as quantity."""
         return super().value() * self.unit()
-

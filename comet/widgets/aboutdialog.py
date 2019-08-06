@@ -1,13 +1,13 @@
-from PyQt5 import QtWidgets
+import os
+from PyQt5 import QtWidgets, uic
 
-from .ui.aboutdialog import Ui_AboutDialog
+Ui_AboutDialog, AboutDialogBase = uic.loadUiType(os.path.join(os.path.dirname(__file__), 'ui', 'aboutdialog.ui'))
 
 __all__ = ['AboutDialog']
 
-class AboutDialog(QtWidgets.QDialog):
+class AboutDialog(AboutDialogBase):
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, parent=None):
+        super().__init__(parent)
         self.ui = Ui_AboutDialog()
         self.ui.setupUi(self)
-
