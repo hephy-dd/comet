@@ -1,3 +1,4 @@
+from .application import *
 from .mainwindow import *
 from .aboutdialog import *
 from .preferencesdialog import *
