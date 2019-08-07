@@ -1,3 +1,4 @@
+import argparse
 import logging
 import signal
 import sys, os
@@ -35,14 +36,20 @@ class MainWindow(MainWindowBase):
         dialog = AboutDialog(self)
         dialog.exec_()
 
-def bootstrap(cls, logging_level=logging.INFO):
+def bootstrap(cls):
 
-    logging.basicConfig(format='%(levelname)s: %(message)s', level=logging_level)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-v', '--verbose', action='store_true', help="verbose messages")
+    args = parser.parse_args()
+
+    logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.DEBUG if args.verbose else logging.INFO)
 
     app = QtWidgets.QApplication(sys.argv)
 
-    w = cls()
+    w = MainWindow()
+    w.setCentralWidget(cls(w))
     w.show()
+    w.raise_()
 
     # Terminate application on SIG_INT signal.
     signal.signal(signal.SIGINT, signal.SIG_DFL)

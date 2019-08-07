@@ -7,6 +7,8 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 from .mainwindow import MainWindow
 
+CentralWidget = QtWidgets.QWidget
+
 __all__ = ['Application']
 
 class Application(object):
@@ -17,36 +19,55 @@ class Application(object):
     >>> app.run()
     """
 
-    OrganizationName = 'HEPHY'
+    organization = 'HEPHY'
     """Organization name for application."""
 
-    OrganizationDomain = 'hephy.at'
+    domain = 'hephy.at'
     """Organization domain for application."""
 
-    ApplicationName = 'COMET'
-    """Application name used to store settings."""
+    name = 'COMET'
+    """Application name used for title and settings."""
 
-    MainWindowClass = MainWindow
+    mainWindowClass = MainWindow
     """Application main window class."""
 
-    def setupWindow(self, context):
-        """Overwrite method to setup window and central widget."""
+    centralWidgetClass = CentralWidget
+    """Application main window class."""
+
+    def createMainWindow(self):
+        """Overwrite method to create custom main window."""
+        window = MainWindow()
+        window.setWindowTitle(self.name)
+        return window
+
+    def setupMainWindow(self, window):
+        """Overwrite method to extend main window."""
         pass
+
+    def createCentralWidget(self, context):
+        """Overwrite method to create custom central widget."""
+        widget = CentralWidget(context)
+        return widget
+
+    def setupCentralWidget(self, widget):
+        """Overwrite method to extend central widget."""
+        pass
+
+    def createArgumentParser(self):
+        """Overwrite method to create custom argument parser."""
+        parser = argparse.ArgumentParser()
+        parser.add_argument('-v', '--verbose', action='store_true', help="verbose messages")
+        return parser
 
     def setupArgumentParser(self, parser):
-        """Overwrite method to setup argument parser."""
+        """Overwrite method to extend argument parser."""
         pass
-
-    def parse(self):
-        parser = argparse.ArgumentParser()
-        parser.add_argument('-v', '--verbose', action='store_true', help="Verbose messages")
-        self.setupArgumentParser(parser)
-        return parser.parse_args()
 
     def run(self):
         """Bootstrap and execute application."""
 
-        args = self.parse()
+        # Run argument parser
+        args = self.createArgumentParser().parse_args()
 
         # Setup logger
         logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.INFO if args.verbose else logging.WARNING)
@@ -55,18 +76,12 @@ class Application(object):
         app = QtWidgets.QApplication(sys.argv)
 
         # Setup application
-        app.setOrganizationName(self.OrganizationName)
-        app.setOrganizationDomain(self.OrganizationDomain)
-        app.setApplicationName(self.ApplicationName)
+        app.setOrganizationName(self.organization)
+        app.setOrganizationDomain(self.domain)
+        app.setApplicationName(self.name)
 
         # Initalize settings
         QtCore.QSettings()
-
-        # Create main window
-        w = self.MainWindowClass()
-        self.setupWindow(w)
-        w.show()
-        w.raise_()
 
         # Register interupt signal
         signal.signal(signal.SIGINT, signal.SIG_DFL)
@@ -76,5 +91,11 @@ class Application(object):
         timer.timeout.connect(lambda: None)
         timer.start(250)
 
-        return app.exec_()
+        # Create main window and central widget
+        window = self.createMainWindow()
+        widget = self.createCentralWidget(window)
+        window.setCentralWidget(widget)
+        window.show()
+        window.raise_()
 
+        return app.exec_()
