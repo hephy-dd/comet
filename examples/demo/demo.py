@@ -1,3 +1,8 @@
+"""Demo using continous und triggered workers and buffers with table views.
+
+Measured data is written to `demo.csv` using class `comet.CsvFormatter`.
+"""
+
 import random
 import time
 import sys, os
