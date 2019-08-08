@@ -12,7 +12,15 @@ class Application(object):
 
     def __init__(self):
         self.__application = QtWidgets.QApplication(sys.argv)
+        self.__name = 'comet'
         self.__windows = []
+
+    def name(self):
+        return self.__name
+
+    def setName(self, name):
+        """Set application name."""
+        self.__name = name
 
     def addWindow(self, window):
         self.__windows.append(window)
@@ -26,7 +34,7 @@ class Application(object):
         # Setup application
         self.__application.setOrganizationName('HEPHY')
         self.__application.setOrganizationDomain('hephy.at')
-        self.__application.setApplicationName('comet')
+        self.__application.setApplicationName(self.name())
 
         # Initalize settings
         QtCore.QSettings()
