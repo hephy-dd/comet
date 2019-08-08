@@ -1,26 +1,34 @@
-import argparse
 import logging
-import signal
-import sys, os
+import os
 import webbrowser
 
-from PyQt5 import QtCore, QtWidgets, uic
+from PyQt5 import QtCore, QtGui, QtWidgets, uic
+
+from ..worker import WorkerRunnable
 
 from .preferencesdialog import PreferencesDialog
 from .aboutdialog import AboutDialog
 
+__all__ = ['MainWindow']
+
 Ui_MainWindow, MainWindowBase = uic.loadUiType(os.path.join(os.path.dirname(__file__), 'ui', 'mainwindow.ui'))
 
-__all__ = ['MainWindow', 'bootstrap']
-
 class MainWindow(MainWindowBase):
+    """Main window for COMET applications."""
 
-    ContentsUrl = 'https://github.com/hephy-dd/comet/'
+    closeRequested = QtCore.pyqtSignal()
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, parent=None):
+        super().__init__(parent)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+        # Setup status bar widgets
+        self.__messageLabel = QtWidgets.QLabel(self)
+        self.__messageLabel.hide()
+        self.statusBar().addPermanentWidget(self.__messageLabel)
+        self.__progressBar = QtWidgets.QProgressBar(self)
+        self.__progressBar.hide()
+        self.statusBar().addPermanentWidget(self.__progressBar)
 
     def showPreferences(self):
         """Show modal preferences dialog."""
@@ -29,34 +37,62 @@ class MainWindow(MainWindowBase):
 
     def showContents(self):
         """Open local webbrowser with contets URL."""
-        webbrowser.open(self.ContentsUrl)
+        webbrowser.open(self.property('contentsUrl'))
 
     def showAbout(self):
         """Show modal about dialog."""
         dialog = AboutDialog(self)
         dialog.exec_()
 
-def bootstrap(cls):
+    def messageLabel(self):
+        return self.__messageLabel
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-v', '--verbose', action='store_true', help="verbose messages")
-    args = parser.parse_args()
+    def showMessage(self, message):
+        self.messageLabel().setText(message)
+        self.messageLabel().show()
 
-    logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.DEBUG if args.verbose else logging.INFO)
+    def clearMessage(self):
+        self.messageLabel().clear()
+        self.messageLabel().hide()
 
-    app = QtWidgets.QApplication(sys.argv)
+    def progressBar(self):
+        return self.__progressBar
 
-    w = MainWindow()
-    w.setCentralWidget(cls(w))
-    w.show()
-    w.raise_()
+    def showProgress(self, value, maximum):
+        self.progressBar().setRange(0, maximum)
+        self.progressBar().setValue(value)
+        self.progressBar().show()
 
-    # Terminate application on SIG_INT signal.
-    signal.signal(signal.SIGINT, signal.SIG_DFL)
+    def hideProgress(self):
+        self.progressBar().hide()
 
-    # Run timer to catch SIG_INT signals.
-    timer = QtCore.QTimer()
-    timer.start(250)
-    timer.timeout.connect(lambda: None)
+    def raiseException(self, exception):
+        """Raise message box showing exception inforamtion."""
+        QtWidgets.QMessageBox.critical(self, self.tr("Error"), format(exception))
 
-    sys.exit(app.exec_())
+    def connectWorker(self, worker):
+        """Connect worker signals to main window slots."""
+        self.closeRequested.connect(worker.stop)
+        worker.exceptionOccured.connect(self.raiseException)
+        worker.messageChanged.connect(self.showMessage)
+        worker.messageCleared.connect(self.clearMessage)
+        worker.progressChanged.connect(self.showProgress)
+        worker.progressHidden.connect(self.hideProgress)
+
+    def startWorker(self, worker):
+        """Start worker in  global thread pool."""
+        self.connectWorker(worker)
+        logging.info("starting worker: %s", worker)
+        QtCore.QThreadPool.globalInstance().start(WorkerRunnable(worker))
+
+    def closeEvent(self, event):
+        dialog = QtWidgets.QMessageBox(self)
+        dialog.setText("Quit application?");
+        dialog.setStandardButtons(QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel)
+        dialog.setDefaultButton(QtWidgets.QMessageBox.Cancel)
+        result = dialog.exec_()
+        if result == QtWidgets.QMessageBox.Ok:
+            event.accept()
+            self.closeRequested.emit()
+        else:
+            event.ignore()

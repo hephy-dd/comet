@@ -5,4 +5,3 @@ __all__ = ['HephyDbFormatter']
 class HephyDbFormatter(Formatter):
 
     pass
-

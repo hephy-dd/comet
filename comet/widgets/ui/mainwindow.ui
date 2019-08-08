@@ -14,6 +14,9 @@
   <property name="windowTitle">
    <string>COMET</string>
   </property>
+  <property name="contentsUrl" stdset="0">
+   <string>https://github.com/hephy-dd/comet/</string>
+  </property>
   <widget class="QWidget" name="centralwidget"/>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -159,4 +162,3 @@
   <slot>showAbout()</slot>
  </slots>
 </ui>
-
