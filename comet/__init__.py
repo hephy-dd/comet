@@ -8,4 +8,5 @@ from .formatter import Formatter
 from .formatters import CsvFormatter, JsonFormatter, HephyDbFormatter
 from .units import ureg
 from .logger import logger
+from .utilities import Range
 from .version import __version__
