@@ -11,9 +11,12 @@ __all__ = ['MainWindow']
 class Application(object):
 
     def __init__(self):
-        self.__application = QtWidgets.QApplication(sys.argv)
         self.__name = 'comet'
         self.__windows = []
+        self.__application = QtWidgets.QApplication(sys.argv)
+        self.__application.setOrganizationName('HEPHY')
+        self.__application.setOrganizationDomain('hephy.at')
+        self.__application.setApplicationName(self.name())
 
     def name(self):
         return self.__name
@@ -32,8 +35,6 @@ class Application(object):
         logger().addHandler(fileHandler)
 
         # Setup application
-        self.__application.setOrganizationName('HEPHY')
-        self.__application.setOrganizationDomain('hephy.at')
         self.__application.setApplicationName(self.name())
 
         # Initalize settings
