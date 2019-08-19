@@ -2,6 +2,8 @@
 device driver classes.
 """
 
+import threading
+
 from .transport import Transport
 
 __all__ = ['Driver']
@@ -28,6 +30,10 @@ class Driver(object):
     def __init__(self, transport):
         assert isinstance(transport, Transport)
         self.__transport = transport
+        self.__lock = threading.RLock()
 
     def transport(self):
         return self.__transport
+
+    def lock(self):
+        return self.__lock

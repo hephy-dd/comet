@@ -1,10 +1,10 @@
-"""Generic VISA tranport layer."""
+"""Generic transport layers."""
 
 import visa
 
 from .settings import Settings
 
-__all__ = ['Transport']
+__all__ = ['Transport', 'Visa']
 
 class Transport(object):
 
@@ -44,3 +44,7 @@ class Transport(object):
 
     def __exit__(self, *args, **kwargs):
         self.close()
+
+class Visa(Transport):
+
+    pass

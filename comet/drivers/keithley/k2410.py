@@ -1,8 +1,8 @@
-from ...driver import Driver
+from ..iec import IEC60488
 
 __all__ = ['K2410']
 
-class K2410(Driver):
+class K2410(IEC60488):
 
     def fetch(self):
         """Returns the latest available reading

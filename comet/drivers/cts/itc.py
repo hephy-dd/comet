@@ -64,13 +64,20 @@ class ITC(Driver):
     }
     """Error messages."""
 
+    def _query(self, message, count):
+        """Raw query for bytes."""
+        with self.lock():
+            if not isinstance(message, bytes):
+                message = message.encode()
+            self.transport().write_raw(message)
+            return self.transport().read_bytes(count).decode()
+
     def time(self):
         """Returns current date and time of device as datetime object.
         >>> device.time()
         datetime.datetime(2019, 6, 12, 13, 01, 21)
         """
-        self.transport().write_raw(b'T')
-        result = self.transport().read_bytes(13).decode()
+        result = self._query('T', 13)
         return datetime.datetime.strptime(result, 'T%d%m%y%H%M%S')
 
     def setTime(self, dt):
@@ -78,8 +85,7 @@ class ITC(Driver):
         >>> device.setTime(datetime.now())
         datetime.datetime(2019, 6, 12, 13, 12, 35)
         """
-        self.transport.write_raw(dt.strftime('t%d%m%y%H%M%S').encode())
-        result = self.transport().read_bytes(13).decode()
+        result = self._query(dt.strftime('t%d%m%y%H%M%S'), 13)
         return datetime.datetime.strptime(result, 't%d%m%y%H%M%S')
 
     def status(self):
@@ -87,19 +93,16 @@ class ITC(Driver):
         >>> device.status()
         {}
         """
-        self.transport().write_raw(b'S')
-        result = self.transport().read_bytes(10).decode()
+        result = self._query('S', 10)
         return result
 
     def analogChannel(self, index):
         """Returns analog channel reading."""
         code = self.ANALOG_CHANNELS[index]
-        self.transport().write_raw(code)
-        result = self.transport().read_bytes(14).decode().split(' ')[-1]
-        return float(result)
+        result = self._query(code, 14)
+        return float(result.split(' ')[-1])
 
     def errorMessage(self):
         """Returns current error message."""
-        self.transport().write_raw(b'F')
-        result = self.transport().read_bytes(33).decode()
+        result = self._query('F', 33)
         return result[1:].strip()

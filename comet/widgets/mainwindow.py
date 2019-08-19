@@ -69,6 +69,8 @@ class MainWindow(MainWindowBase):
     def showException(self, exception):
         """Raise message box showing exception inforamtion."""
         QtWidgets.QMessageBox.critical(self, self.tr("Error"), format(exception))
+        self.showMessage(self.tr("Error"))
+        self.hideProgress()
 
     def connectWorker(self, worker):
         """Connect worker signals to main window slots."""
