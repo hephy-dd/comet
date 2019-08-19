@@ -1,5 +1,7 @@
 import os
-from PyQt5 import QtWidgets, uic
+from PyQt5 import QtGui, QtWidgets, uic
+
+from ..utilities import make_path
 
 Ui_AboutDialog, AboutDialogBase = uic.loadUiType(os.path.join(os.path.dirname(__file__), 'ui', 'aboutdialog.ui'))
 
@@ -11,3 +13,5 @@ class AboutDialog(AboutDialogBase):
         super().__init__(parent)
         self.ui = Ui_AboutDialog()
         self.ui.setupUi(self)
+        icon = QtGui.QPixmap(make_path('assets', 'icons', 'comet.svg'))
+        self.ui.iconLabel.setPixmap(icon)

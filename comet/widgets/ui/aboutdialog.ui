@@ -15,7 +15,29 @@
    <string>About</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="0" column="0">
+   <item row="0" column="0" rowspan="2">
+    <widget class="QLabel" name="iconLabel">
+     <property name="minimumSize">
+      <size>
+       <width>48</width>
+       <height>48</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>48</width>
+       <height>48</height>
+      </size>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="scaledContents">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1">
     <widget class="QLabel" name="titleLabel">
      <property name="styleSheet">
       <string notr="true">font-size: 18px; font-weight: bold;</string>
@@ -25,14 +47,14 @@
      </property>
     </widget>
    </item>
-   <item row="1" column="0">
+   <item row="1" column="1">
     <widget class="QLabel" name="captionLabel">
      <property name="text">
       <string>Control and Measurement Toolkit</string>
      </property>
     </widget>
    </item>
-   <item row="2" column="0">
+   <item row="2" column="0" colspan="2">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
       <number>0</number>
@@ -87,7 +109,7 @@ p, li { white-space: pre-wrap; }
      </widget>
     </widget>
    </item>
-   <item row="3" column="0">
+   <item row="3" column="0" colspan="2">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -135,4 +157,3 @@ p, li { white-space: pre-wrap; }
   </connection>
  </connections>
 </ui>
-

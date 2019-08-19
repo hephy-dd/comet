@@ -15,6 +15,7 @@ import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
 import pyqtgraph
 
+from ..utilities import make_path
 from ..settings import Settings
 from ..logger import logger
 
@@ -31,6 +32,7 @@ class Application(object):
         self.__application.setOrganizationName(self.OrganizationName)
         self.__application.setOrganizationDomain(self.OrganizationDomain)
         self.__application.setApplicationName(self.ApplicationName)
+        self.__application.setWindowIcon(QtGui.QIcon(make_path('assets', 'icons', 'comet.svg')))
 
         # Setup logger
         fileHandler = logging.FileHandler('comet.log')

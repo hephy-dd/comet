@@ -5,4 +5,5 @@ include docs/make.bat
 include docs/Makefile
 recursive-include docs/source *
 
+recursive-include comet/assets *.svg
 include comet/widgets/ui/*.ui
