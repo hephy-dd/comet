@@ -4,4 +4,5 @@ __all__ = ['HephyDbFormatter']
 
 class HephyDbFormatter(Formatter):
 
-    pass
+    def __init__(self, target):
+        super().__init__(target)
