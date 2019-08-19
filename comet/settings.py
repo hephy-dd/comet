@@ -5,7 +5,7 @@ __all__ = ['Settings']
 class Settings(QtCore.QObject):
     """Settings handler class wrapping QSettings.
 
-    >>> s = Settings('HEPHY', 'comet')
+    >>> s = Settings()
     >>> s.operators()
     []
     >>> s.addOperator('Monty')
@@ -26,16 +26,19 @@ class Settings(QtCore.QObject):
     CurrentOperatorKey = 'currentOperator'
     DevicesKey = 'devices'
 
-    def __init__(self, organization=None, application=None, parent=None):
+    DefaultInvertPlots = False
+    DefaultVisaLibrary = '@py'
+
+    def __init__(self, parent=None):
         super().__init__(parent)
-        organization = organization or QtCore.QCoreApplication.organizationName()
-        organization = application or QtCore.QCoreApplication.applicationName()
+        organization = QtCore.QCoreApplication.organizationName()
+        application = QtCore.QCoreApplication.applicationName()
         self.__settings = QtCore.QSettings(organization, application)
         self.__settings.beginGroup(self.PreferencesGroupKey)
 
     def invertPlots(self):
         """Returns True if invert plots is set."""
-        return self.__settings.value(self.InvertPlotsKey, False, type=bool)
+        return self.__settings.value(self.InvertPlotsKey, self.DefaultInvertPlots, type=bool)
 
     def setInvertPlots(self, inverted):
         self.__settings.setValue(self.InvertPlotsKey, inverted)
@@ -43,7 +46,7 @@ class Settings(QtCore.QObject):
 
     def visaLibrary(self):
         """Retruns VISA library."""
-        return self.__settings.value(self.VisaLibraryKey, '', type=str)
+        return self.__settings.value(self.VisaLibraryKey, self.DefaultVisaLibrary, type=str)
 
     def setVisaLibrary(self, library):
         """Set VISA library."""

@@ -178,7 +178,8 @@ class MainWindow(comet.MainWindow):
 
 def main():
     app = comet.Application()
-    app.addWindow(MainWindow())
+    window = MainWindow()
+    window.show()
     return app.run()
 
 if __name__ == '__main__':

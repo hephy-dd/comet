@@ -1,6 +1,6 @@
 """Simple spin box eample assigning a unit from Pint unit registry."""
 
-import os
+import sys, os
 from PyQt5 import QtWidgets, uic
 
 import comet
@@ -25,7 +25,11 @@ class MainWindow(comet.MainWindow):
         super().__init__(parent)
         self.setCentralWidget(Widget(self))
 
-if __name__ == '__main__':
+def main():
     app = comet.Application()
-    app.addWindow(MainWindow())
-    app.run()
+    window = MainWindow()
+    window.show()
+    return app.run()
+
+if __name__ == '__main__':
+    sys.exit(main())
