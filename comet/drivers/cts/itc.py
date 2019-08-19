@@ -1,29 +1,28 @@
 import datetime
 
-from slave.driver import Command, Driver
-from slave.types import Boolean, Float, Integer, Mapping, Set
+from ...driver import Driver
 
 __all__ = ['ITC']
 
 class ITC(Driver):
 
     ANALOG_CHANNELS = {
-        1: '0',
-        2: '1',
-        3: '2',
-        4: '3',
-        5: '4',
-        6: '5',
-        7: '6',
-        8: '7',
-        9: '8',
-        10: '9',
-        11: ':',
-        12: ';',
-        13: '<',
-        14: '=',
-        15: '>',
-        16: '?',
+        1: b'A0',
+        2: b'A1',
+        3: b'A2',
+        4: b'A3',
+        5: b'A4',
+        6: b'A5',
+        7: b'A6',
+        8: b'A7',
+        9: b'A8',
+        10: b'A9',
+        11: b'A:',
+        12: b'A;',
+        13: b'A<',
+        14: b'A=',
+        15: b'A>',
+        16: b'A?',
     }
     """Mapping analog channel index to channel code."""
 
@@ -65,32 +64,42 @@ class ITC(Driver):
     }
     """Error messages."""
 
-    def __init__(self, transport, protocol=None):
-        super().__init__(transport, protocol)
-
-    @property
     def time(self):
         """Returns current date and time of device as datetime object.
-        >>> device.time
+        >>> device.time()
         datetime.datetime(2019, 6, 12, 13, 01, 21)
         """
-        self._transport.write_raw(b'T')
-        result = self._transport.read_bytes(13).decode()
+        self.transport().write_raw(b'T')
+        result = self.transport().read_bytes(13).decode()
         return datetime.datetime.strptime(result, 'T%d%m%y%H%M%S')
 
-    @time.setter
-    def time(self, dt):
+    def setTime(self, dt):
         """Update device date and time, returns updated data and time as datetime object.
-        >>> device.time = datetime.now()
+        >>> device.setTime(datetime.now())
         datetime.datetime(2019, 6, 12, 13, 12, 35)
         """
-        self._transport.write_raw(dt.strftime('t%d%m%y%H%M%S').encode())
-        result = self._transport.read_bytes(13)
+        self.transport.write_raw(dt.strftime('t%d%m%y%H%M%S').encode())
+        result = self.transport().read_bytes(13).decode()
         return datetime.datetime.strptime(result, 't%d%m%y%H%M%S')
 
-    @property
-    def error_message(self):
+    def status(self):
+        """Returns current status.
+        >>> device.status()
+        {}
+        """
+        self.transport().write_raw(b'S')
+        result = self.transport().read_bytes(10).decode()
+        return result
+
+    def analogChannel(self, index):
+        """Returns analog channel reading."""
+        code = self.ANALOG_CHANNELS[index]
+        self.transport().write_raw(code)
+        result = self.transport().read_bytes(14).decode().split(' ')[-1]
+        return float(result)
+
+    def errorMessage(self):
         """Returns current error message."""
-        self._transport.write_raw(b'F')
-        result = self.read_bytes(33).decode()
+        self.transport().write_raw(b'F')
+        result = self.transport().read_bytes(33).decode()
         return result[1:].strip()

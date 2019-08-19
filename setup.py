@@ -18,7 +18,6 @@ setup(
         'PyVISA-py',
         'PyVISA-sim',
         'Pint>=0.9',
-        'slave>=0.4',
         'PyQt5',
         'PyQt5-sip',
         'pyqtgraph',
