@@ -66,14 +66,14 @@ class MainWindow(MainWindowBase):
     def hideProgress(self):
         self.progressBar().hide()
 
-    def raiseException(self, exception):
+    def showException(self, exception):
         """Raise message box showing exception inforamtion."""
         QtWidgets.QMessageBox.critical(self, self.tr("Error"), format(exception))
 
     def connectWorker(self, worker):
         """Connect worker signals to main window slots."""
         self.closeRequested.connect(worker.stop)
-        worker.exceptionOccured.connect(self.raiseException)
+        worker.exceptionOccured.connect(self.showException)
         worker.messageChanged.connect(self.showMessage)
         worker.messageCleared.connect(self.clearMessage)
         worker.progressChanged.connect(self.showProgress)

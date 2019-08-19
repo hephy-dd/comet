@@ -19,22 +19,23 @@ class Buffer(QtCore.QObject):
         self.__channels = OrderedDict()
         self.__size = 0
 
-    def addChannel(self, name):
+    def addChannel(self, name, label=None):
+        """Add channel to buffer."""
         with self.__lock:
-            channel = Channel(self)
-            channel.resize(self.__size)
+            channel = Channel(name, self.__size, self)
+            channel.setLabel(label)
             self.__channels[name] = channel
         self.channelsChanged.emit()
 
     def keys(self):
         return list(self.__channels.keys())
 
-    def data(self):
-        """Returns snapshot of buffer channels."""
+    def data(self, size=None):
+        """Returns buffer channels, limit size using param `size`."""
         data = OrderedDict()
         with self.__lock:
             for name, channel in self.__channels.items():
-                data[name] = channel.data().copy() # shallow copy
+                data[name] = channel.data(size)
         return data
 
     def append(self, data):
@@ -43,7 +44,7 @@ class Buffer(QtCore.QObject):
             for name, channel in self.__channels.items():
                 channel.append(data.get(name))
             self.__size += 1
-            self.dataChanged.emit()
+        self.dataChanged.emit()
 
     def clear(self):
         """Clear all channels."""
