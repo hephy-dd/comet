@@ -18,19 +18,20 @@ class Settings(QtCore.QObject):
     {'smu': 'GPIB::16::INSTR'}
     """
 
+    PreferencesGroupKey = 'preferences'
+
     InvertPlotsKey = 'invertPlots'
     VisaLibraryKey = 'visaLibrary'
     OperatorsKey = 'operators'
     CurrentOperatorKey = 'currentOperator'
     DevicesKey = 'devices'
 
-    def __init__(self, organization, application):
+    def __init__(self, organization=None, application=None, parent=None):
+        super().__init__(parent)
+        organization = organization or QtCore.QCoreApplication.organizationName()
+        organization = application or QtCore.QCoreApplication.applicationName()
         self.__settings = QtCore.QSettings(organization, application)
-        self.__settings.load()
-
-    def settings(self):
-        """Returns wrapped QSettigns object."""
-        return self.__settings
+        self.__settings.beginGroup(self.PreferencesGroupKey)
 
     def invertPlots(self):
         """Returns True if invert plots is set."""
@@ -38,7 +39,7 @@ class Settings(QtCore.QObject):
 
     def setInvertPlots(self, inverted):
         self.__settings.setValue(self.InvertPlotsKey, inverted)
-        self.__settings.store()
+        self.__settings.sync()
 
     def visaLibrary(self):
         """Retruns VISA library."""
@@ -47,23 +48,25 @@ class Settings(QtCore.QObject):
     def setVisaLibrary(self, library):
         """Set VISA library."""
         self.__settings.setValue(self.VisaLibraryKey, library)
-        self.__settings.store()
+        self.__settings.sync()
 
     def operators(self):
         """Returns list of operators."""
         return self.__settings.value(self.OperatorsKey, [], type=list)
 
+    def setOperators(self, operators):
+        self.__settings.setValue(self.OperatorsKey, operators)
+        self.__settings.sync()
+
     def addOperator(self, name):
         operators = self.operators()
         operators.append(name)
-        self.__settings.setValue(self.OperatorsKey, operators)
-        self.__settings.store()
+        self.setOperators(operators)
 
     def removeOperator(self, name):
         operators = self.operators()
         operators.remove(name)
-        self.__settings.setValue(self.OperatorsKey, operators)
-        self.__settings.store()
+        self.setOperators(operators)
 
     def currentOperator(self):
         """Returns current operator index or zero if not set."""
@@ -74,18 +77,20 @@ class Settings(QtCore.QObject):
 
     def devices(self):
         """Retruns list of device configurations."""
-        return self.__settings.value(self.DevicesKey, [], type=dict)
+        return self.__settings.value(self.DevicesKey, {}, type=dict)
+
+    def setDevices(self, devices):
+        self.__settings.setValue(self.DevicesKey, devices)
+        self.__settings.sync()
 
     def setDevice(self, name, resource):
         """Set device resource by name."""
         devices = self.devices()
         devices[name] = resource
-        self.__settings.setValue(self.DevicesKey, devices)
-        self.__settings.store()
+        self.setDevices(devices)
 
     def removeDevice(self, name):
         """Remove device by name."""
         devices = self.devices()
         devices.pop(name, None)
-        self.__settings.setValue(self.DevicesKey, devices)
-        self.__settings.store()
+        self.setDevices(devices)

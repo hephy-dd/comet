@@ -1,19 +1,13 @@
 import os
 from PyQt5 import QtCore, QtWidgets, uic
 
+from ..settings import Settings
+
 Ui_PreferencesDialog, PreferencesDialogBase = uic.loadUiType(os.path.join(os.path.dirname(__file__), 'ui', 'preferencesdialog.ui'))
 
 __all__ = ['PreferencesDialog']
 
 class PreferencesDialog(PreferencesDialogBase):
-
-    DefaultInvertPlots = False
-
-    DefaultVisaLibrary = '@py'
-
-    DefaultOperators = ['Monty']
-
-    DefaultDevices = []
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -23,24 +17,18 @@ class PreferencesDialog(PreferencesDialogBase):
 
     def loadSettings(self):
         # Load settings
-        settings = QtCore.QSettings()
-        settings.beginGroup('preferences')
-        invertPlots = settings.value('invertPlots', self.DefaultInvertPlots, type=bool)
-        visaLibrary = settings.value('visaLibrary', self.DefaultVisaLibrary, type=str)
-        operators = settings.value('operators', self.DefaultOperators, type=list)
-        devices = settings.value('devices', self.DefaultDevices, type=list)
-        settings.endGroup()
+        settings = Settings()
 
-        self.ui.invertPlotsCheckBox.setChecked((invertPlots))
+        self.ui.invertPlotsCheckBox.setChecked((settings.invertPlots()))
 
-        self.ui.visaComboBox.setCurrentText(visaLibrary)
+        self.ui.visaComboBox.setCurrentText(settings.visaLibrary())
 
         self.ui.operatorListWidget.clear()
-        self.ui.operatorListWidget.addItems(operators)
+        self.ui.operatorListWidget.addItems(settings.operators())
 
         self.ui.devicesTableWidget.clearContents()
-        self.ui.devicesTableWidget.setRowCount(len(devices))
-        for i, device in enumerate(devices):
+        self.ui.devicesTableWidget.setRowCount(len(settings.devices()))
+        for i, device in enumerate(settings.devices().items()):
             name, resource = device
             self.ui.devicesTableWidget.setItem(i, 0, QtWidgets.QTableWidgetItem(name))
             self.ui.devicesTableWidget.setItem(i, 1, QtWidgets.QTableWidgetItem(format(resource)))
@@ -60,13 +48,11 @@ class PreferencesDialog(PreferencesDialogBase):
         self.ui.editDevicePushButton.setEnabled(select.hasSelection())
 
     def saveSettings(self):
-        settings = QtCore.QSettings()
-        settings.beginGroup('preferences')
-        settings.setValue('invertPlots', self.invertPlots())
-        settings.setValue('visaLibrary', self.visaLibrary())
-        settings.setValue('operators', self.operators())
-        settings.setValue('devices', self.devices())
-        settings.endGroup()
+        settings = Settings()
+        settings.setInvertPlots(self.invertPlots())
+        settings.setVisaLibrary(self.visaLibrary())
+        settings.setOperators(self.operators())
+        settings.setDevices(self.devices())
 
     def accept(self):
         self.saveSettings()
@@ -95,11 +81,11 @@ class PreferencesDialog(PreferencesDialogBase):
     def devices(self):
         """Returns list of devices containing name and resource."""
         table = self.ui.devicesTableWidget
-        devices = []
+        devices = {}
         for row in range(table.rowCount()):
             name = table.item(row, 0).text()
             resource = table.item(row, 1).text()
-            devices.append([name, resource])
+            devices[name] =resource
         return devices
 
     def addOperator(self):
