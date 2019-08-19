@@ -7,6 +7,7 @@ from .channel import Channel
 from .settings import Settings
 from .formatter import Formatter
 from .formatters import CsvFormatter, JsonFormatter, HephyDbFormatter
+from .functions import Range
 from .units import ureg
 from .logger import logger
 from .utilities import Range
