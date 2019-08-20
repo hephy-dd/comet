@@ -1,5 +1,6 @@
 import logging
 import time
+import traceback
 
 from PyQt5 import QtCore
 
@@ -66,7 +67,8 @@ class Worker(QtCore.QObject):
         try:
             self.run()
         except Exception as e:
-            logging.info("exception occured in worker %s", self)
+            logging.error("exception occured in worker %s", self)
+            logging.error(traceback.print_exc())
             self.__isActive = False
             self.exceptionOccured.emit(e)
         finally:
