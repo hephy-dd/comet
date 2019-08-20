@@ -1,4 +1,5 @@
 import datetime
+from collections import namedtuple
 
 from ...driver import Driver
 
@@ -6,7 +7,7 @@ __all__ = ['ITC']
 
 class ITC(Driver):
 
-    ANALOG_CHANNELS = {
+    AnalogChannels = {
         1: b'A0',
         2: b'A1',
         3: b'A2',
@@ -26,7 +27,7 @@ class ITC(Driver):
     }
     """Mapping analog channel index to channel code."""
 
-    WARNING_MESSAGES = {
+    WarningMessages = {
         '\x01': "Wassernachfüllen",
         '\x02': "Temp. Toleranzband Oben",
         '\x03': "Temp. Toleranzband Unten",
@@ -36,7 +37,7 @@ class ITC(Driver):
     }
     """Warning messages."""
 
-    ERROR_MESSAGES = {
+    ErrorMessages = {
         '\x31': "Temperatur Grenze Min 08-B1",
         '\x32': "Temperatur Grenze Max 08-B1",
         '\x33': "Temp. Begrenzer Pruefr. 01-F1.1",
@@ -64,45 +65,93 @@ class ITC(Driver):
     }
     """Error messages."""
 
-    def _query(self, message, count):
+    Status = namedtuple('Status', ('running', 'warning', 'error', 'channels'))
+
+    def query_bytes(self, message, count):
         """Raw query for bytes."""
         with self.lock():
             if not isinstance(message, bytes):
                 message = message.encode()
-            self.transport().write_raw(message)
-            return self.transport().read_bytes(count).decode()
+            self.resource().write_raw(message)
+            return self.resource().read_bytes(count).decode()
 
     def time(self):
         """Returns current date and time of device as datetime object.
+
         >>> device.time()
         datetime.datetime(2019, 6, 12, 13, 01, 21)
         """
-        result = self._query('T', 13)
+        result = self.query_bytes('T', 13)
         return datetime.datetime.strptime(result, 'T%d%m%y%H%M%S')
 
     def setTime(self, dt):
         """Update device date and time, returns updated data and time as datetime object.
+
         >>> device.setTime(datetime.now())
         datetime.datetime(2019, 6, 12, 13, 12, 35)
         """
-        result = self._query(dt.strftime('t%d%m%y%H%M%S'), 13)
+        result = self.query_bytes(dt.strftime('t%d%m%y%H%M%S'), 13)
         return datetime.datetime.strptime(result, 't%d%m%y%H%M%S')
 
-    def status(self):
-        """Returns current status.
-        >>> device.status()
-        {}
-        """
-        result = self._query('S', 10)
-        return result
-
     def analogChannel(self, index):
-        """Returns analog channel reading."""
-        code = self.ANALOG_CHANNELS[index]
-        result = self._query(code, 14)
-        return float(result.split(' ')[-1])
+        """Read analog channel, returns tuple containing actual value and target value.
+
+        >>> device.analogChannel(1) # read temperature target/actual
+        (24.5, 25.0)
+        """
+        code = self.AnalogChannels[index]
+        result, actual, target = self.query_bytes(code, 14).split()
+        if int(result) != index:
+            raise RuntimeError("invalid channel returned: '{}'".format(result))
+        return float(actual), float(target)
+
+    def setAnalogChannel(self, index, value):
+        """Set target value for analog channel.
+
+        >>> device.set_analog_channel(1, 42.0)
+        """
+        if not 1 <= index <= 7:
+            raise ValueError("invalid channel number: '{}'".format(index))
+        result = self.query_bytes("a{} {:05.1f}".format(index, value), 1)
+        if result != 'a':
+            raise RuntimeError("failed to set target for channel '{}'".format(index))
+
+    def status(self):
+        """Returns device status as object.
+
+        >>> device.status()
+        Status(running=False, warning=None, error=None, channels={}}
+        """
+        result = self.query_bytes('S', 10)
+        running = bool(int(result[1]))
+        isError = bool(int(result[2]))
+        channelStates = {channel: bool(int(state)) for channel, state in enumerate(result[3:9])}
+        errorNr = result[9]
+        warning = self.WarningMessages[errorNr] if isError and errorNr in self.WarningMessages else None
+        error = self.ErrorMessages[errorNr] if isError and errorNr in self.ErrorMessages else None
+        return Status(running, warning, error, channelStates)
 
     def errorMessage(self):
         """Returns current error message."""
-        result = self._query('F', 33)
+        result = self.query_bytes('F', 33)
         return result[1:].strip()
+
+    # TODO
+
+    def program(self):
+        """Returns number of running program or None if no program is running.
+        >>> device.program()
+        3
+        """
+        result = self.query_bytes('P', 4)
+        value =  int(result[1:])
+        return value if value else None
+
+    def startProgram(self, number):
+        """Starts a program. Returns program number or None for no program.
+        >>> device.startProgram(42)
+        42
+        """
+        result = self.query_bytes('P{:03d}'.format(number), 4)
+        value =  int(result[1:])
+        return value if value else None

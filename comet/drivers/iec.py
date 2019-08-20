@@ -7,8 +7,8 @@ class IEC60488(Driver):
 
     def identification(self):
         """Returns IEC60488 device identification."""
-        return self.transport().query('*IDN?')
+        return self.resource().query('*IDN?')
 
     def reset(self):
         """Reset IEC60488 device."""
-        return self.transport().query('*RST')
+        return self.resource().query('*RST')
