@@ -101,7 +101,7 @@ class ITC(Driver):
         """
         code = self.AnalogChannels[index]
         result, actual, target = self.query_bytes(code, 14).split()
-        if int(result) != index:
+        if result != code.decode():
             raise RuntimeError("invalid channel returned: '{}'".format(result))
         return float(actual), float(target)
 
