@@ -11,4 +11,4 @@ class IEC60488(Driver):
 
     def reset(self):
         """Reset IEC60488 device."""
-        return self.resource().query('*RST')
+        return self.resource().write('*RST')
