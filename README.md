@@ -2,14 +2,19 @@
 
 Control and Measurement Toolkit
 
-A PyQt5 powered rapid development toolkit for measurement desktop applications, inspired by QCoDeS, Lantz and Slave.
+A PyQt5 powered rapid development toolkit for measurement desktop applications,
+inspired by QCoDeS, Lantz and Slave.
 
-## Quick Start
+## Quick start
 
-    $ python setup.py install
-    $ cd examples/demo
-    $ python demo.py
+```bash
+$ python setup.py bdist_wheel
+$ pip install dist/*.whl
+$ python examples/demo/demo.py
+```
 
-## Run test
+## Run tests
 
-    $ python setup.py test
+```bash
+$ python setup.py test
+```
