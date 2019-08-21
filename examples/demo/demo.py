@@ -63,7 +63,7 @@ class MeasWorker(comet.Worker):
                 sample['time'] = t
                 sample['voltage'] = voltage
                 time.sleep(random.uniform(0.5, 1.5)) # simulate blocking communication
-                comet.logger().info("measured: time=%.3f voltage=%.3f", )
+                comet.logger().info("measured: time=%.3f voltage=%.3f", t, voltage)
                 self.measBuffer.append(sample)
                 formatter.write(sample) # append CSV output
                 self.showProgress(i + 1, maximum)
