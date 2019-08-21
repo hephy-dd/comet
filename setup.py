@@ -1,15 +1,8 @@
-import os
-import importlib
 from setuptools import setup, find_packages
 
-package = 'comet'
-package_dir = os.path.join(os.path.dirname(__file__), package)
-
-version = importlib.import_module(package, os.path.join(package_dir, '__init__.py')).__version__
-
 setup(
-    name=package,
-    version=version,
+    name='comet',
+    version='0.1.0',
     author="Bernhard Arnold",
     author_email="bernhard.arnold@oeaw.ac.at",
     packages=find_packages(exclude=['tests']),
@@ -23,7 +16,7 @@ setup(
         'pyqtgraph',
     ],
     package_data={
-        package: [
+        'comet': [
             'assets/icons/*.svg',
             'widgets/*.ui',
         ],
