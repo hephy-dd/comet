@@ -1,12 +1,13 @@
 import unittest
-import _env
+from io import StringIO
 
 from comet.formatters import CsvFormatter
 
 class CsvFormatterTest(unittest.TestCase):
 
     def testCsvFormatter(self):
-        formatter = CsvFormatter()
+        with StringIO() as f:
+            formatter = CsvFormatter(f, [])
 
 if __name__ == '__main__':
     unittest.main()

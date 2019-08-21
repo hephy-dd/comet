@@ -1,12 +1,13 @@
 import unittest
-import _env
+from io import StringIO
 
 from comet.formatters import HephyDbFormatter
 
 class HephyDbFormatterTest(unittest.TestCase):
 
     def testHephyDbFormatter(self):
-        formatter = HephyDbFormatter()
+        with StringIO() as f:
+            formatter = HephyDbFormatter(f)
 
 if __name__ == '__main__':
     unittest.main()

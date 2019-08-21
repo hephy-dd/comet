@@ -1,5 +1,4 @@
 import unittest
-import _env
 
 from comet.buffer import Buffer
 

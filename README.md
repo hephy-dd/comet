@@ -9,3 +9,7 @@ A PyQt5 powered rapid development toolkit for measurement desktop applications, 
     $ python setup.py install
     $ cd examples/demo
     $ python demo.py
+
+## Run test
+
+    $ python setup.py test

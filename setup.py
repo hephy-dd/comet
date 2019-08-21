@@ -12,7 +12,7 @@ setup(
     version=version,
     author="Bernhard Arnold",
     author_email="bernhard.arnold@oeaw.ac.at",
-    packages=find_packages(),
+    packages=find_packages(exclude=['tests']),
     install_requires=[
         'PyVISA',
         'PyVISA-py',
@@ -22,12 +22,12 @@ setup(
         'PyQt5-sip',
         'pyqtgraph',
     ],
-    include_package_data=True,
     package_data={
-        '': [
+        package: [
             'assets/icons/*.svg',
             'widgets/*.ui',
         ],
     },
+    test_suite='tests',
     license="GPLv3",
 )
