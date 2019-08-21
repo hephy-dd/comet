@@ -3,6 +3,7 @@
 Measured data is written to `demo.csv` using class `comet.CsvFormatter`.
 """
 
+import logging
 import random
 import time
 import sys, os
@@ -24,7 +25,7 @@ class EnvWorker(comet.Worker):
         t = time.time()
         temp = random.uniform(20, 24)
         humid = random.uniform(45, 55)
-        comet.logger().info("read environment: time=%.3f temp=%.1f, humid=%.1f", t, temp, humid)
+        logging.getLogger('comet').info("read environment: time=%.3f temp=%.1f, humid=%.1f", t, temp, humid)
         self.sampleReady.emit(dict(time=t, temp=temp, humid=humid))
 
     def run(self):
@@ -63,7 +64,7 @@ class MeasWorker(comet.Worker):
                 sample['time'] = t
                 sample['voltage'] = voltage
                 time.sleep(random.uniform(0.5, 1.5)) # simulate blocking communication
-                comet.logger().info("measured: time=%.3f voltage=%.3f", t, voltage)
+                logging.getLogger('comet').info("measured: time=%.3f voltage=%.3f", t, voltage)
                 self.measBuffer.append(sample)
                 formatter.write(sample) # append CSV output
                 self.showProgress(i + 1, maximum)
