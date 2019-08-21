@@ -3,7 +3,7 @@ from PyQt5 import QtGui, QtWidgets, uic
 
 from ..utilities import make_path
 
-Ui_AboutDialog, AboutDialogBase = uic.loadUiType(os.path.join(os.path.dirname(__file__), 'ui', 'aboutdialog.ui'))
+Ui_AboutDialog, AboutDialogBase = uic.loadUiType(os.path.splitext(__file__)[0] + '.ui')
 
 __all__ = ['AboutDialog']
 

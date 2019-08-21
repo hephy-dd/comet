@@ -3,7 +3,7 @@ from PyQt5 import QtCore, QtWidgets, uic
 
 from ..settings import Settings
 
-Ui_PreferencesDialog, PreferencesDialogBase = uic.loadUiType(os.path.join(os.path.dirname(__file__), 'ui', 'preferencesdialog.ui'))
+Ui_PreferencesDialog, PreferencesDialogBase = uic.loadUiType(os.path.splitext(__file__)[0] + '.ui')
 
 __all__ = ['PreferencesDialog']
 

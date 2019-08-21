@@ -11,7 +11,7 @@ from .aboutdialog import AboutDialog
 
 __all__ = ['MainWindow']
 
-Ui_MainWindow, MainWindowBase = uic.loadUiType(os.path.join(os.path.dirname(__file__), 'ui', 'mainwindow.ui'))
+Ui_MainWindow, MainWindowBase = uic.loadUiType(os.path.splitext(__file__)[0] + '.ui')
 
 class MainWindow(MainWindowBase):
     """Main window for COMET applications."""

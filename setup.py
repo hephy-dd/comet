@@ -26,7 +26,7 @@ setup(
     package_data={
         '': [
             'assets/icons/*.svg',
-            'widgets/ui/*.ui',
+            'widgets/*.ui',
         ],
     },
     license="GPLv3",

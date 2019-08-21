@@ -3,7 +3,7 @@ import os
 from PyQt5 import QtWidgets, uic
 import pyqtgraph as pg
 
-Ui_LinePlotWidget, LinePlotWidgetBase = uic.loadUiType(os.path.join(os.path.dirname(__file__), 'ui', 'lineplotwidget.ui'))
+Ui_LinePlotWidget, LinePlotWidgetBase = uic.loadUiType(os.path.splitext(__file__)[0] + '.ui')
 
 class LinePlotWidget(LinePlotWidgetBase):
 

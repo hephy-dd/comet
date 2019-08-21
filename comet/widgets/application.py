@@ -17,7 +17,6 @@ import pyqtgraph
 
 from ..utilities import make_path
 from ..settings import Settings
-from ..logger import logger
 
 __all__ = ['MainWindow']
 
@@ -35,9 +34,10 @@ class Application(object):
         self.__application.setWindowIcon(QtGui.QIcon(make_path('assets', 'icons', 'comet.svg')))
 
         # Setup logger
+        logging.getLogger('comet').setLevel(logging.INFO)
         fileHandler = logging.FileHandler('comet.log')
         fileHandler.setLevel(logging.INFO)
-        logger().addHandler(fileHandler)
+        logging.getLogger('comet').addHandler(fileHandler)
 
         # Setup plot configuration
         settings = Settings()
