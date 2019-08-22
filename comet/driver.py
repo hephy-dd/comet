@@ -57,6 +57,9 @@ class Driver(object):
     def isOpen(self):
         return self.__resource is not None
 
+    def isSimulation(self):
+        return self.__visaLibrary.endswith('@sim')
+
     def __enter__(self):
         self.open()
         return self
