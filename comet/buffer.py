@@ -10,6 +10,8 @@ class Buffer(QtCore.QObject):
     dataChanged = QtCore.pyqtSignal()
     """Emitted when data is appended to the buffer."""
 
+    cleared = QtCore.pyqtSignal()
+
     channelsChanged = QtCore.pyqtSignal()
     """Emitted when new channels are added."""
 
@@ -52,6 +54,7 @@ class Buffer(QtCore.QObject):
             for name, channel in self.__channels.items():
                 channel.clear()
             self.__size = 0
+        self.cleared.emit()
         self.dataChanged.emit()
 
     def size(self):
