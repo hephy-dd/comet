@@ -20,6 +20,7 @@ class K2700(IEC60488):
         [{'VDC': -4.32962079e-05, 'SECS': 0.0, 'RDNG': 0.0}, ...]
         """
         results = []
+        # split '-4.32962079e-05VDC,+0.000SECS,+0.0000RDNG#,...'
         for values in re.findall(r'([^#]+)#\,?', self.resource().query('FETC?')):
             values = re.findall(r'([+-]?\d+(?:\.\d+)?(?:E[+-]\d+)?)([A-Z]+)\,?', values)
             results.append({suffix: float(value) for value, suffix in values})
