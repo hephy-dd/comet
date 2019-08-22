@@ -13,7 +13,7 @@ setup(
         'Pint>=0.9',
         'PyQt5',
         'PyQt5-sip',
-        'pyqtgraph',
+        'PyQtChart',
     ],
     package_data={
         'comet': [

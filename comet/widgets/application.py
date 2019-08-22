@@ -13,7 +13,6 @@ import signal
 import sys
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-import pyqtgraph
 
 from ..utilities import make_path
 from ..settings import Settings
@@ -38,10 +37,6 @@ class Application(object):
         fileHandler = logging.FileHandler('comet.log')
         fileHandler.setLevel(logging.INFO)
         logging.getLogger('comet').addHandler(fileHandler)
-
-        # Setup plot configuration
-        settings = Settings()
-        pyqtgraph.setConfigOption('background', 'w' if settings.invertPlots() else 'k')
 
     def name(self):
         """Returns application name."""

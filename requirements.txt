@@ -4,4 +4,4 @@ PyVISA-sim
 Pint>=0.9
 PyQt5
 PyQt5-sip
-pyqtgraph
+PyQtChart
