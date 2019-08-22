@@ -12,6 +12,7 @@ from collections import OrderedDict
 from PyQt5 import QtCore, QtGui, QtWidgets, uic
 
 import comet
+from comet.utilities import replace_ext
 
 class EnvWorker(comet.Worker):
 
@@ -80,7 +81,7 @@ class MeasWorker(comet.Worker):
             self.showMessage("Aborted")
             self.showProgress(0, 1)
 
-Ui_Demo, DemoBase = uic.loadUiType(os.path.join(os.path.dirname(__file__), 'demo.ui'))
+Ui_Demo, DemoBase = uic.loadUiType(replace_ext(__file__, '.ui'))
 
 class Demo(DemoBase):
     """Demo widget with controls and table views."""
