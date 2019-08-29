@@ -11,9 +11,8 @@ setup(
         'PyVISA-py',
         'PyVISA-sim',
         'Pint>=0.9',
-        'PyQt5',
-        'PyQt5-sip',
-        'PyQtChart',
+        'PyQt5>=5.13',
+        'PyQtChart>=5.13',
     ],
     package_data={
         'comet': [
