@@ -1,9 +1,18 @@
 """Utility functions and paths."""
 
+import contextlib
 import os
 import re
+import sys
 
-__all__ = ['PACKAGE_PATH', 'make_path', 'make_label', 'make_id', 'replace_ext']
+__all__ = [
+    'PACKAGE_PATH',
+    'make_path',
+    'make_label',
+    'make_id',
+    'replace_ext',
+    'switch_dir'
+]
 
 PACKAGE_PATH = os.path.abspath(os.path.dirname(__file__))
 """Absolute path to comet package directory."""
@@ -27,10 +36,10 @@ def make_label(name):
 def make_id(name):
     """Constructs a lower case ID string without special characters from any name.
 
-    >>> make_id('NO-body expects the spanish inquisition!')
-    'no_body_expects_the_spanish_inquisition'
+    >>> make_id('Nobody expects the spanish inquisition!')
+    'nobody_expects_the_spanish_inquisition'
     """
-    return re.sub(r'[^a-z0-9]+', '_', name.lower()).rstrip("_")
+    return re.sub(r'[^a-z0-9]+', '_', name.lower()).rstrip('_')
 
 def replace_ext(filename, ext):
     """Replaces a filename extension.
@@ -39,3 +48,19 @@ def replace_ext(filename, ext):
     '/tmp/module.ui'
     """
     return ''.join((os.path.splitext(filename)[0], ext))
+
+@contextlib.contextmanager
+def switch_dir(path):
+    """Change the current working directory to the specified path and restore
+    the previous location afterwards.
+
+    >>> with switch_dir('/tmp'):
+    ...     print(os.getcwd())
+    '/tmp'
+    >>> print(os.getcwd())
+    '/home/user'
+    """
+    cwd = os.getcwd()
+    os.chdir(path)
+    yield
+    os.chdir(cwd)
