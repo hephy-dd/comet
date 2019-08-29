@@ -2,11 +2,12 @@ from setuptools import setup, find_packages
 
 setup(
     name='comet',
-    version='0.1.0',
+    version='0.2.0',
     author="Bernhard Arnold",
     author_email="bernhard.arnold@oeaw.ac.at",
     packages=find_packages(exclude=['tests']),
     install_requires=[
+        'appdirs>=1.4.3',
         'PyVISA',
         'PyVISA-py',
         'PyVISA-sim',

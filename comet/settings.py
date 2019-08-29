@@ -1,99 +1,75 @@
-from PyQt5 import QtCore
+import os
+import json
+
+from appdirs import user_config_dir
 
 __all__ = ['Settings']
 
-class Settings(QtCore.QObject):
-    """Settings handler class wrapping QSettings.
+class Settings(object):
+    """Settings context manager, storing persistent application settings on any
+    platform.
 
-    >>> s = Settings()
-    >>> s.operators()
-    []
-    >>> s.addOperator('Monty')
-    >>> s.operators()
-    ['Monty']
-    >>> s.devices()
-    {}
-    >>> s.setDevice('smu', 'GPIB::16::INSTR')
-    >>> s.devices()
-    {'smu': 'GPIB::16::INSTR'}
+    >>> with Settings('HEPHY', 'comet') as settings:
+    ...    settings['operators'] = ['Monty', 'John']
+    ...
+
+    >>> with Settings('HEPHY', 'comet') as settings:
+    ...    print(settings.get('operators'))
+    ...
+    ['Monty', 'John']
+
+    Setting persistent to `False` prevents from writing settings to file.
     """
 
-    PreferencesGroupKey = 'preferences'
+    default_filename = 'settings.json'
+    """Filename used to store settings in JSON format."""
 
-    InvertPlotsKey = 'invertPlots'
-    VisaLibraryKey = 'visaLibrary'
-    OperatorsKey = 'operators'
-    CurrentOperatorKey = 'currentOperator'
-    DevicesKey = 'devices'
+    def __init__(self, organization, application, persistent=True):
+        self.__organization = organization
+        self.__application = application
+        self.__persistent = persistent
+        path = user_config_dir(appname=application, appauthor=organization)
+        self.__filename = os.path.join(path, self.default_filename)
+        self.__settings = {}
 
-    DefaultInvertPlots = False
-    DefaultVisaLibrary = '@py'
+    @property
+    def organization(self):
+        """Returns organization name."""
+        return self.__organization
 
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        organization = QtCore.QCoreApplication.organizationName()
-        application = QtCore.QCoreApplication.applicationName()
-        self.__settings = QtCore.QSettings(organization, application)
-        self.__settings.beginGroup(self.PreferencesGroupKey)
+    @property
+    def application(self):
+        """Returns application name."""
+        return self.__application
 
-    def invertPlots(self):
-        """Returns True if invert plots is set."""
-        return self.__settings.value(self.InvertPlotsKey, self.DefaultInvertPlots, type=bool)
+    @property
+    def persistent(self):
+        """Returns persistent option."""
+        return self.__persistent
 
-    def setInvertPlots(self, inverted):
-        self.__settings.setValue(self.InvertPlotsKey, inverted)
-        self.__settings.sync()
+    @property
+    def filename(self):
+        """Returns settings path and filename."""
+        return self.__filename
 
-    def visaLibrary(self):
-        """Retruns VISA library."""
-        return self.__settings.value(self.VisaLibraryKey, self.DefaultVisaLibrary, type=str)
+    def clear(self):
+        """Clear settings file if exists."""
+        if os.path.isfile(self.__filename):
+            os.remove(self.__filename)
 
-    def setVisaLibrary(self, library):
-        """Set VISA library."""
-        self.__settings.setValue(self.VisaLibraryKey, library)
-        self.__settings.sync()
+    def __enter__(self):
+        """Read application settings from filesystem (if existing)."""
+        if os.path.isfile(self.__filename):
+            with open(self.__filename, 'r') as f:
+                self.__settings = json.load(f)
+        return self.__settings
 
-    def operators(self):
-        """Returns list of operators."""
-        return self.__settings.value(self.OperatorsKey, [], type=list)
-
-    def setOperators(self, operators):
-        self.__settings.setValue(self.OperatorsKey, operators)
-        self.__settings.sync()
-
-    def addOperator(self, name):
-        operators = self.operators()
-        operators.append(name)
-        self.setOperators(operators)
-
-    def removeOperator(self, name):
-        operators = self.operators()
-        operators.remove(name)
-        self.setOperators(operators)
-
-    def currentOperator(self):
-        """Returns current operator index or zero if not set."""
-        return self.__settings.value(self.CurrentOperatorKey, 0, type=int)
-
-    def setCurrentOperator(self, index):
-        return self.__settings.setValue(self.CurrentOperatorKey, index)
-
-    def devices(self):
-        """Retruns list of device configurations."""
-        return self.__settings.value(self.DevicesKey, {}, type=dict)
-
-    def setDevices(self, devices):
-        self.__settings.setValue(self.DevicesKey, devices)
-        self.__settings.sync()
-
-    def setDevice(self, name, resource):
-        """Set device resource by name."""
-        devices = self.devices()
-        devices[name] = resource
-        self.setDevices(devices)
-
-    def removeDevice(self, name):
-        """Remove device by name."""
-        devices = self.devices()
-        devices.pop(name, None)
-        self.setDevices(devices)
+    def __exit__(self, *exc):
+        """Write application settings to filesystem."""
+        if self.__persistent:
+            path = os.path.dirname(self.__filename)
+            if not os.path.exists(path):
+                os.makedirs(path)
+            with open(self.__filename, 'w') as f:
+                json.dump(self.__settings, f)
+        return False

@@ -1,3 +1,4 @@
+appdirs>=1.4.3
 PyVISA
 PyVISA-py
 PyVISA-sim
