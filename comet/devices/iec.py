@@ -1,9 +1,9 @@
-from ..driver import Driver
+from comet import Device
 
 __all__ = ['IEC60488']
 
-class IEC60488(Driver):
-    """IEC60488 compatible driver."""
+class IEC60488(Device):
+    """IEC60488 compatible device."""
 
     def identification(self):
         """Returns IEC60488 device identification."""

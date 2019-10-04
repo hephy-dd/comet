@@ -1,10 +1,12 @@
-from ..iec import IEC60488
+from comet.devices import IEC60488
 
 __all__ = ['K2410']
 
 class K2410(IEC60488):
 
-    readTermination = '\r'
+    options = {
+        'read_termination': '\r',
+    }
 
     def output(self):
         """Returns True if output enabled, else retruns False."""

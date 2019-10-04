@@ -1,11 +1,12 @@
 import datetime
 from collections import namedtuple
 
-from ...driver import Driver
+from comet import Device
 
 __all__ = ['ITC']
 
-class ITC(Driver):
+class ITC(Device):
+    """Interface for CTS Climate Chambers."""
 
     AnalogChannels = {
         1: b'A0',
@@ -77,7 +78,6 @@ class ITC(Driver):
 
     def time(self):
         """Returns current date and time of device as datetime object.
-
         >>> device.time()
         datetime.datetime(2019, 6, 12, 13, 01, 21)
         """
@@ -86,7 +86,6 @@ class ITC(Driver):
 
     def setTime(self, dt):
         """Update device date and time, returns updated data and time as datetime object.
-
         >>> device.setTime(datetime.now())
         datetime.datetime(2019, 6, 12, 13, 12, 35)
         """
@@ -95,7 +94,6 @@ class ITC(Driver):
 
     def analogChannel(self, index):
         """Read analog channel, returns tuple containing actual value and target value.
-
         >>> device.analogChannel(1) # read temperature target/actual
         (24.5, 25.0)
         """
@@ -107,7 +105,6 @@ class ITC(Driver):
 
     def setAnalogChannel(self, index, value):
         """Set target value for analog channel.
-
         >>> device.set_analog_channel(1, 42.0)
         """
         if not 1 <= index <= 7:
@@ -118,7 +115,6 @@ class ITC(Driver):
 
     def status(self):
         """Returns device status as object.
-
         >>> device.status()
         Status(running=False, warning=None, error=None, channels={}}
         """

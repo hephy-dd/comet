@@ -1,12 +1,14 @@
 import re
 
-from ..iec import IEC60488
+from comet.iec import IEC60488
 
 __all__ = ['K2700']
 
 class K2700(IEC60488):
 
-    readTermination = '\r'
+    options = {
+        'read_termination': '\r',
+    }
 
     def init(self):
         """Initialize measurement."""
@@ -15,7 +17,6 @@ class K2700(IEC60488):
     def fetch(self):
         """Returns the latest available readings as list of dictionaries.
         .. note:: It does not perform a measurement.
-
         >>> device.fetch()
         [{'VDC': -4.32962079e-05, 'SECS': 0.0, 'RDNG': 0.0}, ...]
         """
