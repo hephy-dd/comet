@@ -36,16 +36,16 @@ class PreferencesDialog(QtWidgets.QDialog, UiLoaderMixin, DeviceMixin):
         self.ui.resourcesTableWidget.resizeColumnsToContents()
 
         self.ui.operatorListWidget.itemSelectionChanged.connect(self.updateOperatorButtons)
-        self.ui.resourcesTableWidget.itemSelectionChanged.connect(self.updateDeviceButtons)
+        self.ui.resourcesTableWidget.itemSelectionChanged.connect(self.updateResourceButtons)
 
     def updateOperatorButtons(self):
         select = self.ui.operatorListWidget.selectionModel()
         self.ui.editOperatorPushButton.setEnabled(select.hasSelection())
         self.ui.removeOperatorPushButton.setEnabled(select.hasSelection())
 
-    def updateDeviceButtons(self):
+    def updateResourceButtons(self):
         select = self.ui.resourcesTableWidget.selectionModel()
-        self.ui.editDevicePushButton.setEnabled(select.hasSelection())
+        self.ui.editResourcePushButton.setEnabled(select.hasSelection())
 
     def saveSettings(self):
         settings = QtCore.QSettings()
@@ -115,7 +115,7 @@ class PreferencesDialog(QtWidgets.QDialog, UiLoaderMixin, DeviceMixin):
         if row is not None:
             table.takeItem(row)
 
-    def editDevice(self):
+    def editResource(self):
         """Edit device resource slot."""
         table = self.ui.resourcesTableWidget
         row = table.currentRow()

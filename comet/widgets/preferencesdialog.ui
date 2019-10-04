@@ -216,7 +216,7 @@
         </widget>
        </item>
        <item row="0" column="1">
-        <widget class="QPushButton" name="editDevicePushButton">
+        <widget class="QPushButton" name="editResourcePushButton">
          <property name="enabled">
           <bool>false</bool>
          </property>
@@ -327,10 +327,10 @@
    </hints>
   </connection>
   <connection>
-   <sender>editDevicePushButton</sender>
+   <sender>editResourcePushButton</sender>
    <signal>clicked()</signal>
    <receiver>PreferencesDialog</receiver>
-   <slot>editDevice()</slot>
+   <slot>editResource()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>337</x>
@@ -347,6 +347,6 @@
   <slot>addOperator()</slot>
   <slot>editOperator()</slot>
   <slot>removeOperator()</slot>
-  <slot>editDevice()</slot>
+  <slot>editResource()</slot>
  </slots>
 </ui>

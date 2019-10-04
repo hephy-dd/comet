@@ -1,6 +1,6 @@
 import re
 
-from comet.iec import IEC60488
+from comet.devices import IEC60488
 
 __all__ = ['K2700']
 

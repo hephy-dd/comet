@@ -1,3 +1,4 @@
+import traceback
 import threading
 import random
 import time
@@ -38,7 +39,11 @@ class Process(QtCore.QObject):
     failed = QtCore.pyqtSignal(object)
     """Emitted if exception occured in method `run`, provides exception as argument."""
 
-    message = QtCore.pyqtSignal(str)
+    messageChanged = QtCore.pyqtSignal(str)
+    messageCleared = QtCore.pyqtSignal()
+
+    progressChanged = QtCore.pyqtSignal(int, int)
+    progressHidden = QtCore.pyqtSignal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -51,6 +56,7 @@ class Process(QtCore.QObject):
         except StopRequest:
             pass
         except Exception as e:
+            logging.error(traceback.print_exc())
             logging.error(e)
             self.failed.emit(e)
         finally:
@@ -80,6 +86,24 @@ class Process(QtCore.QObject):
 
     def time(self):
         return time.time()
+
+    def showMessage(self, message):
+        """Show message, emits signal `messageChanged`."""
+        logging.info("worker %s message: %s", self, message)
+        self.messageChanged.emit(message)
+
+    def clearMessage(self):
+        """Clears message, emits signal `messageCleared`."""
+        self.messageCleared.emit()
+
+    def showProgress(self, value, maximum):
+        """Show progress, emits signal `progressChanged`."""
+        logging.info("worker %s progress: %s of %s", self, value, maximum)
+        self.progressChanged.emit(value, maximum)
+
+    def hideProgress(self):
+        """Hide process, emits sigmal `progressHidden`."""
+        self.progressHidden.emit()
 
     def run(self):
         raise NotImplemented()

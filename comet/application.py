@@ -1,3 +1,4 @@
+import logging
 import signal
 import sys
 
@@ -24,6 +25,9 @@ class Application(QtWidgets.QApplication):
 
         # Initialize settings
         QtCore.QSettings()
+
+        # Setup logger
+        logging.getLogger().setLevel(logging.INFO)
 
     def handler(self, signum, frame):
         """Interupt signal handler, trying to close application windows."""

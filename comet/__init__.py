@@ -3,4 +3,5 @@ from .widgets import *
 from .process import *
 from .device import *
 from .mixins import *
+from .functions import Range
 from .version import __version__
