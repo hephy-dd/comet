@@ -9,7 +9,7 @@ from PyQt5 import QtCore, QtWidgets
 from .device import DeviceMixin
 from .utils import Collection
 
-__all__ = ['Process', 'ProcessManager']
+__all__ = ['Process', 'StopRequest', 'ProcessManager']
 
 class Thread(threading.Thread):
 
@@ -48,7 +48,7 @@ class Process(QtCore.QObject):
         self.started.emit()
         try:
             self.run()
-        except StopProcess:
+        except StopRequest:
             pass
         except Exception as e:
             logging.error(e)
