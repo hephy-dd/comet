@@ -135,19 +135,17 @@ class ITC(Device):
     # TODO
 
     def program(self):
-        """Returns number of running program or None if no program is running.
+        """Returns number of running program or 0 if no program is running.
         >>> device.program()
         3
         """
         result = self.query_bytes('P', 4)
-        value =  int(result[1:])
-        return value if value else None
+        return int(result[1:])
 
     def startProgram(self, number):
-        """Starts a program. Returns program number or None for no program.
+        """Starts a program. Returns program number or 0 for no program.
         >>> device.startProgram(42)
         42
         """
         result = self.query_bytes('P{:03d}'.format(number), 4)
-        value =  int(result[1:])
-        return value if value else None
+        return int(result[1:])
