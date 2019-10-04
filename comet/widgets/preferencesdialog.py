@@ -1,42 +1,42 @@
 import os
 from PyQt5 import QtCore, QtWidgets, uic
 
-from ..settings import Settings
-
-Ui_PreferencesDialog, PreferencesDialogBase = uic.loadUiType(os.path.splitext(__file__)[0] + '.ui')
+from ..mixins import UiLoaderMixin
+from ..device import DeviceMixin
 
 __all__ = ['PreferencesDialog']
 
-class PreferencesDialog(PreferencesDialogBase):
+class PreferencesDialog(QtWidgets.QDialog, UiLoaderMixin, DeviceMixin):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.ui = Ui_PreferencesDialog()
-        self.ui.setupUi(self)
+        self.loadUi()
         self.loadSettings()
 
     def loadSettings(self):
         # Load settings
-        settings = Settings()
+        settings = QtCore.QSettings()
 
-        self.ui.invertPlotsCheckBox.setChecked((settings.invertPlots()))
+        visaLibrary = settings.value('visaLibrary', '@py')
+        self.ui.visaComboBox.setCurrentText(visaLibrary)
 
-        self.ui.visaComboBox.setCurrentText(settings.visaLibrary())
-
+        operators = settings.value('operators', [])
         self.ui.operatorListWidget.clear()
-        self.ui.operatorListWidget.addItems(settings.operators())
+        self.ui.operatorListWidget.addItems(operators)
 
-        self.ui.devicesTableWidget.clearContents()
-        self.ui.devicesTableWidget.setRowCount(len(settings.devices()))
-        for i, device in enumerate(settings.devices().items()):
-            name, resource = device
-            self.ui.devicesTableWidget.setItem(i, 0, QtWidgets.QTableWidgetItem(name))
-            self.ui.devicesTableWidget.setItem(i, 1, QtWidgets.QTableWidgetItem(format(resource)))
-        self.ui.devicesTableWidget.resizeRowsToContents()
-        self.ui.devicesTableWidget.resizeColumnsToContents()
+        resources = settings.value('resources', {})
+        resources.update(self.devices().resources())
+        self.ui.resourcesTableWidget.clearContents()
+        self.ui.resourcesTableWidget.setRowCount(len(resources))
+        for i, resource in enumerate(resources.items()):
+            name, resource = resource
+            self.ui.resourcesTableWidget.setItem(i, 0, QtWidgets.QTableWidgetItem(name))
+            self.ui.resourcesTableWidget.setItem(i, 1, QtWidgets.QTableWidgetItem(resource))
+        self.ui.resourcesTableWidget.resizeRowsToContents()
+        self.ui.resourcesTableWidget.resizeColumnsToContents()
 
         self.ui.operatorListWidget.itemSelectionChanged.connect(self.updateOperatorButtons)
-        self.ui.devicesTableWidget.itemSelectionChanged.connect(self.updateDeviceButtons)
+        self.ui.resourcesTableWidget.itemSelectionChanged.connect(self.updateDeviceButtons)
 
     def updateOperatorButtons(self):
         select = self.ui.operatorListWidget.selectionModel()
@@ -44,15 +44,14 @@ class PreferencesDialog(PreferencesDialogBase):
         self.ui.removeOperatorPushButton.setEnabled(select.hasSelection())
 
     def updateDeviceButtons(self):
-        select = self.ui.devicesTableWidget.selectionModel()
+        select = self.ui.resourcesTableWidget.selectionModel()
         self.ui.editDevicePushButton.setEnabled(select.hasSelection())
 
     def saveSettings(self):
-        settings = Settings()
-        settings.setInvertPlots(self.invertPlots())
-        settings.setVisaLibrary(self.visaLibrary())
-        settings.setOperators(self.operators())
-        settings.setDevices(self.devices())
+        settings = QtCore.QSettings()
+        settings.setValue('visaLibrary', self.visaLibrary())
+        settings.setValue('operators', self.operators())
+        settings.setValue('resources', self.resources())
 
     def accept(self):
         self.saveSettings()
@@ -61,10 +60,6 @@ class PreferencesDialog(PreferencesDialogBase):
             self.tr("Application restart required for changes to take effect.")
         )
         super().accept()
-
-    def invertPlots(self):
-        """Returns selected state of invert plot check box."""
-        return self.ui.invertPlotsCheckBox.isChecked()
 
     def visaLibrary(self):
         """Returns selected state of VISA library combo box."""
@@ -78,15 +73,15 @@ class PreferencesDialog(PreferencesDialogBase):
             operators.append(table.item(row).text())
         return operators
 
-    def devices(self):
-        """Returns list of devices containing name and resource."""
-        table = self.ui.devicesTableWidget
-        devices = {}
+    def resources(self):
+        """Returns list of resources containing name and resource."""
+        table = self.ui.resourcesTableWidget
+        resources = {}
         for row in range(table.rowCount()):
             name = table.item(row, 0).text()
             resource = table.item(row, 1).text()
-            devices[name] =resource
-        return devices
+            resources[name] = resource
+        return resources
 
     def addOperator(self):
         """Add operator slot."""
@@ -122,7 +117,7 @@ class PreferencesDialog(PreferencesDialogBase):
 
     def editDevice(self):
         """Edit device resource slot."""
-        table = self.ui.devicesTableWidget
+        table = self.ui.resourcesTableWidget
         row = table.currentRow()
         item = table.item(row, 1)
         if item is not None:

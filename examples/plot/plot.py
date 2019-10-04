@@ -3,10 +3,9 @@
 import time
 import random
 import sys, os
-from PyQt5 import QtCore, QtWidgets, QtChart, uic
+from PyQt5 import QtCore, QtWidgets, QtChart
 
 import comet
-from comet.utilities import replace_ext
 
 class FakeEnvironment(object):
     """Fake data source providing realistic temperature and humidity readings."""
@@ -25,14 +24,11 @@ class FakeEnvironment(object):
         self.humidity = max(self.humidity_min, min(self.humidity_max, self.humidity + random.uniform(-1, 1)))
         return self.temperature, self.humidity
 
-Ui_Plot, PlotBase = uic.loadUiType(replace_ext(__file__, '.ui'))
-
-class Plot(PlotBase):
+class Plot(QtWidgets.QWidget, comet.UiLoaderMixin):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.ui = Ui_Plot()
-        self.ui.setupUi(self)
+        self.loadUi()
         self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.chart = QtChart.QChart()
         self.chart.setTitle("Environment")
@@ -83,15 +79,10 @@ class Plot(PlotBase):
         menu.addAction(resetAction)
         menu.exec_(self.mapToGlobal(pos))
 
-class MainWindow(comet.MainWindow):
-
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.setCentralWidget(Plot(self))
-
 def main():
     app = comet.Application()
-    window = MainWindow()
+    window = comet.MainWindow()
+    window.setCentralWidget(Plot())
     window.show()
     return app.run()
 

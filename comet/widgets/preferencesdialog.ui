@@ -163,13 +163,13 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="devicesTab">
+     <widget class="QWidget" name="resourcesTab">
       <attribute name="title">
-       <string>&amp;Devices</string>
+       <string>&amp;Resources</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_3">
        <item row="0" column="0" rowspan="2">
-        <widget class="QTableWidget" name="devicesTableWidget">
+        <widget class="QTableWidget" name="resourcesTableWidget">
          <property name="editTriggers">
           <set>QAbstractItemView::NoEditTriggers</set>
          </property>
@@ -226,7 +226,7 @@
         </widget>
        </item>
        <item row="1" column="1">
-        <spacer name="devicesVerticalSpacer">
+        <spacer name="resourcesVerticalSpacer">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
          </property>
