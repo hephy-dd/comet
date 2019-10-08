@@ -1,7 +1,8 @@
 import webbrowser
 
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtCore, QtGui, QtWidgets
 
+from ..utils import make_path
 from ..mixins import UiLoaderMixin, ProcessMixin
 from .preferencesdialog import PreferencesDialog
 from .aboutdialog import AboutDialog
@@ -14,6 +15,8 @@ class MainWindow(QtWidgets.QMainWindow, UiLoaderMixin):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.loadUi()
+        # Set Icon
+        self.setWindowIcon(QtGui.QIcon(make_path('assets', 'icons', 'comet.svg')))
         # Setup status bar widgets
         self.__messageLabel = QtWidgets.QLabel(self)
         self.__messageLabel.hide()

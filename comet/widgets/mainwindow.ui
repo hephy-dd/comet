@@ -14,6 +14,10 @@
   <property name="windowTitle">
    <string>COMET</string>
   </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>../assets/icons/comet.svg</normaloff>../assets/icons/comet.svg</iconset>
+  </property>
   <property name="contentsUrl" stdset="0">
    <string>https://github.com/hephy-dd/comet/</string>
   </property>
