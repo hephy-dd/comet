@@ -3,9 +3,16 @@ import logging
 from collections import OrderedDict
 from contextlib import ContextDecorator
 
+from PyQt5 import QtCore
+
 import visa
 
 __all__ = ['Device', 'DeviceManager', 'DeviceMixin']
+
+def getResourceManager():
+    """Returns resource manager configured by application settings."""
+    visaLibrary = QtCore.QSettings().value('visaLibrary', '@py')
+    return visa.ResourceManager(visaLibrary)
 
 class Device(ContextDecorator):
     """Base class for custom VISA devices.
@@ -25,17 +32,13 @@ class Device(ContextDecorator):
     options = {}
     """Options passed on to VISA resource."""
 
-    def __init__(self, resourceName, visaLibrary):
+    def __init__(self, resourceName):
         self.__resourceName = resourceName
-        self.__visaLibrary = visaLibrary
         self.__resource = None
         self.__lock = threading.RLock()
 
     def resourceName(self):
         return self.__resourceName
-
-    def visaLibrary(self):
-        return self.__visaLibrary
 
     def resource(self):
         return self.__resource
@@ -44,9 +47,8 @@ class Device(ContextDecorator):
         return self.__lock
 
     def __enter__(self):
-        rm = visa.ResourceManager(self.__visaLibrary)
         logging.info("opening resource: '%s' with options %s", self.__resourceName, self.options)
-        self.__resource = rm.open_resource(self.__resourceName, **self.options)
+        self.__resource = getResourceManager().open_resource(self.__resourceName, **self.options)
         return self
 
     def __exit__(self, *exc):
