@@ -12,6 +12,8 @@ __all__ = ['MainWindow']
 class MainWindow(QtWidgets.QMainWindow, UiLoaderMixin):
     """Main window for COMET applications."""
 
+    closeRequest = QtCore.pyqtSignal()
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.loadUi()
@@ -39,14 +41,13 @@ class MainWindow(QtWidgets.QMainWindow, UiLoaderMixin):
     @QtCore.pyqtSlot()
     def showAbout(self):
         """Show modal about dialog."""
-        dialog = QtWidgets.AboutDialog(self)
+        dialog = AboutDialog(self)
         dialog.exec_()
 
     @QtCore.pyqtSlot()
     def showAboutQt(self):
         """Show modal about Qt dialog."""
-        dialog = QtWidgets.QDialog(self)
-        dialog.exec_()
+        QtWidgets.QMessageBox.aboutQt(self)
 
     def setCentralWidget(self, widget):
         super().setCentralWidget(widget)
@@ -98,6 +99,7 @@ class MainWindow(QtWidgets.QMainWindow, UiLoaderMixin):
         dialog.exec_()
 
         if dialog.result() == dialog.Ok:
+            self.closeRequest.emit()
             dialog = ProcessDialog(self)
             dialog.exec_()
             event.accept()

@@ -20,7 +20,7 @@ class PreferencesDialog(QtWidgets.QDialog, UiLoaderMixin, DeviceMixin):
         visaLibrary = settings.value('visaLibrary', '@py')
         self.ui.visaComboBox.setCurrentText(visaLibrary)
 
-        operators = settings.value('operators', [])
+        operators = settings.value('operators', []) or [] # HACK
         self.ui.operatorListWidget.clear()
         self.ui.operatorListWidget.addItems(operators)
 

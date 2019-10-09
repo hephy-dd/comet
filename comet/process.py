@@ -98,7 +98,7 @@ class Process(QtCore.QObject):
 
     def showProgress(self, value, maximum):
         """Show progress, emits signal `progressChanged`."""
-        logging.info("worker %s progress: %s of %s", self, value, maximum)
+        logging.debug("worker %s progress: %s of %s", self, value, maximum)
         self.progressChanged.emit(value, maximum)
 
     def hideProgress(self):
