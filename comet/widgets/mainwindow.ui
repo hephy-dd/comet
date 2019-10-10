@@ -48,6 +48,7 @@
      <string>&amp;Help</string>
     </property>
     <addaction name="contentsAction"/>
+    <addaction name="aboutQtAction"/>
     <addaction name="aboutAction"/>
    </widget>
    <addaction name="fileMenu"/>
@@ -73,6 +74,11 @@
   <action name="aboutAction">
    <property name="text">
     <string>&amp;About</string>
+   </property>
+  </action>
+  <action name="aboutQtAction">
+   <property name="text">
+    <string>About &amp;Qt</string>
    </property>
   </action>
  </widget>
@@ -142,6 +148,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>aboutQtAction</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>showAboutQt()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>299</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <designerdata>
   <property name="gridDeltaX">
@@ -164,5 +186,6 @@
   <slot>showPreferences()</slot>
   <slot>showContents()</slot>
   <slot>showAbout()</slot>
+  <slot>showAboutQt()</slot>
  </slots>
 </ui>
