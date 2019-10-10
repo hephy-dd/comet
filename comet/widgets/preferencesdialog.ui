@@ -38,7 +38,7 @@
        <string>&amp;General</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_5">
-       <item row="2" column="0">
+       <item row="1" column="0">
         <spacer name="generalVerticalSpacer">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
@@ -52,22 +52,6 @@
         </spacer>
        </item>
        <item row="0" column="0">
-        <widget class="QGroupBox" name="plotsGroupBox">
-         <property name="title">
-          <string>Plots</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_4">
-          <item row="0" column="0">
-           <widget class="QCheckBox" name="invertPlotsCheckBox">
-            <property name="text">
-             <string>&amp;Invert background color</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="1" column="0">
         <widget class="QGroupBox" name="visaGroupBox">
          <property name="title">
           <string>VISA Library</string>
