@@ -2,7 +2,7 @@
 
 Control and Measurement Toolkit (COMET)
 
-A PyQt5 powered rapid development toolkit for measurement desktop applications,
+A PyQt5 powered rapid development tool for creating graphical measurement desktop applications,
 inspired by QCoDeS, Lantz and Slave.
 
 ## Install
@@ -16,3 +16,7 @@ $ python setup.py install
 ```bash
 $ python setup.py test
 ```
+
+## License
+
+COMET is licensed under the GNU General Public License Version 3.
