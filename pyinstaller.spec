@@ -66,7 +66,7 @@ if __name__ == '__main__':
 """
 
 # Create pyinstaller entry point
-with open(entry_point.pyw', 'w') as f:
+with open('entry_point.pyw', 'w') as f:
     f.write(entry_point.format(
         package=package,
     ))
