@@ -2,12 +2,12 @@
 
 Control and Measurement Toolkit (COMET)
 
-See the documentation on https://hephy-dd.github.io/comet/
-
 A PyQt5 powered rapid development tool for creating graphical measurement desktop applications,
 inspired by [QCoDeS](https://github.com/QCoDeS/Qcodes), [Lantz](https://github.com/LabPy/lantz),
 [Slave](https://github.com/p3trus/slave), [FluidLab](https://github.com/fluiddyn/fluidlab) and
 [Dash](https://github.com/plotly/dash).
+
+See the documentation on https://hephy-dd.github.io/comet/
 
 ## Install
 
