@@ -1,4 +1,5 @@
 import webbrowser
+import traceback
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
@@ -78,7 +79,13 @@ class MainWindow(QtWidgets.QMainWindow, UiLoaderMixin):
 
     def showException(self, exception):
         """Raise message box showing exception inforamtion."""
-        QtWidgets.QMessageBox.critical(self, self.tr("Error"), format(exception))
+        box = QtWidgets.QMessageBox(self)
+        box.setIcon(box.Icon.Critical)
+        box.setWindowTitle(self.tr("Error"))
+        box.setText(format(exception))
+        if hasattr(exception, 'details'):
+            box.setDetailedText(format(exception.details))
+        box.exec_()
         self.showMessage(self.tr("Error"))
         self.hideProgress()
 

@@ -37,7 +37,8 @@ class Process(QtCore.QObject):
     """Emitted if process execution finished."""
 
     failed = QtCore.pyqtSignal(object)
-    """Emitted if exception occured in method `run`, provides exception as argument."""
+    """Emitted if exception occured in method `run`, provides exception as argument.
+    """
 
     messageChanged = QtCore.pyqtSignal(str)
     messageCleared = QtCore.pyqtSignal()
@@ -56,9 +57,7 @@ class Process(QtCore.QObject):
         except StopRequest:
             pass
         except Exception as e:
-            logging.error(traceback.print_exc())
-            logging.error(e)
-            self.failed.emit(e)
+            self.handleException(e)
         finally:
             self.finished.emit()
 
@@ -86,6 +85,12 @@ class Process(QtCore.QObject):
 
     def time(self):
         return time.time()
+
+    def handleException(self, exception):
+        exception.details = traceback.format_exc()
+        logging.error(exception.details)
+        logging.error(exception)
+        self.failed.emit(exception)
 
     def showMessage(self, message):
         """Show message, emits signal `messageChanged`."""

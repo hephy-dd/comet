@@ -1,9 +1,8 @@
 include README.md
 include LICENSE
 
-include docs/make.bat
-include docs/Makefile
-recursive-include docs/source *
+include docs/_config.yml
+recursive-include docs/ *.md
 
 include comet/assets/icons/*.svg
 include comet/widgets/*.ui

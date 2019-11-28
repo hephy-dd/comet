@@ -7,7 +7,7 @@ permalink: /
 
 # COMET
 
-Control and Measurement Toolkit. 
+Control and Measurement Toolkit.
 {: .fs-6 .fw-300 }
 
 A PyQt5 powered rapid development tool for creating graphical measurement desktop applications,
@@ -21,7 +21,7 @@ inspired by [QCoDeS](https://github.com/QCoDeS/Qcodes), [Lantz](https://github.c
 
 ### Dependencies
 
-COMET depends on [PyVISA-py](https://pyvisa-py.readthedocs.io/en/latest/) for instrument 
+COMET depends on [PyVISA-py](https://pyvisa-py.readthedocs.io/en/latest/) for instrument
 communication and [PyQt5](https://www.riverbankcomputing.com/software/pyqt/intro) for the
 graphical user interface. COMET works on Linux and Windows operating systems.
 
@@ -30,7 +30,7 @@ graphical user interface. COMET works on Linux and Windows operating systems.
 Install from GitHub using pip
 
 ```bash
-pip install git+https://github.com/hephy-dd/comet.git@0.1.0
+pip install git+https://github.com/hephy-dd/comet.git@0.2.0
 ```
 
 ### Quick start
