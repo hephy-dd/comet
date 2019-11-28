@@ -1,4 +1,9 @@
 # Template for comet applications
+#
+# Copy this file to your custom COMET project and adjust application
+# name, organization, version and package name. Also add additional
+# package data and hidden imports to the analysis object.
+#
 
 import os
 import comet
@@ -6,13 +11,18 @@ import comet
 # Application name
 name = 'comet'
 
+# Application organization
+organization = 'HEPHY'
+
 # Application version
 version = '0.1.0'
 
-# Path to comet package
-comet_path = os.path.join(os.path.dirname(comet.__file__))
+# Application package
+package = 'comet'
 
-block_cipher = None
+# Paths
+comet_root = os.path.join(os.path.dirname(comet.__file__))
+comet_icon = os.path.join(comet_root, 'assets', 'icons', 'comet.ico')
 
 # Windows version info template
 version_info = """
@@ -32,11 +42,11 @@ VSVersionInfo(
             [
             StringTable(
                 u'000004b0',
-                [StringStruct(u'CompanyName', u'HEPHY'),
+                [StringStruct(u'CompanyName', u'{organization}'),
                 StringStruct(u'FileDescription', u'{name}'),
                 StringStruct(u'FileVersion', u'{version[0]}.{version[1]}.{version[2]}.0'),
                 StringStruct(u'InternalName', u'{name}'),
-                StringStruct(u'LegalCopyright', u'{license}'),
+                StringStruct(u'LegalCopyright', u'GPLv3'),
                 StringStruct(u'OriginalFilename', u'{name}.exe'),
                 StringStruct(u'ProductName', u'{name}'),
                 StringStruct(u'ProductVersion', u'{version[0]}.{version[1]}.{version[2]}.0'),
@@ -47,29 +57,38 @@ VSVersionInfo(
 )
 """
 
-# Pyinstaller wrapper script
-with open('comet.pyw', 'w') as f:
-    f.write('from comet import main\n')
-    f.write('import sys\n')
-    f.write('if __name__ == '__main__':\n')
-    f.write('    sys.exit(main.main())\n')
+# Pyinstaller entry point template
+entry_point = """
+from {package} import main
+import sys
+if __name__ == '__main__':
+    sys.exit(main.main())
+"""
 
-# Windows version info file
-with open('version_info.txt', 'w') as f:
-    f.write(version_info.format(
-         name=name,
-         version=version.split('.'),
-         license='GPLv3',
+# Create pyinstaller entry point
+with open('entry_point.pyw', 'w') as f:
+    f.write(entry_point.format(
+        package=package,
     ))
 
-a = Analysis(['comet.pyw'],
+# Create windows version info
+with open('version_info.txt', 'w') as f:
+    f.write(version_info.format(
+        name=name,
+        organization=organization
+        version=version.split('.'),
+        license='GPLv3',
+    ))
+
+a = Analysis(['entry_point.pyw'],
     pathex=[
       os.getcwd()
     ],
     binaries=[],
     datas=[
-        (os.path.join(comet_path, 'widgets', '*.ui'), os.path.join('comet', 'widgets')),
-        (os.path.join(comet_path, 'assets', 'icons', '*.svg'), os.path.join('comet', 'assets', 'icons')),
+        (os.path.join(comet_root, 'widgets', '*.ui'), os.path.join('comet', 'widgets')),
+        (os.path.join(comet_root, 'assets', 'icons', '*.svg'), os.path.join('comet', 'assets', 'icons')),
+        (os.path.join(comet_root, 'assets', 'icons', '*.ico'), os.path.join('comet', 'assets', 'icons')),
         # Add your package data here
     ],
     hiddenimports=[
@@ -83,13 +102,13 @@ a = Analysis(['comet.pyw'],
     excludes=[],
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
-    cipher=block_cipher,
+    cipher=None,
     noarchive=False
 )
 pyz = PYZ(
     a.pure,
     a.zipped_data,
-    cipher=block_cipher
+    cipher=None
 )
 exe = EXE(
     pyz,
@@ -107,5 +126,5 @@ exe = EXE(
     upx_exclude=[],
     runtime_tmpdir=None,
     console=False,
-    icon=os.path.join(comet_path, 'assets', 'icons', 'comet.ico'),
+    icon=comet_icon,
 )
