@@ -7,7 +7,7 @@ __all__ = ['Range']
 class Range(object):
     """Linear range function generator class.
 
-    Range is [begin, end] if last step does not exceed end.
+    Range is bound to [begin, end].
 
     >>> list(Range(0, 10, 2.5)) # positive ramp
     [0.0, 2.5, 5.0, 7.5, 10.0]
@@ -15,19 +15,39 @@ class Range(object):
     [10.0, 7.5, 5.0, 2.5, 0.0]
     """
 
-    def __init__(self, begin, end, step=1.0):
-        if step == 0.0:
-            raise ValueError("function step can't be zero")
-        self.__begin = begin
-        self.__end = end
-        self.__step = step
+    def __init__(self, begin, end, step):
+        self.__begin = float(begin)
+        self.__end = float(end)
+        self.__step = float(step)
+
+    @property
+    def begin(self):
+        """Returns begin value."""
+        return self.__begin
+
+    @property
+    def end(self):
+        """Returns end value."""
+        return self.__end
+
+    @property
+    def step(self):
+        """Returns step value."""
+        return self.__step
+
+    @property
+    def valid(self):
+        """Returns True if linear range is valid."""
+        return (self.begin < self.end and self.step > 0) \
+            or (self.begin > self.end and self.step < 0)
 
     def __iter__(self):
-        begin = float(self.__begin)
-        end = float(self.__end)
-        step = float(self.__step)
-        test = [end.__gt__, end.__lt__][begin < end and step >= 0.]
-        for value in itertools.count(begin, step):
-            if test(value):
-                break
-            yield value
+        if self.valid:
+            for value in itertools.count(self.begin, self.step):
+                if self.step > 0 and value >= self.end:
+                    yield self.end
+                    break
+                if self.step < 0 and value <= self.end:
+                    yield self.end
+                    break
+                yield value
