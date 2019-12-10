@@ -27,7 +27,7 @@ graphical user interface. COMET works on Linux and Windows operating systems.
 Install from GitHub using pip
 
 ```bash
-pip install git+https://github.com/hephy-dd/comet.git@0.2.2
+pip install git+https://github.com/hephy-dd/comet.git@0.2.3
 ```
 
 ### Quick start
