@@ -26,7 +26,8 @@ class ITC(Device):
         15: b'A>',
         16: b'A?',
     }
-    """Mapping analog channel index to channel code."""
+    """Mapping analog channel index to channel code. When writing convert to
+    lower case."""
 
     WarningMessages = {
         '\x01': "Wassernachfüllen",
@@ -109,7 +110,8 @@ class ITC(Device):
         """
         if not 1 <= index <= 7:
             raise ValueError("invalid channel number: '{}'".format(index))
-        result = self.query_bytes("a{} {:05.1f}".format(index, value), 1)
+        code = self.AnalogChannels[index].lower().decode() # write requires lower case 'a'
+        result = self.query_bytes("{} {:05.1f}".format(code, value), 1)
         if result != 'a':
             raise RuntimeError("failed to set target for channel '{}'".format(index))
 
@@ -125,7 +127,7 @@ class ITC(Device):
         errorNr = result[9]
         warning = self.WarningMessages[errorNr] if isError and errorNr in self.WarningMessages else None
         error = self.ErrorMessages[errorNr] if isError and errorNr in self.ErrorMessages else None
-        return Status(running, warning, error, channelStates)
+        return self.Status(running, warning, error, channelStates)
 
     def errorMessage(self):
         """Returns current error message."""
