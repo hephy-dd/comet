@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='comet',
-    version='0.2.1',
+    version='0.2.2',
     author="Bernhard Arnold",
     author_email="bernhard.arnold@oeaw.ac.at",
     packages=find_packages(exclude=['tests']),
