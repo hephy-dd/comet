@@ -10,7 +10,7 @@ from .aboutdialog import AboutDialog
 
 __all__ = ['MainWindow']
 
-class MainWindow(QtWidgets.QMainWindow, UiLoaderMixin):
+class MainWindow(QtWidgets.QMainWindow, UiLoaderMixin, ProcessMixin):
     """Main window for COMET applications."""
 
     closeRequest = QtCore.pyqtSignal()
@@ -107,8 +107,9 @@ class MainWindow(QtWidgets.QMainWindow, UiLoaderMixin):
 
         if dialog.result() == dialog.Ok:
             self.closeRequest.emit()
-            dialog = ProcessDialog(self)
-            dialog.exec_()
+            if len(self.processes()):
+                dialog = ProcessDialog(self)
+                dialog.exec_()
             event.accept()
         else:
             event.ignore()
