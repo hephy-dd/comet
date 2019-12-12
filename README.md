@@ -14,7 +14,7 @@ See the documentation on https://hephy-dd.github.io/comet/
 Install from GitHub using pip
 
 ```bash
-pip install git+https://github.com/hephy-dd/comet.git@0.2.3
+pip install git+https://github.com/hephy-dd/comet.git@0.3.0
 ```
 
 ## Quick start

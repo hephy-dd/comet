@@ -15,7 +15,7 @@ name = 'comet'
 organization = 'HEPHY'
 
 # Application version
-version = '0.2.3'
+version = '0.3.0'
 
 # Application package
 package = 'comet'
