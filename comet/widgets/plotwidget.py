@@ -84,6 +84,56 @@ class ScatterSeries(QtChart.QScatterSeries, DataSetMixin):
 
     pass
 
+class MarkerGraphicsItem(QtWidgets.QGraphicsRectItem):
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.__ellipse = QtWidgets.QGraphicsEllipseItem(-7, -7, 13, 13, self)
+        self.__ellipse.setPen(QtCore.Qt.red)
+        self.__rect = QtWidgets.QGraphicsRectItem(self)
+        self.__rect.setBrush(QtCore.Qt.white)
+        self.__rect.setPen(QtCore.Qt.transparent)
+        self.__rect.setPos(10, -12)
+        self.__text = QtWidgets.QGraphicsTextItem(self)
+        self.__text.setPos(10, -12)
+
+
+    def setColor(self, color):
+        self.__ellipse.setPen(QtGui.QColor(color))
+        #self.__rect.setPen(QtGui.QColor(color))
+        self.__text.setDefaultTextColor(QtGui.QColor(color))
+
+    def setLabel(self, label):
+        self.__text.setPlainText(label)
+        self.__rect.setRect(self.__text.boundingRect())
+
+class RulerGraphicsItem(QtWidgets.QGraphicsRectItem):
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.__line = QtWidgets.QGraphicsLineItem(self)
+        self.__markers = {}
+        self.setColor(QtCore.Qt.red)
+
+    def setColor(self, color):
+        self.__line.setPen(QtGui.QColor(color))
+        for marker in self.__markers.values():
+            marker.setColor(color)
+
+    def move(self, x1, y1, x2, y2):
+        self.__line.setLine(x1, y1, x2, y2)
+
+    def setLabel(self, series, index):
+        chart = series.chart()
+        pos = chart.mapToPosition(series.at(index))
+        value = series.at(index)
+        visible = series.at(0).x() <= value.x() <= series.at(series.count()-1).x() and self.isVisible()
+        marker = self.__markers.setdefault(series, MarkerGraphicsItem(self))
+        marker.setPos(pos)
+        marker.setLabel("{:G} {}".format(value.y(), series.name()))
+        marker.setColor(series.color())
+        marker.setVisible(visible and chart.plotArea().contains(marker.pos()))
+
 class PlotView(QtChart.QChartView):
     """Custom view for chart and ruler."""
 
@@ -100,33 +150,16 @@ class PlotView(QtChart.QChartView):
         self.setRubberBand(QtChart.QChartView.RectangleRubberBand)
         # Ruler with symbols and labels for series
         self.__ruler = None
-        self.__symbols = {}
-        self.__labels = {}
         # Store mouse pressed state
         self.__mousePressed = False
 
     def ruler(self):
         if not self.__ruler:
-            self.__ruler = self.chart().scene().addLine(0, 0, 0, 0)
-            self.__ruler.setPen(QtGui.QColor(255,0,0))
-            self.__ruler.setZValue(100)
+            if self.chart().scene():
+                self.__ruler = RulerGraphicsItem()
+                self.__ruler.setZValue(100)
+                self.chart().scene().addItem(self.__ruler)
         return self.__ruler
-
-    def rulerSymbol(self, series):
-        name = series.name()
-        if name not in self.__symbols:
-            item = self.chart().scene().addEllipse(0, 0, 13, 13)
-            item.setZValue(200)
-            self.__symbols[name] = item
-        return self.__symbols[name]
-
-    def rulerLabel(self, series):
-        name = series.name()
-        if name not in self.__labels:
-            item = self.chart().scene().addText("")
-            item.setZValue(300)
-            self.__labels[name] = item
-        return self.__labels[name]
 
     def setRulerEnabled(self, enabled):
         self.__setRulerEnabled = enabled
@@ -157,23 +190,13 @@ class PlotView(QtChart.QChartView):
         # Hise if mouse pressed (else collides with rubber band)
         visible = rect.contains(pos) and self.isRulerEnabled() and not self.isMousePressed()
         ruler = self.ruler()
-        ruler.setLine(pos.x() - 1, rect.y(), pos.x() - 1, rect.y() + rect.height())
+        ruler.move(pos.x() - 1, rect.y(), pos.x() - 1, rect.y() + rect.height())
         ruler.setVisible(visible)
         for i, series in enumerate(chart.series()):
-            points = np.array([point.x() for point in series.pointsVector()])
-            index = np.abs(points - value.x()).argmin()
-            series_visible = series.at(0).x() <= value.x() <= series.at(series.count()-1).x() and visible
-            y = chart.mapToPosition(series.at(index)).y()
-            x = chart.mapToPosition(series.at(index)).x()
-            symbol = self.rulerSymbol(series)
-            symbol.setPos(x - 7, y - 7)
-            symbol.setPen(ruler.pen())
-            symbol.setVisible(series_visible)
-            label = self.rulerLabel(series)
-            label.setPlainText("{:.3f}".format(series.at(index).y()))
-            label.setPos(x + 7, y - 13)
-            label.setVisible(series_visible)
-            # label.setDefaultTextColor(series.color())
+            if len(series.data()):
+                points = np.array([point.x() for point in series.pointsVector()])
+                index = np.abs(points - value.x()).argmin()
+                ruler.setLabel(series, index)
         super().mouseMoveEvent(event)
 
 class PlotWidget(QtWidgets.QWidget):
@@ -185,12 +208,20 @@ class PlotWidget(QtWidgets.QWidget):
         self.__axes = {}
         self.__series = {}
 
+        w = QtWidgets.QWidget()
+        w.setObjectName('toolbar')
+        w.setStyleSheet('#toolbar {background: transparent;}')
+        l = QtWidgets.QVBoxLayout()
+        w.setLayout(l)
+        view.scene().addWidget(w).setPos(0, 0)
+
         # View all button
         button = QtWidgets.QPushButton(u'\u2b1a')
         button.setFixedSize(24, 24)
         button.setToolTip("View All")
         button.clicked.connect(self.fit)
-        view.scene().addWidget(button).setPos(8, 8)
+        l.addWidget(button)
+        #view.scene().addWidget(button).setPos(8, 8)
 
         # Toggle ruler button
         button = QtWidgets.QPushButton(u'|')
@@ -199,7 +230,8 @@ class PlotWidget(QtWidgets.QWidget):
         button.setCheckable(True)
         button.setToolTip("Toggle Ruler")
         button.clicked.connect(self.toggleRuler)
-        view.scene().addWidget(button).setPos(8, 8+24+4)
+        l.addWidget(button)
+        #view.scene().addWidget(button).setPos(8, 8+24+4)
 
         layout = QtWidgets.QGridLayout()
         layout.setContentsMargins(0, 0, 0, 0)
@@ -289,19 +321,21 @@ class PlotWidget(QtWidgets.QWidget):
 
     def limits(self):
         """Returns bounding box of all series."""
-        if len(self.__series):
+        if len(self.series()):
             minimumX = []
             maximumX = []
             minimumY = []
             maximumY = []
-            for series in self.__series.values():
-                x, y = series.data().limits()
-                minimumX.append(x[0])
-                maximumX.append(x[1])
-                minimumY.append(y[0])
-                maximumY.append(y[1])
-            return (min(minimumX),  max(maximumX)), (min(minimumY),  max(maximumY))
-        return ((0., 1.), (0., 1.))
+            for series in self.series().values():
+                if len(series.data()):
+                    x, y = series.data().limits()
+                    minimumX.append(x[0])
+                    maximumX.append(x[1])
+                    minimumY.append(y[0])
+                    maximumY.append(y[1])
+            if len(minimumX):
+                return (min(minimumX),  max(maximumX)), (min(minimumY),  max(maximumY))
+        return ((0., 1.), (0., 1.)) # default limits
 
     def fitX(self, limits=None):
         limits = limits or self.limits()

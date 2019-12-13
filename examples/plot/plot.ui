@@ -15,15 +15,15 @@
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0">
-    <widget class="QChartView" name="chartView"/>
+    <widget class="PlotWidget" name="plotWidget"/>
    </item>
   </layout>
  </widget>
  <customwidgets>
   <customwidget>
-   <class>QChartView</class>
-   <extends>QGraphicsView</extends>
-   <header>PyQt5.QtChart</header>
+   <class>PlotWidget</class>
+   <extends>QWidget</extends>
+   <header>comet.widgets</header>
   </customwidget>
  </customwidgets>
  <resources/>
