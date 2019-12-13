@@ -11,6 +11,8 @@ from PyQt5 import QtCore, QtGui, QtWidgets, QtChart
 
 from ..dataseries import DataSeries
 
+__all__ = ['PlotWidget']
+
 milliseconds = 1000.
 
 def toDateTime(seconds):
