@@ -39,23 +39,24 @@ class DataSeries:
             return self._x[index], self._y[index]
 
     def xpos(self, value):
+        """Returns nearest index for value on ordered series on x axis."""
         with self._lock:
             return np.abs(self._x - value).argmin()
 
     def limits(self):
         with self._lock:
-            if len(self._x):
-                return (self._x[0], self._x[-1]), (np.amin(self._y), np.amax(self._y))
-            return (0., 0.), (0., 0.)
+            return (self._x[0], self._x[-1]), (np.amin(self._y), np.amax(self._y))
 
     def sample(self, begin, end, count):
+        """Returns a sampling generator."""
         with self._lock:
             assert begin <= end
             assert count > 0
-            if self._x.size < 1:
+            size = self._x.size
+            if size < 1:
                 return iter([])
             begin_index = max(0, self.xpos(begin) - 1)
-            end_index = min(self._x.size - 1, self.xpos(end) + 1)
+            end_index = min(size - 1, self.xpos(end) + 1)
             step = int(max(1, math.ceil((end_index - begin_index) / count)))
             for i in range(count):
                 if begin_index >= end_index:
