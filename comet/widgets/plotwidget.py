@@ -11,26 +11,30 @@ from PyQt5 import QtCore, QtGui, QtWidgets, QtChart
 
 from ..dataseries import DataSeries
 
-__all__ = ['PlotWidget']
+__all__ = ['ChartView']
 
 milliseconds = 1000.
 
 def toDateTime(seconds):
+    """Returns seconds as QDateTime object."""
     return QtCore.QDateTime.fromMSecsSinceEpoch(seconds * milliseconds)
 
 def toSecs(datetime):
+    """Returns QDateTime object as seconds."""
     return datetime.toMSecsSinceEpoch() / milliseconds
 
 def toMSecs(seconds):
+    """Returns QDateTime object as milli seconds."""
     return seconds * milliseconds
-
-def toAlign(align):
-    if isinstance(align, str):
-        return getattr(QtCore.Qt, 'Align{}'.format(align.lower().title()))
-    return align
 
 class DataSetMixin:
     """Mixin class to extend data series classes with a dataset attribute."""
+
+    def stretch(self):
+        for axis in self.attachedAxes():
+            if axis.orientation() == QtCore.Qt.Horizontal:
+                self.chart().updateAxis(axis, axis.min(), axis.max())
+                break
 
     def data(self):
         try:
@@ -78,11 +82,13 @@ class LineSeries(QtChart.QLineSeries, DataSetMixin):
 
 class SplineSeries(QtChart.QSplineSeries, DataSetMixin):
 
-     pass
+    pass
 
 class ScatterSeries(QtChart.QScatterSeries, DataSetMixin):
 
     pass
+
+# Ruler
 
 class MarkerGraphicsItem(QtWidgets.QGraphicsRectItem):
 
@@ -96,7 +102,6 @@ class MarkerGraphicsItem(QtWidgets.QGraphicsRectItem):
         self.__rect.setPos(10, -12)
         self.__text = QtWidgets.QGraphicsTextItem(self)
         self.__text.setPos(10, -12)
-
 
     def setColor(self, color):
         self.__ellipse.setPen(QtGui.QColor(color))
@@ -115,51 +120,192 @@ class RulerGraphicsItem(QtWidgets.QGraphicsRectItem):
         self.__markers = {}
         self.setColor(QtCore.Qt.red)
 
+    def setRuler(self, pos, rect):
+        self.__line.setLine(pos.x() - 1, rect.y(), pos.x() - 1, rect.y() + rect.height())
+
     def setColor(self, color):
         self.__line.setPen(QtGui.QColor(color))
-        for marker in self.__markers.values():
-            marker.setColor(color)
-
-    def move(self, x1, y1, x2, y2):
-        self.__line.setLine(x1, y1, x2, y2)
 
     def setLabel(self, series, index):
         chart = series.chart()
         pos = chart.mapToPosition(series.at(index))
         value = series.at(index)
         visible = series.at(0).x() <= value.x() <= series.at(series.count()-1).x() and self.isVisible()
-        marker = self.__markers.setdefault(series, MarkerGraphicsItem(self))
+        if series not in self.__markers:
+            self.__markers[series] = MarkerGraphicsItem(self)
+        marker = self.__markers.get(series)
         marker.setPos(pos)
         marker.setLabel("{:G} {}".format(value.y(), series.name()))
         marker.setColor(series.color())
         marker.setVisible(visible and chart.plotArea().contains(marker.pos()))
 
-class PlotView(QtChart.QChartView):
-    """Custom view for chart and ruler."""
+class Toolbar(QtWidgets.QWidget):
+
+    viewAll = QtCore.pyqtSignal()
+
+    toggleRuler = QtCore.pyqtSignal(bool)
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        chart = QtChart.QChart()
-        # Reset margin
-        chart.layout().setContentsMargins(0, 0, 0, 0)
-        # Reset rounded corners
-        chart.setBackgroundRoundness(0)
-        self.setChart(chart)
-        # Rubber band for zoom
+        self.setLayout(QtWidgets.QVBoxLayout())
+        self.setStyleSheet('Toolbar {background-color: transparent;}')
+        # View all button
+        button = self.addButton(u'\u2b1a')
+        button.setToolTip(self.tr("View All"))
+        button.clicked.connect(self.viewAll.emit)
+        # Toggle ruler button
+        button = self.addButton(u'|')
+        button.setStyleSheet('QPushButton {color: red;}')
+        button.setCheckable(True)
+        button.setToolTip("Toggle Ruler")
+        button.toggled.connect(self.toggleRuler.emit)
+
+    def buttons(self):
+        return self.layout().widgets()
+
+    def addButton(self, text):
+        button = QtWidgets.QPushButton(self)
+        button.setFixedSize(24, 24)
+        button.setText(text)
+        self.layout().addWidget(button)
+        return button
+
+class Chart(QtChart.QChart):
+    """Custom chart class."""
+
+    def __init__(self):
+        super().__init__()
+        self.setResolution(800)
+
+    def resolution(self):
+        return self.__resolution
+
+    def setResolution(self, count):
+        self.__resolution = count
+
+    def addValueAxis(self, align):
+        return self.addAxis(ValueAxis(), align)
+
+    def addLogValueAxis(self, align):
+        return self.addAxis(LogValueAxis(), align)
+
+    def addDateTimeAxis(self, align):
+        return self.addAxis(DateTimeAxis(), align)
+
+    def addCategoryAxis(self, align):
+        return self.addAxis(CategoryAxis(), align)
+
+    def addBarCategoryAxis(self, align):
+        return self.addAxis(BarCategoryAxis(), align)
+
+    def addAxis(self, axis, align):
+        def updateAxis(minimum, maximum):
+            self.updateAxis(axis, minimum, maximum)
+        axis.rangeChanged.connect(updateAxis)
+        super().addAxis(axis, align)
+        return axis
+
+    def addLineSeries(self, x, y, parent=None):
+        return self.addSeries(LineSeries(parent), x, y)
+
+    def addSplineSeries(self, x, y, parent=None):
+        return self.addSeries(SplineSeries(parent), x, y)
+
+    def addScatterSeries(self, x, y, parent=None):
+        return self.addSeries(ScatterSeries(parent), x, y)
+
+    def addSeries(self, series, x, y):
+        super().addSeries(series)
+        series.attachAxis(x)
+        series.attachAxis(y)
+        return series
+
+    def bounds(self):
+        """Returns bounding box of all series."""
+        series = self.series()
+        if len(series):
+            minimumX = []
+            maximumX = []
+            minimumY = []
+            maximumY = []
+            for series in series:
+                if len(series.data()):
+                    x, y = series.data().bounds()
+                    minimumX.append(x[0])
+                    maximumX.append(x[1])
+                    minimumY.append(y[0])
+                    maximumY.append(y[1])
+            if len(minimumX):
+                return (min(minimumX),  max(maximumX)), (min(minimumY),  max(maximumY))
+        return ((0., 1.), (0., 1.)) # default bounds
+
+    def fitHorizontal(self, bounds=None):
+        bounds = self.bounds() if bounds is None else bounds
+        self.zoomReset()
+        for axis in self.axes(QtCore.Qt.Horizontal):
+            if isinstance(axis, QtChart.QDateTimeAxis):
+                axis.setRange(toDateTime(bounds[0][0]), toDateTime(bounds[0][1]))
+            else:
+                axis.setRange(bounds[0][0], bounds[0][1])
+
+    def fitVertical(self, bounds=None):
+        bounds = self.bounds() if bounds is None else bounds
+        for axis in self.axes(QtCore.Qt.Vertical):
+            if isinstance(axis, QtChart.QDateTimeAxis):
+                axis.setRange(toDateTime(bounds[1][0]), toDateTime(bounds[1][1]))
+            else:
+                axis.setRange(bounds[1][0], bounds[1][1])
+
+    def fit(self, bounds=None):
+        bounds = self.bounds() if bounds is None else bounds
+        self.fitHorizontal(bounds)
+        self.fitVertical(bounds)
+
+    @QtCore.pyqtSlot(object, float, float)
+    def updateAxis(self, axis, minimum, maximum):
+        if axis in self.axes(QtCore.Qt.Horizontal):
+            if isinstance(axis, QtChart.QDateTimeAxis):
+                minimum = toSecs(minimum)
+                maximum = toSecs(maximum)
+            for series in self.series():
+                if axis in series.attachedAxes():
+                    generator = series.data().sample(minimum, maximum, self.resolution())
+                    if isinstance(axis, QtChart.QDateTimeAxis):
+                        points = (QtCore.QPointF(toMSecs(x), y) for x, y in generator)
+                    else:
+                        points = (QtCore.QPointF(x, y) for x, y in generator)
+                    series.replace(points) # assign a generator object
+
+class ChartView(QtChart.QChartView):
+    """Custom chart view class."""
+
+    def __init__(self, parent=None):
+        super().__init__(Chart(), parent)
+        self.__createToolbar()
+        self.chart().layout().setContentsMargins(0, 0, 0, 0)
+        self.chart().setBackgroundRoundness(0)
         self.setRulerEnabled(False)
         self.setRubberBand(QtChart.QChartView.RectangleRubberBand)
-        # Ruler with symbols and labels for series
-        self.__ruler = None
+        self.setRuler(RulerGraphicsItem())
         # Store mouse pressed state
         self.__mousePressed = False
 
+    def __createToolbar(self):
+        self.__toolbar = Toolbar(self)
+        self.__toolbar.viewAll.connect(self.chart().fit)
+        self.__toolbar.toggleRuler.connect(self.setRulerEnabled)
+        self.scene().addWidget(self.__toolbar).setPos(0, 0)
+
+    def toolbar(self):
+        return self.__toolbar
+
     def ruler(self):
-        if not self.__ruler:
-            if self.chart().scene():
-                self.__ruler = RulerGraphicsItem()
-                self.__ruler.setZValue(100)
-                self.chart().scene().addItem(self.__ruler)
         return self.__ruler
+
+    def setRuler(self, item):
+        self.__ruler = item
+        item.setZValue(100)
+        self.chart().scene().addItem(item)
 
     def setRulerEnabled(self, enabled):
         self.__setRulerEnabled = enabled
@@ -190,7 +336,7 @@ class PlotView(QtChart.QChartView):
         # Hise if mouse pressed (else collides with rubber band)
         visible = rect.contains(pos) and self.isRulerEnabled() and not self.isMousePressed()
         ruler = self.ruler()
-        ruler.move(pos.x() - 1, rect.y(), pos.x() - 1, rect.y() + rect.height())
+        ruler.setRuler(pos, rect)
         ruler.setVisible(visible)
         for i, series in enumerate(chart.series()):
             if len(series.data()):
@@ -198,181 +344,3 @@ class PlotView(QtChart.QChartView):
                 index = np.abs(points - value.x()).argmin()
                 ruler.setLabel(series, index)
         super().mouseMoveEvent(event)
-
-class PlotWidget(QtWidgets.QWidget):
-
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.setResolution(800)
-        view = self.__view = PlotView()
-        self.__axes = {}
-        self.__series = {}
-
-        w = QtWidgets.QWidget()
-        w.setObjectName('toolbar')
-        w.setStyleSheet('#toolbar {background: transparent;}')
-        l = QtWidgets.QVBoxLayout()
-        w.setLayout(l)
-        view.scene().addWidget(w).setPos(0, 0)
-
-        # View all button
-        button = QtWidgets.QPushButton(u'\u2b1a')
-        button.setFixedSize(24, 24)
-        button.setToolTip("View All")
-        button.clicked.connect(self.fit)
-        l.addWidget(button)
-        #view.scene().addWidget(button).setPos(8, 8)
-
-        # Toggle ruler button
-        button = QtWidgets.QPushButton(u'|')
-        button.setStyleSheet('QPushButton {color: red;}')
-        button.setFixedSize(24, 24)
-        button.setCheckable(True)
-        button.setToolTip("Toggle Ruler")
-        button.clicked.connect(self.toggleRuler)
-        l.addWidget(button)
-        #view.scene().addWidget(button).setPos(8, 8+24+4)
-
-        layout = QtWidgets.QGridLayout()
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(view, 16, 16)
-        self.setLayout(layout)
-
-    def resolution(self):
-        return self.__resolution
-
-    def setResolution(self, samples):
-        self.__resolution = samples
-
-    def view(self):
-        return self.__view
-
-    def chart(self):
-        return self.view().chart()
-
-    def legend(self):
-        return self.chart().legend()
-
-    def axes(self):
-        return self.__axes
-
-    def series(self):
-        return self.__series
-
-    def addValueAxis(self, *args, **kwargs):
-        return self.addAxis(ValueAxis, *args, **kwargs)
-
-    def addLogValueAxis(self, name, align, color=None):
-        return self.addAxis(LogValueAxis, *args, **kwargs)
-
-    def addDateTimeAxis(self, *args, **kwargs):
-        return self.addAxis(DateTimeAxis, *args, **kwargs)
-
-    def addCategoryAxis(self, *args, **kwargs):
-        return self.addAxis(CategoryAxis, *args, **kwargs)
-
-    def addBarCategoryAxis(self, *args, **kwargs):
-        return self.addAxis(BarCategoryAxis, *args, **kwargs)
-
-    def addAxis(self, cls, name, align, color=None):
-        axis = cls()
-        axis.setTitleText(name)
-        def updateAxis(minimum, maximum):
-            self.updateAxis(axis, minimum, maximum)
-        axis.rangeChanged.connect(updateAxis)
-        self.chart().addAxis(axis, toAlign(align))
-        if color is not None:
-            axis.setLinePenColor(color)
-            axis.setLabelsColor(color)
-            axis.setTitleBrush(color)
-        self.__axes[name] = axis
-        return axis
-
-    def addLineSeries(self, *args, **kwargs):
-        return self.addSeries(LineSeries, *args, **kwargs)
-
-    def addSplineSeries(self, *args, **kwargs):
-        return self.addSeries(SplineSeries, *args, **kwargs)
-
-    def addScatterSeries(self, *args, **kwargs):
-        return self.addSeries(ScatterSeries, *args, **kwargs)
-
-    def addSeries(self, cls, name, x, y, data=None, color=None):
-        series = cls()
-        series.setName(name)
-        if data is None:
-            data = DataSeries()
-        series.setData(data)
-        self.chart().addSeries(series)
-        if x in self.__axes.values():
-            series.attachAxis(x)
-        else:
-            series.attachAxis(self.__axes.get(x))
-        if y in self.__axes.values():
-            series.attachAxis(y)
-        else:
-            series.attachAxis(self.__axes.get(y))
-        if color is None:
-            series.setPen(series.pen().color()) # Reset pen
-        else:
-            series.setPen(color)
-        self.__series[name] = series
-        return series
-
-    def limits(self):
-        """Returns bounding box of all series."""
-        if len(self.series()):
-            minimumX = []
-            maximumX = []
-            minimumY = []
-            maximumY = []
-            for series in self.series().values():
-                if len(series.data()):
-                    x, y = series.data().limits()
-                    minimumX.append(x[0])
-                    maximumX.append(x[1])
-                    minimumY.append(y[0])
-                    maximumY.append(y[1])
-            if len(minimumX):
-                return (min(minimumX),  max(maximumX)), (min(minimumY),  max(maximumY))
-        return ((0., 1.), (0., 1.)) # default limits
-
-    def fitX(self, limits=None):
-        limits = limits or self.limits()
-        self.chart().zoomReset()
-        for axis in self.chart().axes(QtCore.Qt.Horizontal):
-            if isinstance(axis, QtChart.QDateTimeAxis):
-                axis.setRange(toDateTime(limits[0][0]), toDateTime(limits[0][1]))
-            else:
-                axis.setRange(limits[0][0], limits[0][1])
-
-    def fitY(self, limits=None):
-        limits = limits or self.limits()
-        for axis in self.chart().axes(QtCore.Qt.Vertical):
-            if isinstance(axis, QtChart.QDateTimeAxis):
-                axis.setRange(toDateTime(limits[1][0]), toDateTime(limits[1][1]))
-            else:
-                axis.setRange(limits[1][0], limits[1][1])
-
-    def fit(self, limits=None):
-        limits = limits or self.limits()
-        self.fitX(limits)
-        self.fitY(limits)
-
-    def toggleRuler(self, checked):
-        self.view().setRulerEnabled(checked)
-
-    @QtCore.pyqtSlot(object, float, float)
-    def updateAxis(self, axis, minimum, maximum):
-        if axis in self.chart().axes(QtCore.Qt.Horizontal):
-            if isinstance(axis, QtChart.QDateTimeAxis):
-                minimum = toSecs(minimum)
-                maximum = toSecs(maximum)
-            for series in self.__series.values():
-                if axis in series.attachedAxes():
-                    generator = series.data().sample(minimum, maximum, self.resolution())
-                    if isinstance(axis, QtChart.QDateTimeAxis):
-                        points = (QtCore.QPointF(toMSecs(x), y) for x, y in generator)
-                    else:
-                        points = (QtCore.QPointF(x, y) for x, y in generator)
-                    series.replace(points) # assign a generator object
