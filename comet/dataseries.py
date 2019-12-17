@@ -6,7 +6,14 @@ import threading
 __all__ = ['DataSeries']
 
 class DataSeries:
-    """2D data series using numpy arrays."""
+    """2D data series using numpy arrays.
+
+    >>> series = DataSeries([(0, 1), (2, 3)])
+    >>> series.append(4, 5)
+    >>> series.replace([(2, 3), (4, 5), (6, 7)])
+    >>> series.bounds()
+    ((2, 3), (6, 7))
+    """
 
     def __init__(self, data=None):
         self._lock = threading.RLock()
@@ -25,14 +32,22 @@ class DataSeries:
             self._y = np.append(self._y, y)
 
     def replace(self, points):
-        assert isinstance(points, (list, tuple))
         with self._lock:
-            if points:
+            assert isinstance(points, (list, tuple))
+            if len(points):
                 points = zip(*points)
                 self._x = np.array(next(points))
                 self._y = np.array(next(points))
             else:
                 self.clear()
+
+    def first(self):
+        with self._lock:
+            return self._x[0], self._y[0]
+
+    def last(self):
+        with self._lock:
+            return self._x[-1], self._y[-1]
 
     def at(self, index):
         with self._lock:
@@ -43,12 +58,17 @@ class DataSeries:
         with self._lock:
             return np.abs(self._x - value).argmin()
 
-    def limits(self):
+    def bounds(self):
         with self._lock:
             return (self._x[0], self._x[-1]), (np.amin(self._y), np.amax(self._y))
 
     def sample(self, begin, end, count):
-        """Returns a sampling generator."""
+        """Returns a sampling generator, up to `count` samples between `begin` and `end`.
+
+        >>> series = DataSeries()
+        >>> list(series.sample(100, 200, 25))
+        [...]
+        """
         with self._lock:
             assert begin <= end
             assert count > 0

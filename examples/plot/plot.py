@@ -3,11 +3,12 @@
 import time
 import random
 import sys, os
-from PyQt5 import QtCore, QtWidgets, QtChart
+
+from PyQt5 import QtCore, QtWidgets
 
 import comet
 
-class FakeEnvironment(object):
+class FakeEnvironment:
     """Fake data source providing realistic temperature and humidity readings."""
 
     def __init__(self, temperature=25.0, humidity=50.0):
@@ -31,14 +32,22 @@ class Plot(QtWidgets.QWidget, comet.UiLoaderMixin):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.loadUi()
-        plot = self.ui.plotWidget
-        plot.chart().setTitle("Environment")
-        plot.chart().legend().setAlignment(QtCore.Qt.AlignBottom)
-        self.x = plot.addDateTimeAxis("Time", QtCore.Qt.AlignBottom)
-        self.y1 = plot.addValueAxis("Temp.[°C]", QtCore.Qt.AlignLeft, color=QtCore.Qt.red)
-        self.y2 = plot.addValueAxis("Humid.[%rH]", QtCore.Qt.AlignRight, color=QtCore.Qt.blue)
-        self.temp = plot.addLineSeries("Temperature [°C]", x=self.x, y=self.y1, color=QtCore.Qt.red)
-        self.humid = plot.addLineSeries("Humidity [%rH]", x=self.x, y=self.y2, color=QtCore.Qt.blue)
+        chart =  self.ui.chartView.chart()
+        chart.setTitle("Environment")
+        chart.legend().setAlignment(QtCore.Qt.AlignBottom)
+        self.x = chart.addDateTimeAxis(QtCore.Qt.AlignBottom)
+        self.x.setTitleText("Time")
+        self.y1 = chart.addValueAxis(QtCore.Qt.AlignLeft)
+        self.y1.setTitleText("Temp.[°C]",)
+        self.y1.setLinePen(QtCore.Qt.red)
+        self.y2 = chart.addValueAxis(QtCore.Qt.AlignRight)
+        self.y2.setLinePen(QtCore.Qt.blue)
+        self.temp = chart.addLineSeries(self.x, self.y1)
+        self.temp.setName("Temperature [°C]")
+        self.temp.setColor(QtCore.Qt.red)
+        self.humid = chart.addLineSeries(self.x, self.y2)
+        self.humid.setName("Humidity [%rH]")
+        self.humid.setColor(QtCore.Qt.blue)
         # Create data source and timing
         self.source = FakeEnvironment()
         # Create timer to update plot with new data
@@ -52,12 +61,12 @@ class Plot(QtWidgets.QWidget, comet.UiLoaderMixin):
         self.temp.data().append(time, temp)
         self.humid.data().append(time, humid)
         # Adjust range if not zoomed
-        plot = self.ui.plotWidget
-        if not plot.chart().isZoomed():
-            plot.fit()
+        chart = self.ui.chartView.chart()
+        if not chart.isZoomed():
+            chart.fit()
         else:
             # TODO
-            plot.updateAxis(self.x, self.x.min(), self.x.max())
+            chart.updateAxis(self.x, self.x.min(), self.x.max())
 
 def main():
     app = comet.Application()
