@@ -1,4 +1,5 @@
 from comet.devices import IEC60488
+from comet.device import Mapping
 
 __all__ = ['K2656A']
 
@@ -9,38 +10,59 @@ class K2656A(IEC60488):
         'read_termination': '\r',
     }
 
-    Output = {0: 'OFF', 1: 'ON', 2: 'HIGH_Z'}
+    Output = Mapping({'off': 0, 'on': 1, 'high_z': 2})
 
-    def reset(self):
-        self.resource().write('reset(true)')
-
+    @property
     def output(self):
-        return int(self.resource().query('print(smua.source.output)'))
+        return self.Output.get_key(self.resource.query('print(smua.source.output)'))
 
-    def setOutput(self, value):
-        value = self.Output.get(value.upper(), 'OFF')
-        self.resource().write('smua.source.output = smua.OUTPUT_{}'.format(value))
+    @output.setter
+    def output(self, value):
+        value = self.Output.get_value(value)
+        with self.lock:
+            self.resource.write(f'smua.source.output = {value:E}')
+            self.resource.waitcomplete()
 
-    def voltage(self):
-        return self.resource().query('print(smua.source.levelv)')
+    @property
+    def levelv(self):
+        with self.lock:
+            return float(self.resource.query('print(smua.source.levelv)'))
 
-    def setVoltage(self, value):
-        self.resource().write('smua.source.levelv = {}'.format(value))
+    @levelv.setter
+    def levelv(self, value):
+        with self.lock:
+            self.resource.write(f'smua.source.levelv = {value:E}')
+            self.resource.waitcomplete()
 
-    def current(self):
-        return self.resource().query('print(smua.source.leveli)')
+    @property
+    def leveli(self):
+        with self.lock:
+            return float(self.resource.query('print(smua.source.leveli)'))
 
-    def setCurrent(self, value):
-        self.resource().write('smua.source.leveli = {}'.format(value))
+    @leveli.setter
+    def leveli(self, value):
+        with self.lock:
+            self.resource.write(f'smua.source.leveli = {value:E}')
+            self.resource.waitcomplete()
 
-    def voltageLimit(self):
-        return self.resource().query('print(smua.source.limitv)')
+    @property
+    def limitv(self):
+        with self.lock:
+            return float(self.resource.query('print(smua.source.limitv)'))
 
-    def setVoltageLimit(self, value):
-        return self.resource().write('smua.source.limitv = {}'.format(value))
+    @limitv.setter
+    def limitv(self, value):
+        with self.lock:
+            self.resource.write(f'smua.source.limitv = {value:E}')
+            self.resource.waitcomplete()
 
-    def currentLimit(self):
-        return self.resource().query('print(smua.source.limiti)')
+    @property
+    def limiti(self):
+        with self.lock:
+            return float(self.resource.query('print(smua.source.limiti)'))
 
-    def setCurrentLimit(self, value):
-        return self.resource().write('smua.source.limiti = {}'.format(value))
+    @limiti.setter
+    def limiti(self, value):
+        with self.lock:
+            self.resource.write(f'smua.source.limiti = {value:E}')
+            self.resource.waitcomplete()

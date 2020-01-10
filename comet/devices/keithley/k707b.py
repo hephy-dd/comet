@@ -4,11 +4,7 @@ __all__ = ['K707B']
 
 class K707B(IEC60488):
 
-
     options = {
         'encoding': 'latin1',
         'read_termination': '\r',
     }
-
-    def reset(self):
-        self.resource().write('reset(true)')

@@ -7,11 +7,15 @@ class IEC60488(Device):
 
     def identification(self):
         """Returns IEC60488 device identification."""
-        return self.resource().query('*IDN?')
+        return self.resource.query('*IDN?')
+
+    def clear(self):
+        """Clear IEC60488 device status."""
+        return self.resource.write('*CLS')
 
     def reset(self):
         """Reset IEC60488 device."""
-        return self.resource().write('*RST')
+        return self.resource.write('*RST')
 
-    def opc(self):
-        return self.resource().write('*OPC?')
+    def waitcomplete(self):
+        return self.resource.query('*OPC?')
