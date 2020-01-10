@@ -22,7 +22,11 @@ class K2410(IEC60488):
         value = self.Output.get_value(value)
         with self.lock:
             self.resource.write(f'OUTP {value}')
+<<<<<<< HEAD
             self.resource.query('*OPC?')
+=======
+            self.resource.waitcomplete()
+>>>>>>> e8b8185236585ddcd1dfc1e68bc13ba961dbdfca
 
     @property
     def voltage(self):
@@ -32,12 +36,20 @@ class K2410(IEC60488):
     def voltage(self, value):
         with self.lock:
             self.resource.write(f'SOUR:VOLT:LEV {value:E}')
+<<<<<<< HEAD
             self.resource.query('*OPC?')
+=======
+            self.resource.waitcomplete()
+>>>>>>> e8b8185236585ddcd1dfc1e68bc13ba961dbdfca
 
     def init(self):
         with self.lock:
             self.resource.write(':INIT')
+<<<<<<< HEAD
             self.resource.query('*OPC?')
+=======
+            self.resource.waitcomplete()
+>>>>>>> e8b8185236585ddcd1dfc1e68bc13ba961dbdfca
 
     def read(self):
         """A high level command to perform a singleshot measurement.

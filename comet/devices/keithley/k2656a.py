@@ -21,7 +21,11 @@ class K2656A(IEC60488):
         value = self.Output.get_value(value)
         with self.lock:
             self.resource.write(f'smua.source.output = {value:E}')
+<<<<<<< HEAD
             self.resource.query('*OPC?')
+=======
+            self.resource.waitcomplete()
+>>>>>>> e8b8185236585ddcd1dfc1e68bc13ba961dbdfca
 
     @property
     def levelv(self):
@@ -32,7 +36,11 @@ class K2656A(IEC60488):
     def levelv(self, value):
         with self.lock:
             self.resource.write(f'smua.source.levelv = {value:E}')
+<<<<<<< HEAD
             self.resource.query('*OPC?')
+=======
+            self.resource.waitcomplete()
+>>>>>>> e8b8185236585ddcd1dfc1e68bc13ba961dbdfca
 
     @property
     def leveli(self):
@@ -43,7 +51,11 @@ class K2656A(IEC60488):
     def leveli(self, value):
         with self.lock:
             self.resource.write(f'smua.source.leveli = {value:E}')
+<<<<<<< HEAD
             self.resource.query('*OPC?')
+=======
+            self.resource.waitcomplete()
+>>>>>>> e8b8185236585ddcd1dfc1e68bc13ba961dbdfca
 
     @property
     def limitv(self):
@@ -54,7 +66,11 @@ class K2656A(IEC60488):
     def limitv(self, value):
         with self.lock:
             self.resource.write(f'smua.source.limitv = {value:E}')
+<<<<<<< HEAD
             self.resource.query('*OPC?')
+=======
+            self.resource.waitcomplete()
+>>>>>>> e8b8185236585ddcd1dfc1e68bc13ba961dbdfca
 
     @property
     def limiti(self):
@@ -65,4 +81,8 @@ class K2656A(IEC60488):
     def limiti(self, value):
         with self.lock:
             self.resource.write(f'smua.source.limiti = {value:E}')
+<<<<<<< HEAD
             self.resource.query('*OPC?')
+=======
+            self.resource.waitcomplete()
+>>>>>>> e8b8185236585ddcd1dfc1e68bc13ba961dbdfca
