@@ -74,8 +74,8 @@ class ITC(Device):
         with self.lock():
             if not isinstance(message, bytes):
                 message = message.encode()
-            self.resource().write_raw(message)
-            return self.resource().read_bytes(count).decode()
+            self.resource.write_raw(message)
+            return self.resource.read_bytes(count).decode()
 
     def time(self):
         """Returns current date and time of device as datetime object.
