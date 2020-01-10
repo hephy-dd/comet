@@ -14,7 +14,7 @@ class K2700(IEC60488):
         """Initialize measurement."""
         with self.lock:
             self.resource.write(':INIT')
-            self.resource.query('*OPC?')
+            # TODO self.resource.query('*OPC?')
 
     def fetch(self):
         """Returns the latest available readings as list of dictionaries.

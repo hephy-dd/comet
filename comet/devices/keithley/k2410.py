@@ -37,7 +37,7 @@ class K2410(IEC60488):
     def init(self):
         with self.lock:
             self.resource.write(':INIT')
-            self.resource.query('*OPC?')
+            # TODO self.resource.query('*OPC?')
 
     def read(self):
         """A high level command to perform a singleshot measurement.
