@@ -12,7 +12,9 @@ class K2700(IEC60488):
 
     def init(self):
         """Initialize measurement."""
-        self.resource().write('INIT')
+        with self.lock:
+            self.resource.write(':INIT')
+            self.resource.query('*OPC?')
 
     def fetch(self):
         """Returns the latest available readings as list of dictionaries.
@@ -20,16 +22,20 @@ class K2700(IEC60488):
         >>> device.fetch()
         [{'VDC': -4.32962079e-05, 'SECS': 0.0, 'RDNG': 0.0}, ...]
         """
-        results = []
+        readings = []
         # split '-4.32962079e-05VDC,+0.000SECS,+0.0000RDNG#,...'
-        for values in re.findall(r'([^#]+)#\,?', self.resource().query('FETC?')):
+        with self.lock:
+            result = self.resource.query(':FETC?')
+        for values in re.findall(r'([^#]+)#\,?', result):
             values = re.findall(r'([+-]?\d+(?:\.\d+)?(?:E[+-]\d+)?)([A-Z]+)\,?', values)
-            results.append({suffix: float(value) for value, suffix in values})
-        return results
+            readings.append({suffix: float(value) for value, suffix in values})
+        return readings
 
     def read(self):
         """A high level command to perform a singleshot measurement.
         It resets the trigger model(idle), initiates it, and fetches a new
         value.
         """
-        return [float(value) for value in self.resource().query(':READ?').split(',')]
+        with self.lock:
+            result = self.resource.query(':READ?')
+        return [float(value) for value in result.split(',')]

@@ -9,13 +9,6 @@ import visa
 
 __all__ = ['Device', 'DeviceManager', 'DeviceMixin']
 
-class ResourceManager(visa.ResourceManager):
-    """Custom resource manager configured by application settings."""
-
-    def __init__(self):
-        visa_library = QtCore.QSettings().value('visaLibrary', '@py')
-        super().__init__(visa_library)
-
 class Mapping:
     def __init__(self, d):
         self.d = d
@@ -23,10 +16,6 @@ class Mapping:
         return list(self.d.keys())[list(self.d.values()).index(value)]
     def get_value(self, key):
         return list(self.d.values())[list(self.d.keys()).index(key)]
-
-class Set:
-    def __init__(self, s):
-        self.s = set(s)
 
 class Device(ContextDecorator):
     """Base class for custom VISA devices.
@@ -67,8 +56,9 @@ class Device(ContextDecorator):
 
     def __enter__(self):
         resource_name = self.options.get('resource_name')
+        visa_library = QtCore.QSettings().value('visaLibrary', '@py')
         logging.info("opening resource: '%s' with options %s", resource_name, self.options)
-        self.__resource = ResourceManager().open_resource(**self.options)
+        self.__resource = visa.ResourceManager(visa_library).open_resource(**self.options)
         return self
 
     def __exit__(self, *exc):
