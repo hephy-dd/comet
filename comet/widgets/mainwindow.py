@@ -4,7 +4,8 @@ import traceback
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from ..utils import make_path
-from ..mixins import UiLoaderMixin, ProcessMixin
+from ..process import ProcessMixin
+from .uiloader import UiLoaderMixin
 from .preferencesdialog import PreferencesDialog
 from .aboutdialog import AboutDialog
 

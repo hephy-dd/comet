@@ -10,7 +10,7 @@ from PyQt5 import QtCore, QtWidgets
 from .device import DeviceMixin
 from .utils import Collection
 
-__all__ = ['Process', 'StopRequest', 'ProcessManager']
+__all__ = ['Process', 'StopRequest', 'ProcessManager', 'ProcessMixin']
 
 class Thread(threading.Thread):
 
@@ -125,3 +125,11 @@ class ProcessManager(Collection):
     def join(self):
         for process in self.values():
             process.join()
+
+class ProcessMixin(object):
+
+    __processes = ProcessManager()
+
+    @classmethod
+    def processes(cls):
+        return cls.__processes

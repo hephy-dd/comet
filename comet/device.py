@@ -9,50 +9,70 @@ import visa
 
 __all__ = ['Device', 'DeviceManager', 'DeviceMixin']
 
-def getResourceManager():
-    """Returns resource manager configured by application settings."""
-    visaLibrary = QtCore.QSettings().value('visaLibrary', '@py')
-    return visa.ResourceManager(visaLibrary)
+class ResourceManager(visa.ResourceManager):
+    """Custom resource manager configured by application settings."""
+
+    def __init__(self):
+        visa_library = QtCore.QSettings().value('visaLibrary', '@py')
+        super().__init__(visa_library)
+
+class Mapping:
+    def __init__(self, d):
+        self.d = d
+    def get_key(self, value):
+        return list(self.d.keys())[list(self.d.values()).index(value)]
+    def get_value(self, key):
+        return list(self.d.values())[list(self.d.keys()).index(key)]
+
+class Set:
+    def __init__(self, s):
+        self.s = set(s)
 
 class Device(ContextDecorator):
     """Base class for custom VISA devices.
     >>> class MyDevice(comet.Device):
+    ...     @property
     ...     def voltage(self):
-    ...         return float(self.resource().query(':VOLT?'))
-    ...     def setVoltage(self, value):
-    ...         self.resource().query(':VOLT {:.3f}'.format(value))
+    ...         with self.lock:
+    ...             return float(self.resource.query(':VOLT?'))
+    ...     @voltage.setter
+    ...     def voltage(self, value):
+    ...         with self.lock:
+    ...             self.resource.write(f':VOLT {value:.3f}; *OPC?')
+    ...             self.resource.read()
     ...
     >>> with MyDevice('GPIB::15') as device:
-    ...     device.setVoltage(42)
-    ...     device.voltage()
+    ...     device.voltage = 42
+    ...     print(device.voltage)
     ...
     42.0
     """
 
     options = {}
-    """Options passed on to VISA resource."""
+    """Default options passed on to VISA resource."""
 
-    def __init__(self, resourceName):
-        self.__resourceName = resourceName
+    def __init__(self, resource_name, **options):
+        options.update(dict(resource_name=resource_name))
+        self.options.update(options)
         self.__resource = None
         self.__lock = threading.RLock()
 
-    def resourceName(self):
-        return self.__resourceName
-
+    @property
     def resource(self):
         return self.__resource
 
+    @property
     def lock(self):
         return self.__lock
 
     def __enter__(self):
-        logging.info("opening resource: '%s' with options %s", self.__resourceName, self.options)
-        self.__resource = getResourceManager().open_resource(self.__resourceName, **self.options)
+        resource_name = self.options.get('resource_name')
+        logging.info("opening resource: '%s' with options %s", resource_name, self.options)
+        self.__resource = ResourceManager().open_resource(**self.options)
         return self
 
     def __exit__(self, *exc):
-        logging.info("closing resource: '%s'", self.__resourceName)
+        logging.info("closing resource: '%s'", self.__resource.resource_name)
         self.__resource.close()
         self.__resource = None
         return False
@@ -90,9 +110,9 @@ class DeviceManager(object):
     @classmethod
     def resources(cls):
         for name, device in cls.__devices.items():
-            yield name, device.resourceName()
+            yield name, device.options.get('resource_name')
 
-class DeviceMixin(object):
+class DeviceMixin:
 
     __devices = DeviceManager()
 
