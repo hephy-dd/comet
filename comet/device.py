@@ -17,6 +17,24 @@ class Mapping:
     def get_value(self, key):
         return list(self.d.values())[list(self.d.keys()).index(key)]
 
+class Group:
+    """Grouping properties and commands."""
+
+    def __init__(self, parent):
+        self.__parent = parent
+
+    @property
+    def options(self):
+        return self.__parent.options
+
+    @property
+    def lock(self):
+        return self.__parent.lock
+
+    @property
+    def resource(self):
+        return self.__parent.resource
+
 class Device(ContextDecorator):
     """Base class for custom VISA devices.
     >>> class MyDevice(comet.Device):

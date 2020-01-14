@@ -11,8 +11,8 @@ class IEC60488(Device):
 
     def clear(self):
         """Clear IEC60488 device status."""
-        return self.resource.write('*CLS')
+        self.resource.write('*CLS')
 
     def reset(self):
         """Reset IEC60488 device."""
-        return self.resource.write('*RST')
+        self.resource.write('*RST')
