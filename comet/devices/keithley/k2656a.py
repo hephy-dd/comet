@@ -7,7 +7,7 @@ class SMU(Group):
 
     def __init__(self, parent, root):
         super().__init__(parent)
-        self.__source = Source(self, root=f'{root}.source}')
+        self.__source = Source(self, root=f'{root}.source')
 
     @property
     def source(self):
