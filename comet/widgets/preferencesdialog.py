@@ -1,8 +1,8 @@
 import os
 from PyQt5 import QtCore, QtWidgets, uic
 
-from ..mixins import UiLoaderMixin
 from ..device import DeviceMixin
+from .uiloader import UiLoaderMixin
 
 __all__ = ['PreferencesDialog']
 

@@ -70,30 +70,39 @@ class ITC(Device):
     Status = namedtuple('Status', ('running', 'warning', 'error', 'channels'))
 
     def query_bytes(self, message, count):
-        """Raw query for bytes."""
-        with self.lock():
+        """Raw query for bytes.
+
+        >>> device.query_bytes('P', 4)
+        'P001'
+        """
+        with self.lock:
             if not isinstance(message, bytes):
                 message = message.encode()
-            self.resource().write_raw(message)
-            return self.resource().read_bytes(count).decode()
+            self.resource.write_raw(message)
+            return self.resource.read_bytes(count).decode()
 
-    def time(self):
+    @property
+    def time(self) -> object:
         """Returns current date and time of device as datetime object.
-        >>> device.time()
+
+        >>> device.time
         datetime.datetime(2019, 6, 12, 13, 01, 21)
         """
         result = self.query_bytes('T', 13)
         return datetime.datetime.strptime(result, 'T%d%m%y%H%M%S')
 
-    def setTime(self, dt):
+    @time.setter
+    def time(self, dt) -> None:
         """Update device date and time, returns updated data and time as datetime object.
-        >>> device.setTime(datetime.now())
-        datetime.datetime(2019, 6, 12, 13, 12, 35)
-        """
-        result = self.query_bytes(dt.strftime('t%d%m%y%H%M%S'), 13)
-        return datetime.datetime.strptime(result, 't%d%m%y%H%M%S')
 
-    def analogChannel(self, index):
+        >>> device.time = datetime.now()
+        """
+        datetime_format = 't%d%m%y%H%M%S'
+        result = self.query_bytes(dt.strftime(datetime_format), 13)
+        if dt != datetime.datetime.strptime(result, datetime_format):
+            raise RuntimeError("failed to set date and time")
+
+    def analog_channel(self, index):
         """Read analog channel, returns tuple containing actual value and target value.
         >>> device.analogChannel(1) # read temperature target/actual
         (24.5, 25.0)
@@ -104,7 +113,7 @@ class ITC(Device):
             raise RuntimeError("invalid channel returned: '{}'".format(result))
         return float(actual), float(target)
 
-    def setAnalogChannel(self, index, value):
+    def set_analog_channel(self, index, value):
         """Set target value for analog channel.
         >>> device.set_analog_channel(1, 42.0)
         """
@@ -115,39 +124,66 @@ class ITC(Device):
         if result != 'a':
             raise RuntimeError("failed to set target for channel '{}'".format(index))
 
-    def status(self):
+    @property
+    def status(self) -> object:
         """Returns device status as object.
-        >>> device.status()
-        Status(running=False, warning=None, error=None, channels={}}
+
+        >>> device.status
+        Status(running=False, warning=None, error=None, channels={})
         """
         result = self.query_bytes('S', 10)
         running = bool(int(result[1]))
-        isError = bool(int(result[2]))
-        channelStates = {channel: bool(int(state)) for channel, state in enumerate(result[3:9])}
-        errorNr = result[9]
-        warning = self.WarningMessages[errorNr] if isError and errorNr in self.WarningMessages else None
-        error = self.ErrorMessages[errorNr] if isError and errorNr in self.ErrorMessages else None
-        return self.Status(running, warning, error, channelStates)
+        is_error = bool(int(result[2]))
+        channels = {channel: bool(int(state)) for channel, state in enumerate(result[3:9])}
+        error_nr = result[9]
+        warning = self.WarningMessages[error_nr] if is_error and error_nr in self.WarningMessages else None
+        error = self.ErrorMessages[error_nr] if is_error and error_nr in self.ErrorMessages else None
+        return self.Status(running, warning, error, channels)
 
-    def errorMessage(self):
-        """Returns current error message."""
+    @property
+    def error_message(self) -> str:
+        """Returns current error message.
+
+        >>> device.error_message
+        'Wasserbad Abschlaemmen'
+        """
         result = self.query_bytes('F', 33)
         return result[1:].strip()
 
-    # TODO
-
-    def program(self):
+    @property
+    def program(self) -> int:
         """Returns number of running program or 0 if no program is running.
-        >>> device.program()
-        3
+
+        >>> device.program
+        42
         """
         result = self.query_bytes('P', 4)
         return int(result[1:])
 
-    def startProgram(self, number):
+    @program.setter
+    def program(self, number: int) -> None:
         """Starts a program. Returns program number or 0 for no program.
-        >>> device.startProgram(42)
-        42
+
+        >>> device.program = 42
         """
-        result = self.query_bytes('P{:03d}'.format(number), 4)
-        return int(result[1:])
+        result = self.query_bytes(f'P{number:03d}', 4)
+        if number != int(result[1:]):
+            raise RuntimeError(f"failed to start program '{number}'")
+
+    def start(self) -> None:
+        """Switch climate chamber ON.
+
+        >>> device.start()
+        """
+        result = self.query_bytes('s1 1', 2)
+        if result != 's1':
+            raise RuntimeError("failed to start instrument")
+
+    def stop(self) -> None:
+        """Switch climate chamber OFF.
+
+        >>> device.stop()
+        """
+        result = self.query_bytes('s1 0', 2)
+        if result != 's1':
+            raise RuntimeError("failed to stop instrument")

@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='comet',
-    version='0.4.0',
+    version='0.5.0',
     author="Bernhard Arnold",
     author_email="bernhard.arnold@oeaw.ac.at",
     packages=find_packages(exclude=['tests']),
@@ -12,7 +12,7 @@ setup(
         'PyVISA-sim',
         'numpy>=1.17',
         'PyQt5>=5.13',
-        'PyQtChart>=5.13',
+        'QCharted>=1.1',
     ],
     package_data={
         'comet': [

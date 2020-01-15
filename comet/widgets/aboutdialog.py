@@ -1,7 +1,7 @@
 from PyQt5 import QtGui, QtWidgets
 
-from ..mixins import UiLoaderMixin
 from ..utils import make_path
+from .uiloader import UiLoaderMixin
 
 __all__ = ['AboutDialog']
 
