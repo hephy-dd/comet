@@ -1,4 +1,5 @@
 import threading
+import weakref
 import logging
 from collections import OrderedDict
 from contextlib import ContextDecorator
@@ -17,11 +18,16 @@ class Mapping:
     def get_value(self, key):
         return list(self.d.values())[list(self.d.keys()).index(key)]
 
-class Group:
-    """Grouping properties and commands."""
+class Node:
+    """Device node for grouping properties and commands."""
 
-    def __init__(self, parent):
+    def __init__(self, parent, prefix=''):
         self.__parent = parent
+        self.__prefix = prefix
+
+    @property
+    def prefix(self):
+        return self.__prefix
 
     @property
     def options(self):
@@ -34,6 +40,53 @@ class Group:
     @property
     def resource(self):
         return self.__parent.resource
+
+class Action:
+
+    def __init__(self, fget=None):
+        self.fget = lambda: fget
+
+    def __get__(self, obj, objtype=None):
+        if obj is None:
+            return self
+        return self.fget(obj)
+
+    def __set__(self, obj, value):
+        raise AttributeError("can't set attribute")
+
+    def __delete__(self, obj):
+        raise AttributeError("can't delete attribute")
+
+    def getter(self, fget):
+        return type(self)(fget, self.fset, self.fdel, self.__doc__)
+
+    def setter(self, fset):
+        return type(self)(self.fget, fset, self.fdel, self.__doc__)
+
+    def deleter(self, fdel):
+        return type(self)(self.fget, self.fset, fdel, self.__doc__)
+
+class Property:
+
+    def __init__(self, fget=None, fset=None, type=None, values=None):
+        pass
+
+    def __get__(self, obj, cls):
+        pass
+
+    def __set__(self, obj, value):
+        pass
+
+class ListProperty:
+
+    def __init__(self, fget=None, fset=None, type=None, min=None, max=None):
+        pass
+
+class DictProperty:
+
+    def __init__(self, fget=None, fset=None, type=None, values={}):
+        pass
+
 
 class Device(ContextDecorator):
     """Base class for custom VISA devices.

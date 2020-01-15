@@ -2,11 +2,11 @@ import re
 import time
 
 from comet.devices import IEC60488
-from comet.device import Group, Mapping
+from comet.device import Node, Mapping
 
 __all__ = ['K2410']
 
-class System(Group):
+class System(Node):
 
     def __init__(self, parent):
         super().__init__(parent)
@@ -27,7 +27,7 @@ class System(Group):
             result = self.resource.query(':SYST:ERR?').split(',')
             return int(result[0]), result[1].strip('"')
 
-class Beeper(Group):
+class Beeper(Node):
 
     @property
     def status(self) -> bool:
@@ -41,7 +41,7 @@ class Beeper(Group):
             self.resource.write(f':SYST:BEEP:STAT {value:d}')
             self.resource.query('*OPC?')
 
-class Source(Group):
+class Source(Node):
 
     def __init__(self, parent):
         super().__init__(parent)
@@ -51,7 +51,7 @@ class Source(Group):
     def voltage(self):
         return self.__voltage
 
-class Voltage(Group):
+class Voltage(Node):
 
     @property
     def level(self) -> float:
