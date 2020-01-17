@@ -52,6 +52,14 @@ class Application(ProcessMixin, DeviceMixin):
         self.__widget.title = title
 
     @property
+    def about(self):
+        return self.__main_window.about or ""
+
+    @about.setter
+    def about(self, about):
+        self.__main_window.about = about
+
+    @property
     def layout(self):
         return self.__widget.layout
 

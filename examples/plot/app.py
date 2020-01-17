@@ -26,57 +26,18 @@ class FakeDataProducer:
         return self.time, self.temperature, self.humidity
 
 class FakeDataProcess(comet.Process):
+    """Fake data generating process."""
 
     def run(self):
         source = FakeDataProducer()
         while not self.stopRequested():
             self.push("data", source.read())
-            self.sleep(.250)
-#
-# class Plot(QtWidgets.QWidget, comet.UiLoaderMixin):
-#
-#     def __init__(self, parent=None):
-#         super().__init__(parent)
-#         self.loadUi()
-#         chart =  self.ui.chartView.chart()
-#         chart.setTitle("Environment")
-#         chart.legend().setAlignment(QtCore.Qt.AlignBottom)
-#         self.x = chart.addDateTimeAxis(QtCore.Qt.AlignBottom)
-#         self.x.setTitleText("Time")
-#         self.y1 = chart.addValueAxis(QtCore.Qt.AlignLeft)
-#         self.y1.setTitleText("Temp.[°C]",)
-#         self.y1.setLinePen(QtCore.Qt.red)
-#         self.y2 = chart.addValueAxis(QtCore.Qt.AlignRight)
-#         self.y2.setLinePen(QtCore.Qt.blue)
-#         self.temp = chart.addLineSeries(self.x, self.y1)
-#         self.temp.setName("Temperature [°C]")
-#         self.temp.setColor(QtCore.Qt.red)
-#         self.humid = chart.addLineSeries(self.x, self.y2)
-#         self.humid.setName("Humidity [%rH]")
-#         self.humid.setColor(QtCore.Qt.blue)
-#         # Create data source and timing
-#         self.source = FakeEnvironment()
-#         # Create timer to update plot with new data
-#         self.timer = QtCore.QTimer()
-#         self.timer.timeout.connect(self.read)
-#         self.timer.start(250)
-#
-#     def read(self):
-#         """Read data from source and update plot."""
-#         time, temp, humid = self.source.read()
-#         self.temp.data().append(time, temp)
-#         self.humid.data().append(time, humid)
-#         # Adjust range if not zoomed
-#         chart = self.ui.chartView.chart()
-#         if not chart.isZoomed():
-#             chart.fit()
-#         else:
-#             # TODO
-#             chart.updateAxis(self.x, self.x.min(), self.x.max())
+            self.sleep(random.uniform(.250, .500))
 
 def main():
     app = comet.Application()
     app.title = "Plot"
+    app.about = "An example plot application."
 
     plot = comet.Plot(id="plot", legend="bottom")
     plot.add_axis("x", align="bottom", type="datetime")
