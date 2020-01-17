@@ -108,7 +108,7 @@ class MainWindow(QtWidgets.QMainWindow, UiLoaderMixin, ProcessMixin):
 
         if dialog.result() == dialog.Ok:
             self.closeRequest.emit()
-            if len(self.processes()):
+            if self.processes:
                 dialog = ProcessDialog(self)
                 dialog.exec_()
             event.accept()
@@ -126,8 +126,8 @@ class ProcessDialog(QtWidgets.QProgressDialog, ProcessMixin):
 
     @QtCore.pyqtSlot()
     def close(self):
-        self.processes().stop()
-        self.processes().join()
+        self.processes.stop()
+        self.processes.join()
         super().close()
 
     def exec_(self):

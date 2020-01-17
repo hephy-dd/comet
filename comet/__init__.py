@@ -1,5 +1,5 @@
 from .application import *
-from .widgets import *
+from .ui import *
 from .process import *
 from .device import *
 from .mixins import *

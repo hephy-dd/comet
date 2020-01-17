@@ -8,7 +8,7 @@ import logging
 from PyQt5 import QtCore, QtWidgets
 
 from .device import DeviceMixin
-from .utils import Collection
+from .collection import Collection
 
 __all__ = ['Process', 'StopRequest', 'ProcessManager', 'ProcessMixin']
 
@@ -30,15 +30,20 @@ class StopRequest(Exception):
 
 class Process(QtCore.QObject):
 
-    started = QtCore.pyqtSignal()
+    __started = QtCore.pyqtSignal()
     """Emitted if process execution started."""
 
-    finished = QtCore.pyqtSignal()
+    __finished = QtCore.pyqtSignal()
     """Emitted if process execution finished."""
 
-    failed = QtCore.pyqtSignal(object)
+    __failed = QtCore.pyqtSignal(object)
     """Emitted if exception occured in method `run`, provides exception as argument.
     """
+
+    __push = QtCore.pyqtSignal(object, object)
+    """Emmited on push() to propagate data from inside a thread."""
+
+    __message = QtCore.pyqtSignal(str)
 
     messageChanged = QtCore.pyqtSignal(str)
     messageCleared = QtCore.pyqtSignal()
@@ -46,12 +51,70 @@ class Process(QtCore.QObject):
     progressChanged = QtCore.pyqtSignal(int, int)
     progressHidden = QtCore.pyqtSignal()
 
-    def __init__(self, parent=None):
+    def __init__(self, begin=None, finish=None, fail=None, pop=None, parent=None):
         super().__init__(parent)
         self.__thread = None
+        self.begin = begin
+        self.finish = finish
+        self.fail = fail
+        self.pop = pop
+        self.__started.connect(self.__started_handler)
+        self.__finished.connect(self.__finished_handler)
+        self.__failed.connect(self.__failed_handler)
+        self.__push.connect(self.__pop_handler)
+
+    def __started_handler(self):
+        if callable(self.begin):
+            self.begin()
+    @property
+    def begin(self):
+        return self.__begin
+
+    @begin.setter
+    def begin(self, callable):
+        self.__begin = callable
+
+    def __finished_handler(self):
+        if callable(self.finish):
+            self.finish()
+    @property
+    def finish(self):
+        return self.__finish
+
+    @finish.setter
+    def finish(self, callable):
+        self.__finish = callable
+
+    def __failed_handler(self):
+        if callable(self.fail):
+            self.fail()
+
+    @property
+    def fail(self):
+        return self.__fail
+
+    @fail.setter
+    def fail(self, callable):
+        self.__fail = callable
+
+    def push(self, key, value):
+        """Push user data to be received by main thread. Key must be a string."""
+        self.__push.emit(key, value)
+
+    def __pop_handler(self, key, value):
+        if callable(self.pop):
+            self.pop(key, value)
+
+    @property
+    def pop(self):
+        return self.__pop
+
+    @pop.setter
+    def pop(self, callable):
+        self.__pop = callable
 
     def __run(self):
-        self.started.emit()
+        self.__started.emit()
         try:
             self.run()
         except StopRequest:
@@ -59,7 +122,7 @@ class Process(QtCore.QObject):
         except Exception as e:
             self.handleException(e)
         finally:
-            self.finished.emit()
+            self.__finished.emit()
 
     def start(self):
         if not self.isAlive():
@@ -90,7 +153,7 @@ class Process(QtCore.QObject):
         exception.details = traceback.format_exc()
         logging.error(exception.details)
         logging.error(exception)
-        self.failed.emit(exception)
+        self.__failed.emit(exception)
 
     def showMessage(self, message):
         """Show message, emits signal `messageChanged`."""
@@ -126,10 +189,10 @@ class ProcessManager(Collection):
         for process in self.values():
             process.join()
 
-class ProcessMixin(object):
+class ProcessMixin:
 
     __processes = ProcessManager()
 
-    @classmethod
-    def processes(cls):
-        return cls.__processes
+    @property
+    def processes(self):
+        return self.__class__.__processes

@@ -1,12 +1,12 @@
 import threading
 import weakref
 import logging
-from collections import OrderedDict
 from contextlib import ContextDecorator
 
 from PyQt5 import QtCore
-
 import visa
+
+from .collection import Collection
 
 __all__ = ['Device', 'DeviceManager', 'DeviceMixin']
 
@@ -87,7 +87,6 @@ class DictProperty:
     def __init__(self, fget=None, fset=None, type=None, values={}):
         pass
 
-
 class Device(ContextDecorator):
     """Base class for custom VISA devices.
     >>> class MyDevice(comet.Device):
@@ -138,45 +137,20 @@ class Device(ContextDecorator):
         self.__resource = None
         return False
 
-class DeviceManager(object):
+class DeviceManager(Collection):
 
-    __devices = OrderedDict()
+    def __init__(self):
+        super().__init__(base=Device)
 
-    @classmethod
-    def get(cls, key):
-        if key not in cls.__devices:
-            raise KeyError("key does not exist: '{}'".format(key))
-        return cls.__devices.get(key)
-
-    @classmethod
-    def add(cls, key, value):
-        if key in cls.__devices:
-            raise KeyError("key already exists: '{}'".format(key))
-        if value in cls.__devices.values():
-            raise ValueError("value already exists: '{}'".format(value))
-        return cls.__devices.setdefault(key, value)
-
-    @classmethod
-    def __len__(cls):
-        return len(cls.__devices)
-
-    @classmethod
-    def values(cls):
-        return cls.__devices.values()
-
-    @classmethod
-    def items(cls):
-        return cls.__devices.items()
-
-    @classmethod
-    def resources(cls):
-        for name, device in cls.__devices.items():
+    @property
+    def resources(self):
+        for name, device in self.items():
             yield name, device.options.get('resource_name')
 
 class DeviceMixin:
 
     __devices = DeviceManager()
 
-    @classmethod
-    def devices(cls):
-        return cls.__devices
+    @property
+    def devices(self):
+        return self.__class__.__devices

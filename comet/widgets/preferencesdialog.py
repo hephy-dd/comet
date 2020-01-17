@@ -25,7 +25,7 @@ class PreferencesDialog(QtWidgets.QDialog, UiLoaderMixin, DeviceMixin):
         self.ui.operatorListWidget.addItems(operators)
 
         resources = settings.value('resources', {})
-        resources.update(self.devices().resources())
+        resources.update(self.devices.resources)
         self.ui.resourcesTableWidget.clearContents()
         self.ui.resourcesTableWidget.setRowCount(len(resources))
         for i, resource in enumerate(resources.items()):

@@ -5,7 +5,7 @@ from PyQt5 import QtCore, uic
 
 __all__ = ['UiLoaderMixin']
 
-class UiLoaderMixin(object):
+class UiLoaderMixin:
 
     def loadUi(self, filename=None):
         """Loads an UI file and calls setupUi(). If filename is omitted a sidefile
