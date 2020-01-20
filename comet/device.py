@@ -139,7 +139,7 @@ class Device(ContextDecorator):
 
 class DeviceManager(Collection):
 
-    Type = Device
+    ValueType = Device
 
     def resources(self):
         return {name: device.options.get('resource_name') for name, device in self.items()}

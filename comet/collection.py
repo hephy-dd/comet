@@ -7,7 +7,7 @@ __all__ = ['Collection']
 class Collection:
     """Base class for instance collections."""
 
-    Type = None
+    ValueType = None
 
     def __init__(self):
         self.__items = OrderedDict()
@@ -30,13 +30,13 @@ class Collection:
         return self.__items.get(key)
 
     def add(self, key, value):
-        if self.Type is not None:
-            if not isinstance(value, self.Type):
-                raise TypeError("value must inherit from {}".format(self.Type))
+        if self.ValueType is not None:
+            if not isinstance(value, self.ValueType):
+                raise TypeError("value must inherit from {}".format(self.ValueType))
         if key in self.keys():
             raise KeyError("key is already defined: '{}'".format(key))
         self.__items[key] = value
         return value
 
     def __repr__(self):
-        return format(self.__items)
+        return f"{self.__class__.__name__}({list(self.items())})"

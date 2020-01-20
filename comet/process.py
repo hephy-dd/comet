@@ -30,7 +30,7 @@ class StopRequest(Exception):
 
 class Process(QtCore.QObject, DeviceMixin):
 
-    __start_signal = QtCore.pyqtSignal()
+    __begin_signal = QtCore.pyqtSignal()
     """Emitted if process execution started."""
 
     __finish_signal = QtCore.pyqtSignal()
@@ -56,14 +56,14 @@ class Process(QtCore.QObject, DeviceMixin):
         self.__slots = slots or {}
         self.message = None
         self.progress = None
-        self.__start_signal.connect(self.__start_handler)
+        self.__begin_signal.connect(self.__begin_handler)
         self.__finish_signal.connect(self.__finish_handler)
         self.__fail_signal.connect(self.__fail_handler)
         self.__push_signal.connect(self.__push_handler)
         self.__message_signal.connect(self.__message_handler)
         self.__progress_signal.connect(self.__progress_handler)
 
-    def __start_handler(self):
+    def __begin_handler(self):
         if callable(self.begin):
             self.begin()
 
@@ -113,8 +113,16 @@ class Process(QtCore.QObject, DeviceMixin):
     def slots(self):
         return self.__slots
 
+    def __message_handler(self, message):
+        if callable(self.message):
+            self.message(message)
+
+    def __progress_handler(self, value, maximum):
+        if callable(self.progress):
+            self.progress(value, maximum)
+
     def __run(self):
-        self.__start_signal.emit()
+        self.__begin_signal.emit()
         try:
             self.run()
         except StopRequest:
@@ -158,20 +166,12 @@ class Process(QtCore.QObject, DeviceMixin):
         logging.error(exception)
         self.__fail_signal.emit(exception)
 
-    def __message_handler(self, message):
-        if callable(self.message):
-            self.message(message)
-
-    def __progress_handler(self, value, maximum):
-        if callable(self.progress):
-            self.progress(value, maximum)
-
     def run(self):
         raise NotImplemented()
 
 class ProcessManager(Collection):
 
-    Type = Process
+    ValueType = Process
 
     def stop(self):
         for process in self.values():
