@@ -58,7 +58,6 @@ class MainWindow(QtWidgets.QMainWindow, UiLoaderMixin, ProcessMixin):
         super().setCentralWidget(widget)
         self.setWindowTitle(widget.windowTitle())
 
-
     def messageLabel(self):
         return self.__messageLabel
 
@@ -92,14 +91,6 @@ class MainWindow(QtWidgets.QMainWindow, UiLoaderMixin, ProcessMixin):
         box.exec_()
         self.showMessage(self.tr("Error"))
         self.hideProgress()
-
-    def connectProcess(self, process):
-        """Connect process signals to main window slots."""
-        process.failed.connect(self.showException)
-        process.messageChanged.connect(self.showMessage)
-        process.messageCleared.connect(self.clearMessage)
-        process.progressChanged.connect(self.showProgress)
-        process.progressHidden.connect(self.hideProgress)
 
     @QtCore.pyqtSlot(object)
     def closeEvent(self, event):

@@ -16,7 +16,7 @@ __all__ = ['Application']
 
 class Application(ProcessMixin, DeviceMixin):
 
-    def __init__(self, name=None):
+    def __init__(self, name=None, title=None, version=None, about=None):
         app = self.__app = QtWidgets.QApplication(sys.argv)
 
         # Application settings
@@ -33,6 +33,8 @@ class Application(ProcessMixin, DeviceMixin):
         app.lastWindowClosed.connect(app.quit)
 
         # Initialize settings
+        self.__title = None
+        self.__version = None
         self.__widget = Widget(id="root")
         self.__main_window = MainWindow()
         self.__main_window.setCentralWidget(self.__widget.qt)
@@ -40,24 +42,63 @@ class Application(ProcessMixin, DeviceMixin):
         # Setup logger
         logging.getLogger().setLevel(logging.INFO)
 
+        # Set properties
+        self.title = title
+        self.version = version
+        self.about = about
+
     def get(self, id):
         return get(id)
 
     @property
     def title(self):
-        return self.__widget.title
+        return self.__title
 
     @title.setter
     def title(self, title):
-        self.__widget.title = title
+        self.__title = title
+        self.__update_window_title()
+
+    @property
+    def version(self):
+        return self.__version
+
+    @version.setter
+    def version(self, version):
+        self.__version = version
+        self.__update_window_title()
 
     @property
     def about(self):
-        return self.__main_window.about or ""
+        return self.__main_window.about
 
     @about.setter
     def about(self, about):
-        self.__main_window.about = about
+        self.__main_window.about = about or ""
+
+    @property
+    def message(self):
+        return self.__message
+
+    @message.setter
+    def message(self, message):
+        self.__message = message
+        if message is None:
+            self.__main_window.clearMessage()
+        else:
+            self.__main_window.showMessage(message)
+
+    @property
+    def progress(self):
+        return self.__progress
+
+    @progress.setter
+    def progress(self, args):
+        self.__progress = args
+        if args is None:
+            self.__main_window.hideProgress()
+        else:
+            self.__main_window.showProgress(*args[:2])
 
     @property
     def layout(self):
@@ -65,12 +106,22 @@ class Application(ProcessMixin, DeviceMixin):
 
     @layout.setter
     def layout(self, layout):
+        if callable(layout):
+            layout = layout()
         self.__widget.layout = layout
 
     def __handler(self, signum, frame):
         """Interupt signal handler, trying to close application windows."""
         if signum == signal.SIGINT:
             self.__app.closeAllWindows()
+
+    def __update_window_title(self):
+        tokens = []
+        if self.title is not None:
+            tokens.append(format(self.title))
+        if self.version is not None:
+            tokens.append(format(self.version))
+        self.__main_window.setWindowTitle(" ".join(tokens))
 
     def run(self):
         """Run application event loop."""
