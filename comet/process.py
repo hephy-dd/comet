@@ -16,76 +16,78 @@ class Thread(threading.Thread):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.__stopRequested = threading.Event()
+        self.__stop_requested = threading.Event()
 
-    def requestStop(self):
-        self.__stopRequested.set()
+    def stop(self):
+        self.__stop_requested.set()
 
-    def stopRequested(self):
-        return self.__stopRequested.is_set()
+    def is_running(self):
+        return not self.__stop_requested.is_set()
 
 class StopRequest(Exception):
     """Step process exception."""
     pass
 
-class Process(QtCore.QObject):
+class Process(QtCore.QObject, DeviceMixin):
 
-    __started = QtCore.pyqtSignal()
+    __start_signal = QtCore.pyqtSignal()
     """Emitted if process execution started."""
 
-    __finished = QtCore.pyqtSignal()
+    __finish_signal = QtCore.pyqtSignal()
     """Emitted if process execution finished."""
 
-    __failed = QtCore.pyqtSignal(object)
+    __fail_signal = QtCore.pyqtSignal(object)
     """Emitted if exception occured in method `run`, provides exception as argument.
     """
 
-    __push = QtCore.pyqtSignal(object, object)
+    __push_signal = QtCore.pyqtSignal(str, object, object)
     """Emmited on push() to propagate data from inside a thread."""
 
-    __message = QtCore.pyqtSignal(str)
+    __message_signal = QtCore.pyqtSignal(str)
 
-    messageChanged = QtCore.pyqtSignal(str)
-    messageCleared = QtCore.pyqtSignal()
+    __progress_signal = QtCore.pyqtSignal(int, int)
 
-    progressChanged = QtCore.pyqtSignal(int, int)
-    progressHidden = QtCore.pyqtSignal()
-
-    def __init__(self, begin=None, finish=None, fail=None, pop=None, parent=None):
+    def __init__(self, begin=None, finish=None, fail=None, slots={}, parent=None):
         super().__init__(parent)
         self.__thread = None
         self.begin = begin
         self.finish = finish
         self.fail = fail
-        self.pop = pop
-        self.__started.connect(self.__started_handler)
-        self.__finished.connect(self.__finished_handler)
-        self.__failed.connect(self.__failed_handler)
-        self.__push.connect(self.__pop_handler)
+        self.__slots = slots or {}
+        self.message = None
+        self.progress = None
+        self.__start_signal.connect(self.__start_handler)
+        self.__finish_signal.connect(self.__finish_handler)
+        self.__fail_signal.connect(self.__fail_handler)
+        self.__push_signal.connect(self.__push_handler)
+        self.__message_signal.connect(self.__message_handler)
+        self.__progress_signal.connect(self.__progress_handler)
 
-    def __started_handler(self):
+    def __start_handler(self):
         if callable(self.begin):
             self.begin()
+
     @property
     def begin(self):
         return self.__begin
 
     @begin.setter
-    def begin(self, callable):
-        self.__begin = callable
+    def begin(self, fn):
+        self.__begin = fn
 
-    def __finished_handler(self):
+    def __finish_handler(self):
         if callable(self.finish):
             self.finish()
+
     @property
     def finish(self):
         return self.__finish
 
     @finish.setter
-    def finish(self, callable):
-        self.__finish = callable
+    def finish(self, fn):
+        self.__finish = fn
 
-    def __failed_handler(self):
+    def __fail_handler(self):
         if callable(self.fail):
             self.fail()
 
@@ -94,54 +96,54 @@ class Process(QtCore.QObject):
         return self.__fail
 
     @fail.setter
-    def fail(self, callable):
-        self.__fail = callable
+    def fail(self, fn):
+        self.__fail = fn
 
-    def push(self, key, value):
-        """Push user data to be received by main thread. Key must be a string."""
-        self.__push.emit(key, value)
+    def push(self, key, *args, **kwargs):
+        """Emit a user callback to the main thread."""
+        self.__push_signal.emit(key, args, kwargs)
 
-    def __pop_handler(self, key, value):
-        if callable(self.pop):
-            self.pop(key, value)
+    def __push_handler(self, key, args, kwargs):
+        if key in self.__slots:
+            fn = self.__slots.get(key)
+            if callable(fn):
+                fn(*args, **kwargs)
 
     @property
-    def pop(self):
-        return self.__pop
-
-    @pop.setter
-    def pop(self, callable):
-        self.__pop = callable
+    def slots(self):
+        return self.__slots
 
     def __run(self):
-        self.__started.emit()
+        self.__start_signal.emit()
         try:
             self.run()
         except StopRequest:
             pass
         except Exception as e:
-            self.handleException(e)
+            self.__handle_exception(e)
         finally:
-            self.__finished.emit()
+            self.__finish_signal.emit()
 
     def start(self):
-        if not self.isAlive():
+        if not self.alive:
             self.__thread = Thread(target=self.__run)
             self.__thread.start()
 
     def stop(self):
-        if self.isAlive():
-            self.__thread.requestStop()
+        if self.alive:
+            self.__thread.stop()
 
     def join(self):
-        if self.isAlive():
+        if self.alive:
             self.__thread.join()
 
-    def isAlive(self):
+    @property
+    def alive(self):
         return self.__thread and self.__thread.is_alive()
 
-    def stopRequested(self):
-        return self.__thread.stopRequested()
+    @property
+    def running(self):
+        return self.alive and self.__thread.is_running()
 
     def sleep(self, seconds):
         time.sleep(seconds)
@@ -149,37 +151,27 @@ class Process(QtCore.QObject):
     def time(self):
         return time.time()
 
-    def handleException(self, exception):
+    @property
+    def __handle_exception(self, exception):
         exception.details = traceback.format_exc()
         logging.error(exception.details)
         logging.error(exception)
-        self.__failed.emit(exception)
+        self.__fail_signal.emit(exception)
 
-    def showMessage(self, message):
-        """Show message, emits signal `messageChanged`."""
-        logging.info("worker %s message: %s", self, message)
-        self.messageChanged.emit(message)
+    def __message_handler(self, message):
+        if callable(self.message):
+            self.message(message)
 
-    def clearMessage(self):
-        """Clears message, emits signal `messageCleared`."""
-        self.messageCleared.emit()
-
-    def showProgress(self, value, maximum):
-        """Show progress, emits signal `progressChanged`."""
-        logging.debug("worker %s progress: %s of %s", self, value, maximum)
-        self.progressChanged.emit(value, maximum)
-
-    def hideProgress(self):
-        """Hide process, emits sigmal `progressHidden`."""
-        self.progressHidden.emit()
+    def __progress_handler(self, value, maximum):
+        if callable(self.progress):
+            self.progress(value, maximum)
 
     def run(self):
         raise NotImplemented()
 
 class ProcessManager(Collection):
 
-    def __init__(self):
-        super().__init__(base=Process)
+    Type = Process
 
     def stop(self):
         for process in self.values():
