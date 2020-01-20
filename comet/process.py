@@ -87,9 +87,9 @@ class Process(QtCore.QObject, DeviceMixin):
     def finish(self, fn):
         self.__finish = fn
 
-    def __fail_handler(self):
+    def __fail_handler(self, e):
         if callable(self.fail):
-            self.fail()
+            self.fail(e)
 
     @property
     def fail(self):
@@ -159,12 +159,11 @@ class Process(QtCore.QObject, DeviceMixin):
     def time(self):
         return time.time()
 
-    @property
-    def __handle_exception(self, exception):
-        exception.details = traceback.format_exc()
-        logging.error(exception.details)
-        logging.error(exception)
-        self.__fail_signal.emit(exception)
+    def __handle_exception(self, e):
+        e.details = traceback.format_exc()
+        logging.error(e.details)
+        logging.error(e)
+        self.__fail_signal.emit(e)
 
     def run(self):
         raise NotImplemented()

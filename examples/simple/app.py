@@ -8,24 +8,24 @@ import comet
 
 class Measure(comet.Process):
 
+    voltage = 0
+
     def run(self):
-        while not self.stopRequested():
-            print(self.stopRequested(), self.isAlive())
-            self.push("value", random.uniform(40., 42.))
+        while self.running:
+            self.push("reading", random.uniform(.25, 2.5) * self.voltage)
             time.sleep(random.random())
 
 def main():
     app = comet.Application()
     app.title = "Measurement"
 
-    def finish():
+    def on_finish():
         app.get('start').enabled = True
         app.get('stop').enabled = False
         app.get("current").value = 0
 
-    def pop(key, value):
-        if key == "value":
-            app.get("current").value = value
+    def on_reading(value):
+        app.get("current").value = value
 
     def on_start(event):
         app.get('start').enabled = False
@@ -39,12 +39,20 @@ def main():
         measure = app.processes.get("measure")
         measure.stop()
 
-    measure = Measure(pop=pop, finish=finish, fail=print)
+    def on_voltage(event):
+        measure = app.processes.get("measure")
+        measure.voltage = event.value
+
+    measure = Measure(
+        finish=on_finish,
+        fail=app.show_exception,
+        slots={"reading": on_reading}
+    )
     app.processes.add("measure", measure)
 
     app.layout = comet.Column(
         comet.Label("Voltage"),
-        comet.Number(value=42, maximum=1000, decimals=1, suffix="V"),
+        comet.Number(value=0, maximum=1000, decimals=1, suffix="V", change=on_voltage),
         comet.Label("Current"),
         comet.Number(id="current", readonly=True, value=0, maximum=1000, decimals=3, suffix="mA"),
         comet.Button(id="start", text="Start", click=on_start),

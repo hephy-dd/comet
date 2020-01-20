@@ -170,9 +170,9 @@ class Number(Input):
     def change(self, change):
         self.__change = change
 
-    def __change_handler(self, text):
+    def __change_handler(self, value):
         if callable(self.change):
-            self.change(Event(self, text=text))
+            self.change(Event(self, value=value))
 
 class Select(Input):
 

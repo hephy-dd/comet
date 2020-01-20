@@ -136,6 +136,9 @@ class Application(ProcessMixin, DeviceMixin):
             tokens.append(format(self.version))
         self.__window.setWindowTitle(" ".join(tokens))
 
+    def show_exception(self, e):
+        self.__window.showException(e)
+
     def run(self):
         """Run application event loop."""
         self.__window.show()
