@@ -41,6 +41,9 @@ class Object:
         self.__qt = self.QtBaseClass()
         self.id = id
 
+    def get(self, id):
+        return get(id)
+
     @property
     def qt(self):
         return self.__qt

@@ -1,6 +1,13 @@
+import time
+import random
+
 from .application import *
 from .ui import *
 from .process import *
 from .device import *
 from .functions import Range
 from .version import __version__
+
+def app():
+    """Returns reference to global application object."""
+    return CoreApplication.app()

@@ -5,56 +5,45 @@ import sys
 from PyQt5 import QtCore, QtWidgets
 
 from .version import __version__
+from .settings import Settings
 from .widgets import MainWindow
 from .device import DeviceMixin
 from .process import ProcessMixin
-from .ui.core import get
 from .ui.widget import Widget
 from .ui.layout import Layout
 
-__all__ = ['Application']
+__all__ = ['CoreApplication', 'Application']
 
-DisplayName = "COMET"
-OrganizationName = "HEPHY"
-OrganizationDomain = "hephy.at"
+class CoreApplication(ProcessMixin, DeviceMixin):
+    """Base class for COMET application classes."""
 
-class Application(ProcessMixin, DeviceMixin):
+    QtBaseClass = QtCore.QCoreApplication
 
-    QtBaseClass = QtWidgets.QApplication
+    __app = None
 
-    def __init__(self, name=None, title=None, version=None, about=None):
+    def __init__(self, name=None, version=None):
         self.__qt = self.QtBaseClass(sys.argv)
+
+        # Store reference to application
+        CoreApplication.__app = self
 
         # Application settings
         self.name = name
         self.version = version
-        self.qt.setApplicationDisplayName(DisplayName)
-        self.qt.setOrganizationName(OrganizationName)
-        self.qt.setOrganizationDomain(OrganizationDomain)
+        self.display_name = "COMET"
+        self.organization_name = "HEPHY"
+        self.organization_domain = "hephy.at"
 
-        # Connections
-        self.qt.lastWindowClosed.connect(self.qt.quit)
+        # Initialize global settings
+        self.__settings = Settings(self)
 
-        # Initialize window
-        self.__widget = Widget(id="root")
-        self.__window = MainWindow()
-        self.__window.setCentralWidget(self.__widget.qt)
-        self.title = title
-        self.about = about
-        self.__update_window_title()
-
-        # Setup logger
-        logging.getLogger().setLevel(logging.INFO)
-
-        # Initialize settings
-        QtCore.QSettings()
+    @classmethod
+    def app(cls):
+        return cls.__app
 
     @property
     def qt(self):
         return self.__qt
-
-    def get(self, id):
-        return get(id)
 
     @property
     def name(self):
@@ -70,24 +59,85 @@ class Application(ProcessMixin, DeviceMixin):
 
     @version.setter
     def version(self, version):
-        self.qt.setApplicationVersion(version)
+        self.qt.setApplicationVersion("" if version is None else format(version))
+
+    @property
+    def display_name(self):
+        return self.qt.applicationDisplayName()
+
+    @display_name.setter
+    def display_name(self, name):
+        self.qt.setApplicationDisplayName("" if name is None else format(name))
+
+    @property
+    def organization_name(self):
+        return self.qt.organizationName()
+
+    @organization_name.setter
+    def organization_name(self, name):
+        self.qt.setOrganizationName("" if name is None else format(name))
+
+    @property
+    def organization_domain(self):
+        return self.qt.organizationDomain()
+
+    @organization_domain.setter
+    def organization_domain(self, domain):
+        self.qt.setOrganizationDomain("" if domain is None else format(domain))
+
+    @property
+    def settings(self):
+        return self.__settings
+
+    def run(self):
+        """Run application event loop."""
+        result = self.qt.exec_()
+
+        # Stop processes
+        self.processes.stop()
+        self.processes.join()
+
+        return result
+
+class Application(CoreApplication):
+    """Base class for COMET applications providing a default main window."""
+
+    QtBaseClass = QtWidgets.QApplication
+
+    def __init__(self, name=None, version=None, title=None, about=None):
+        super().__init__(name, version)
+
+        # Connections
+        self.qt.lastWindowClosed.connect(self.qt.quit)
+
+        # Initialize main window
+        self.qt.window = MainWindow()
+        self.__widget = Widget(id="root")
+
+        self.qt.window.setCentralWidget(self.__widget.qt)
+
+        # Application properties
+        self.title = title
+        self.about = about
+
+        # Setup logger
+        logging.getLogger().setLevel(logging.INFO)
 
     @property
     def title(self):
-        return self.__title
+        return self.qt.window.windowTitle()
 
     @title.setter
     def title(self, title):
-        self.__title = "" if title is None else format(title)
-        self.__update_window_title()
+        self.qt.window.setWindowTitle("" if title is None else format(title))
 
     @property
     def about(self):
-        return self.__window.about
+        return self.qt.window.aboutText()
 
     @about.setter
     def about(self, about):
-        self.__window.about = about or ""
+        self.qt.window.setAboutText(about or "")
 
     @property
     def message(self):
@@ -97,9 +147,9 @@ class Application(ProcessMixin, DeviceMixin):
     def message(self, message):
         self.__message = message
         if message is None:
-            self.__window.clearMessage()
+            self.qt.window.clearMessage()
         else:
-            self.__window.showMessage(message)
+            self.qt.window.showMessage(message)
 
     @property
     def progress(self):
@@ -109,9 +159,9 @@ class Application(ProcessMixin, DeviceMixin):
     def progress(self, args):
         self.__progress = args
         if args is None:
-            self.__window.hideProgress()
+            self.qt.window.hideProgress()
         else:
-            self.__window.showProgress(*args[:2])
+            self.qt.window.showProgress(*args[:2])
 
     @property
     def layout(self):
@@ -123,25 +173,25 @@ class Application(ProcessMixin, DeviceMixin):
             layout = layout()
         self.__widget.layout = layout
 
+    def show_exception(self, e):
+        self.qt.window.showException(e)
+
+    def __update_window_title(self):
+        if self.qt.window:
+            tokens = []
+            if self.title is not None:
+                tokens.append(format(self.title))
+            if self.version is not None:
+                tokens.append(format(self.version))
+            self.qt.window.setWindowTitle(" ".join(tokens))
+
     def __handler(self, signum, frame):
         """Interupt signal handler, trying to close application windows."""
         if signum == signal.SIGINT:
             self.qt.closeAllWindows()
 
-    def __update_window_title(self):
-        tokens = []
-        if self.title is not None:
-            tokens.append(format(self.title))
-        if self.version is not None:
-            tokens.append(format(self.version))
-        self.__window.setWindowTitle(" ".join(tokens))
-
-    def show_exception(self, e):
-        self.__window.showException(e)
-
     def run(self):
         """Run application event loop."""
-        self.__window.show()
 
         # Register interupt signal handler
         signal.signal(signal.SIGINT, self.__handler)
@@ -151,9 +201,7 @@ class Application(ProcessMixin, DeviceMixin):
         timer.timeout.connect(lambda: None)
         timer.start(250)
 
-        result = self.qt.exec_()
+        # Show main window
+        self.qt.window.show()
 
-        self.processes.stop()
-        self.processes.join()
-
-        return result
+        return super().run()
