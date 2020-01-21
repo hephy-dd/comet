@@ -7,12 +7,10 @@ __all__ = ['Collection']
 class Collection:
     """Base class for instance collections."""
 
-    def __init__(self, items=None, base=None):
+    ValueType = None
+
+    def __init__(self):
         self.__items = OrderedDict()
-        self.__base = base
-        if items is not None:
-            for key, value in items:
-                self.add(key, value)
 
     def __len__(self):
         return len(self.__items)
@@ -24,20 +22,21 @@ class Collection:
         return self.__items.values()
 
     def items(self):
-        return self.__items.copy()
+        return self.__items.items()
 
     def get(self, key):
         if key not in self.__items:
-            raise KeyError("key down not exists '{}'".format(key))
+            raise KeyError("key does not exists '{}'".format(key))
         return self.__items.get(key)
 
     def add(self, key, value):
-        if self.__base is not None:
-            if not isinstance(value, self.__base):
-                raise TypeError("value must inherit from {}".format(self.__base))
+        if self.ValueType is not None:
+            if not isinstance(value, self.ValueType):
+                raise TypeError("value must inherit from {}".format(self.ValueType))
         if key in self.keys():
             raise KeyError("key is already defined: '{}'".format(key))
         self.__items[key] = value
+        return value
 
-    def __str__(self):
-        return format(self.__items)
+    def __repr__(self):
+        return f"{self.__class__.__name__}({list(self.items())})"

@@ -26,15 +26,14 @@ class Text(Input):
         self.readonly = readonly
         self.clearable = clearable
         self.change = change
-        self.qt.textChanged.connect(self.__changed)
+        self.qt.textChanged.connect(self.__change_handler)
 
     @property
     def value(self):
-        return self.__value
+        return self.qt.text()
 
     @value.setter
     def value(self, value):
-        self.__value = value
         self.qt.setText("" if value is None else format(value))
 
     @property
@@ -61,9 +60,9 @@ class Text(Input):
     def change(self, change):
         self.__change = change
 
-    def __changed(self, text):
-        if callable(self.__change):
-            self.__change(Event(self, text=text))
+    def __change_handler(self, text):
+        if callable(self.change):
+            self.change(Event(self, text=text))
 
 class Number(Input):
 
@@ -83,7 +82,7 @@ class Number(Input):
         self.suffix = suffix
         self.readonly = readonly
         self.change = change
-        self.qt.valueChanged.connect(self.__changed)
+        self.qt.valueChanged.connect(self.__change_handler)
 
     @property
     def value(self):
@@ -171,9 +170,9 @@ class Number(Input):
     def change(self, change):
         self.__change = change
 
-    def __changed(self, text):
-        if callable(self.__change):
-            self.__change(Event(self, text=text))
+    def __change_handler(self, value):
+        if callable(self.change):
+            self.change(Event(self, value=value))
 
 class Select(Input):
 
@@ -184,7 +183,7 @@ class Select(Input):
         self.values = values
         self.default = default
         self.change = change
-        self.qt.currentIndexChanged.connect(self.__changed)
+        self.qt.currentIndexChanged.connect(self.__change_handler)
 
     @property
     def values(self):
@@ -227,10 +226,10 @@ class Select(Input):
     def change(self, change):
         self.__change = change
 
-    def __changed(self, index):
-        if callable(self.__change):
+    def __change_handler(self, index):
+        if callable(self.change):
             value = self.values[index]
-            self.__change(Event(self, value=value, index=index))
+            self.change(Event(self, value=value, index=index))
 
 class List(Input):
 
@@ -241,7 +240,7 @@ class List(Input):
         self.values = values
         self.default = default
         self.change = change
-        self.qt.currentRowChanged[int].connect(self.__changed)
+        self.qt.currentRowChanged[int].connect(self.__change_handler)
 
     @property
     def values(self):
@@ -272,10 +271,10 @@ class List(Input):
     def change(self, change):
         self.__change = change
 
-    def __changed(self, index):
-        if callable(self.__change):
+    def __change_handler(self, index):
+        if callable(self.change):
             value = self.values[index]
-            self.__change(Event(self, value=value, index=index))
+            self.change(Event(self, value=value, index=index))
 
 class CheckBox(Input):
 
@@ -286,7 +285,7 @@ class CheckBox(Input):
         self.text = text
         self.checked = checked
         self.change = change
-        self.qt.stateChanged.connect(self.__changed)
+        self.qt.stateChanged.connect(self.__change_handler)
 
     @property
     def text(self):
@@ -312,9 +311,9 @@ class CheckBox(Input):
     def change(self, change):
         self.__change = change
 
-    def __changed(self, state):
-        if callable(self.__change):
-            self.__change(Event(self, checked=state==QtCore.Qt.Checked))
+    def __change_handler(self, state):
+        if callable(self.change):
+            self.change(Event(self, checked=state==QtCore.Qt.Checked))
 
 class Button(Input):
 
@@ -329,16 +328,15 @@ class Button(Input):
         self.checked = checked
         self.click = click
         self.toggle = toggle
-        self.qt.clicked.connect(self.__clicked)
-        self.qt.toggled.connect(self.__toggled)
+        self.qt.clicked.connect(self.__click_handler)
+        self.qt.toggled.connect(self.__toggle_handler)
 
     @property
     def text(self):
-        return self.__text
+        return self.qt.text()
 
     @text.setter
     def text(self, text):
-        self.__text = text
         self.qt.setText("" if text is None else format(text))
 
     @property
@@ -365,9 +363,9 @@ class Button(Input):
     def click(self, click):
         self.__click = click
 
-    def __clicked(self, checked):
-        if callable(self.__click):
-            self.__click(Event(self, checked=checked))
+    def __click_handler(self, checked):
+        if callable(self.click):
+            self.click(Event(self, checked=checked))
 
     @property
     def toggle(self):
@@ -377,6 +375,6 @@ class Button(Input):
     def toggle(self, toggle):
         self.__toggle = toggle
 
-    def __toggled(self, checked):
-        if callable(self.__toggle):
-            self.__toggle(Event(self, checked=checked))
+    def __toggle_handler(self, checked):
+        if callable(self.toggle):
+            self.toggle(Event(self, checked=checked))

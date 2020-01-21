@@ -141,13 +141,10 @@ class Device(ContextDecorator):
 
 class DeviceManager(Collection):
 
-    def __init__(self):
-        super().__init__(base=Device)
+    ValueType = Device
 
-    @property
     def resources(self):
-        for name, device in self.items():
-            yield name, device.options.get('resource_name')
+        return {name: device.options.get('resource_name') for name, device in self.items()}
 
 class DeviceMixin:
 

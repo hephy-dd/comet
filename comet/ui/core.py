@@ -53,4 +53,3 @@ class Object:
     def id(self, id):
         self.qt.setObjectName(id)
         ElementStore.add(self)
-

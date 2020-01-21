@@ -5,16 +5,17 @@ from PyQt5 import QtCore, uic
 
 __all__ = ['UiLoaderMixin']
 
-class UiLoaderMixin(object):
+class UiLoaderMixin:
 
     def loadUi(self, filename=None):
         """Loads an UI file and calls setupUi(). If filename is omitted a sidefile
         of the current python module is expected (eg. `widget.py` and `widget.ui`).
         """
+        dirname = inspect.getfile(self.__class__)
         if filename is None:
-            filename = '{}.ui'.format(os.path.splitext(inspect.getfile(self.__class__))[0])
+            filename = '{}.ui'.format(os.path.splitext(dirname)[0])
         elif not os.path.isabs(filename):
-            filename = os.path.join(os.path.dirname(inspect.getfile(self.__class__)), filename)
+            filename = os.path.join(os.path.dirname(dirname), filename)
         ui, base = uic.loadUiType(filename)
         self.ui = ui()
         self.ui.setupUi(self)
