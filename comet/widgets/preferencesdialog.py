@@ -1,6 +1,8 @@
 import os
 from PyQt5 import QtCore, QtWidgets, uic
 
+import comet
+
 from ..device import DeviceMixin
 from .uiloader import UiLoaderMixin
 
@@ -15,18 +17,18 @@ class PreferencesDialog(QtWidgets.QDialog, UiLoaderMixin, DeviceMixin):
 
     def loadSettings(self):
         # Load settings
-        settings = QtCore.QSettings()
+        settings = comet.app().settings
 
-        visaLibrary = settings.value('visaLibrary', '@py')
+        visaLibrary = settings.get('visaLibrary', '@py')
         self.ui.visaComboBox.setCurrentText(visaLibrary)
 
-        operators = settings.value('operators', []) or [] # HACK
+        operators = settings.get('operators', []) or [] # HACK
         self.ui.operatorListWidget.clear()
         self.ui.operatorListWidget.addItems(operators)
 
         resources = self.devices.resources()
         # Update default resources with stored settings
-        for key, value in settings.value('resources', {}).items():
+        for key, value in (settings.get('resources', {}) or {}).items():
             if key in resources:
                 resources[key] = value
         self.ui.resourcesTableWidget.clearContents()
@@ -51,10 +53,10 @@ class PreferencesDialog(QtWidgets.QDialog, UiLoaderMixin, DeviceMixin):
         self.ui.editResourcePushButton.setEnabled(select.hasSelection())
 
     def saveSettings(self):
-        settings = QtCore.QSettings()
-        settings.setValue('visaLibrary', self.visaLibrary())
-        settings.setValue('operators', self.operators())
-        settings.setValue('resources', self.resources())
+        settings = comet.app().settings
+        settings['visaLibrary'] = self.visaLibrary()
+        settings['operators'] = self.operators()
+        settings['resources'] = self.resources()
 
     def accept(self):
         self.saveSettings()

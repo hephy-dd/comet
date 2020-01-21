@@ -14,3 +14,9 @@ class AboutDialog(QtWidgets.QDialog, UiLoaderMixin):
         icon = QtGui.QPixmap(make_path('assets', 'icons', 'comet.svg'))
         self.ui.iconLabel.setPixmap(icon)
         self.ui.titleLabel.setText(f"COMET {__version__}")
+
+    def aboutText(self):
+        return self.ui.aboutTextEdit.plainText()
+
+    def setAboutText(self, text):
+          self.ui.aboutTextEdit.setPlainText(text)

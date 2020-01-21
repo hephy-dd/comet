@@ -6,6 +6,7 @@ from contextlib import ContextDecorator
 from PyQt5 import QtCore
 import visa
 
+import comet
 from .collection import Collection
 
 __all__ = ['Device', 'DeviceManager', 'DeviceMixin']
@@ -128,7 +129,7 @@ class Device(ContextDecorator):
 
     def __enter__(self):
         resource_name = self.options.get('resource_name')
-        visa_library = QtCore.QSettings().value('visaLibrary', '@py')
+        visa_library = comet.app().settings.get('visaLibrary', '@py') if comet.app() else '@py' # TODO!
         logging.info("opening resource: '%s' with options %s", resource_name, self.options)
         self.__resource = visa.ResourceManager(visa_library).open_resource(**self.options)
         return self

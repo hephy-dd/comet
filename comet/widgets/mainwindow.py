@@ -28,7 +28,7 @@ class MainWindow(QtWidgets.QMainWindow, UiLoaderMixin, ProcessMixin):
         self.__progressBar = QtWidgets.QProgressBar(self)
         self.__progressBar.hide()
         self.statusBar().addPermanentWidget(self.__progressBar)
-        self.about = None
+        self.__aboutText = ""
 
     @QtCore.pyqtSlot()
     def showPreferences(self):
@@ -45,9 +45,15 @@ class MainWindow(QtWidgets.QMainWindow, UiLoaderMixin, ProcessMixin):
     def showAbout(self):
         """Show modal about dialog."""
         dialog = AboutDialog(self)
-        if self.about:
-            dialog.ui.aboutTextEdit.setHtml(self.about)
+        if self.aboutText():
+            dialog.setAboutText(self.aboutText())
         dialog.exec_()
+
+    def aboutText(self):
+        return self.__aboutText
+
+    def setAboutText(self, text):
+        self.__aboutText = text
 
     @QtCore.pyqtSlot()
     def showAboutQt(self):
