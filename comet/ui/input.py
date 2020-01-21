@@ -235,7 +235,7 @@ class List(Input):
 
     QtBaseClass = QtWidgets.QListWidget
 
-    def __init__(self, values=None, default=None, change=None, **kwargs):
+    def __init__(self, values=[], default=None, change=None, **kwargs):
         super().__init__(**kwargs)
         self.values = values
         self.default = default
