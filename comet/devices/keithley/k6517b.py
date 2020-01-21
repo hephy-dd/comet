@@ -6,5 +6,5 @@ class K6517B(IEC60488):
     """Keithley Model 6517B Electrometer."""
 
     options = {
-        "read_termination": "\r"
+        "read_termination": "\r\n"
     }

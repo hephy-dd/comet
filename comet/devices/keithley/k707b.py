@@ -7,5 +7,5 @@ class K707B(IEC60488):
 
     options = {
         'encoding': 'latin1',
-        'read_termination': '\r',
+        'read_termination': '\r\n',
     }

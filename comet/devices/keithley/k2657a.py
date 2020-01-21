@@ -77,7 +77,7 @@ class K2657A(IEC60488):
 
     options = {
         'encoding': 'latin1',
-        'read_termination': '\r',
+        'read_termination': '\r\n',
     }
 
     def __init__(self, *args, **kwargs):

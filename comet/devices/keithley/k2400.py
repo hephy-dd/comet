@@ -68,7 +68,7 @@ class K2400(IEC60488):
     """Keithley Series 2400 SourceMeter."""
 
     options = {
-        'read_termination': '\r',
+        'read_termination': '\r\n',
     }
 
     poll_count = 40

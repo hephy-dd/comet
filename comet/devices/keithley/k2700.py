@@ -33,7 +33,7 @@ class K2700(IEC60488):
     """Keithley Model 2700 Multimeter/Switch."""
 
     options = {
-        'read_termination': '\r',
+        'read_termination': '\r\n',
     }
 
     poll_count = 40
