@@ -1,6 +1,7 @@
 """Utility functions and paths."""
 
 import contextlib
+import datetime
 import os
 import re
 import sys
@@ -10,6 +11,7 @@ __all__ = [
     'make_path',
     'make_label',
     'make_id',
+    'make_iso',
     'replace_ext',
     'switch_dir',
 ]
@@ -37,6 +39,20 @@ def make_id(name):
     'nobody_expects_the_spanish_inquisition'
     """
     return re.sub(r'[^a-z0-9]+', '_', name.lower()).rstrip('_')
+
+def make_iso(dt=None):
+    """Returns filesystem safe ISO date time.
+
+    >>> make_iso()
+    '2019-12-24T12-21-42'
+    >>> make_iso(1423456789.8)
+    '2015-02-09T05-39-49'
+    """
+    if dt is None:
+        dt = datetime.datetime.now()
+    if not isinstance(dt, datetime.datetime):
+        dt = datetime.datetime.fromtimestamp(dt)
+    return dt.replace(microsecond=0).isoformat().replace(':', '-')
 
 def replace_ext(filename, ext):
     """Replaces a filename extension.
