@@ -23,6 +23,8 @@ class Node:
 
     def __init__(self, parent, prefix=''):
         self.__parent = parent
+        if isinstance(parent, Node):
+            prefix = f'{parent.prefix}{prefix}'
         self.__prefix = prefix
 
     @property

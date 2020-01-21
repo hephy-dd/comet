@@ -4,6 +4,8 @@ import time
 from comet.devices import IEC60488
 from comet.device import Node
 
+from .k2400 import Beeper
+
 __all__ = ['K2700']
 
 class System(Node):
@@ -27,21 +29,8 @@ class System(Node):
             result = self.resource.query(':SYST:ERR?').split(',')
             return int(result[0]), result[1].strip('"')
 
-class Beeper(Node):
-
-    @property
-    def status(self) -> bool:
-        with self.lock:
-            result = self.resource.query(':SYST:BEEP:STAT?')
-            return bool(int(result))
-
-    @status.setter
-    def status(self, value: bool):
-        with self.lock:
-            self.resource.write(f':SYST:BEEP:STAT {value:d}')
-            self.resource.query('*OPC?')
-
 class K2700(IEC60488):
+    """Keithley Model 2700 Multimeter/Switch."""
 
     options = {
         'read_termination': '\r',
