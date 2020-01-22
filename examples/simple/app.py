@@ -20,22 +20,22 @@ def main():
     app.title = "Measurement"
 
     def on_finish():
-        app.get('start').enabled = True
-        app.get('stop').enabled = False
-        app.get("current").value = 0
+        app.layout.get("start").enabled = True
+        app.layout.get("stop").enabled = False
+        app.layout.get("current").value = 0
 
     def on_reading(value):
-        app.get("current").value = value
+        app.layout.get("current").value = value
 
     def on_start(event):
-        app.get('start').enabled = False
-        app.get('stop').enabled = True
+        app.layout.get("start").enabled = False
+        app.layout.get("stop").enabled = True
         measure = app.processes.get("measure")
         measure.start()
 
     def on_stop(event):
-        app.get('start').enabled = False
-        app.get('stop').enabled = False
+        app.layout.get("start").enabled = False
+        app.layout.get("stop").enabled = False
         measure = app.processes.get("measure")
         measure.stop()
 
@@ -62,5 +62,5 @@ def main():
 
     return app.run()
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())
