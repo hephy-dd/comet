@@ -178,9 +178,11 @@ class Select(Input):
 
     QtBaseClass = QtWidgets.QComboBox
 
-    def __init__(self, values=None, default=None, change=None, **kwargs):
+    def __init__(self, values=[], default=None, change=None, **kwargs):
         super().__init__(**kwargs)
         self.values = values
+        if values and default is None:
+            default = values[0]
         self.default = default
         self.change = change
         self.qt.currentIndexChanged.connect(self.__change_handler)
