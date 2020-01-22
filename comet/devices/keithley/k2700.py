@@ -2,7 +2,7 @@ import re
 import time
 
 from comet.devices import IEC60488
-from comet.device import Node
+from comet.device import lock_resource, Node
 
 from .k2400 import Beeper
 
@@ -19,15 +19,15 @@ class System(Node):
         return self.__beeper
 
     @property
+    @lock_resource
     def error(self) -> tuple:
         """Returns current instrument error.
 
         >>> system.error
         (0, "No error")
         """
-        with self.lock:
-            result = self.resource.query(':SYST:ERR?').split(',')
-            return int(result[0]), result[1].strip('"')
+        result = self.resource.query(':SYST:ERR?').split(',')
+        return int(result[0]), result[1].strip('"')
 
 class K2700(IEC60488):
     """Keithley Model 2700 Multimeter/Switch."""
@@ -50,18 +50,19 @@ class K2700(IEC60488):
     def system(self):
         return self.__system
 
+    @lock_resource
     def init(self):
-        with self.lock:
-            self.resource.write('*CLS')
-            self.resource.write(':INIT')
-            self.resource.write('*OPC')
-            # Poll for OPC flag (bit 0)
-            for i in range(self.poll_count):
-                if int(self.resource.query('*ESR?')) & 0x1:
-                    return
-                time.sleep(self.poll_interval)
-            raise RuntimeError("Failed to poll for OPC flag in ESR.")
+        self.resource.write('*CLS')
+        self.resource.write(':INIT')
+        self.resource.write('*OPC')
+        # Poll for OPC flag (bit 0)
+        for i in range(self.poll_count):
+            if int(self.resource.query('*ESR?')) & 0x1:
+                return
+            time.sleep(self.poll_interval)
+        raise RuntimeError("Failed to poll for OPC flag in ESR.")
 
+    @lock_resource
     def fetch(self):
         """Returns the latest available readings as list of dictionaries.
         .. note:: It does not perform a measurement.
@@ -70,18 +71,17 @@ class K2700(IEC60488):
         """
         readings = []
         # split '-4.32962079e-05VDC,+0.000SECS,+0.0000RDNG#,...'
-        with self.lock:
-            result = self.resource.query(':FETC?')
+        result = self.resource.query(':FETC?')
         for values in re.findall(r'([^#]+)#\,?', result):
             values = re.findall(r'([+-]?\d+(?:\.\d+)?(?:E[+-]\d+)?)([A-Z]+)\,?', values)
             readings.append({suffix: float(value) for value, suffix in values})
         return readings
 
+    @lock_resource
     def read(self):
         """A high level command to perform a singleshot measurement.
         It resets the trigger model(idle), initiates it, and fetches a new
         value.
         """
-        with self.lock:
-            result = self.resource.query(':READ?')
+        result = self.resource.query(':READ?')
         return [float(value) for value in result.split(',')]

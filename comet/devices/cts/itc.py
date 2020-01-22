@@ -2,6 +2,7 @@ import datetime
 from collections import namedtuple
 
 from comet import Device
+from comet.device import lock_resource
 
 __all__ = ['ITC']
 
@@ -69,17 +70,17 @@ class ITC(Device):
 
     Status = namedtuple('Status', ('running', 'warning', 'error', 'channels'))
 
+    @lock_resource
     def query_bytes(self, message, count):
         """Raw query for bytes.
 
         >>> device.query_bytes('P', 4)
         'P001'
         """
-        with self.lock:
-            if not isinstance(message, bytes):
-                message = message.encode()
-            self.resource.write_raw(message)
-            return self.resource.read_bytes(count).decode()
+        if not isinstance(message, bytes):
+            message = message.encode()
+        self.resource.write_raw(message)
+        return self.resource.read_bytes(count).decode()
 
     @property
     def time(self) -> object:

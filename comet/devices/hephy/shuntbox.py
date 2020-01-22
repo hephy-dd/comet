@@ -1,5 +1,7 @@
 from typing import List
+
 from comet import Device
+from comet.device import lock_resource
 
 __all__ = ['ShuntBox']
 
@@ -16,6 +18,7 @@ class ShuntBox(Device):
     """Number of device channels."""
 
     @property
+    @lock_resource
     def identification(self) -> str:
         """Returns device identification.
 
@@ -25,6 +28,7 @@ class ShuntBox(Device):
         return self.resource.query('*IDN?')
 
     @property
+    @lock_resource
     def uptime(self) -> int:
         """Returns up time in seconds.
 
@@ -34,6 +38,7 @@ class ShuntBox(Device):
         return int(self.resource.query('GET:UP ?'))
 
     @property
+    @lock_resource
     def memory(self) -> int:
         """Returns current memory consumption in bytes.
 
@@ -43,6 +48,7 @@ class ShuntBox(Device):
         return int(self.resource.query('GET:RAM ?'))
 
     @property
+    @lock_resource
     def temperature(self) -> List[float]:
         """Returns list of temperature readings from all channels. Unconnected
         channels return a float of special value NAN.
@@ -53,6 +59,7 @@ class ShuntBox(Device):
         result = self.resource.query('GET:TEMP ALL').strip()
         return [float(value) for value in result.split(',') if value.strip()][:self.channels] # avoid trailing commas
 
+    @lock_resource
     def isEnabled(self, index: int) -> bool:
         """Returns single channel relais enabled state.
 
@@ -64,6 +71,7 @@ class ShuntBox(Device):
         result = self.resource.query('GET:REL {}'.format(index)).strip()
         return bool(int(result))
 
+    @lock_resource
     def enable(self, index: int, enabled: bool):
         """Enable or disable a single channel relais.
 
@@ -75,6 +83,7 @@ class ShuntBox(Device):
         if result != 'OK':
             raise RuntimeError(result)
 
+    @lock_resource
     def isEnabledAll(self) -> List[bool]:
         """Returns all channel relais enabled states.
 
@@ -84,6 +93,7 @@ class ShuntBox(Device):
         result = self.resource.query('GET:REL ALL').strip()
         return [bool(int(value)) for value in result.split(',') if value.strip()][:self.channels]
 
+    @lock_resource
     def enableAll(self, enabled: bool):
         """Enable or disable all channel relais.
 

@@ -1,4 +1,5 @@
 from comet.devices import IEC60488
+from comet.device import lock_resource
 from comet.device import Node, Mapping
 
 __all__ = ['K2657A']
@@ -22,55 +23,55 @@ class Source(Node):
         return self.OutputMapping.get_key(self.resource.query(f'print({self.prefix}.output)'))
 
     @output.setter
+    @lock_resource
     def output(self, value):
         value = self.OutputMapping.get_value(value)
-        with self.lock:
-            self.resource.write(f'{self.prefix}.output = {value}')
-            self.resource.query('*OPC?')
+        self.resource.write(f'{self.prefix}.output = {value}')
+        self.resource.query('*OPC?')
 
     @property
+    @lock_resource
     def levelv(self):
-        with self.lock:
-            return float(self.resource.query(f'print({self.prefix}.levelv)'))
+        return float(self.resource.query(f'print({self.prefix}.levelv)'))
 
     @levelv.setter
+    @lock_resource
     def levelv(self, value):
-        with self.lock:
-            self.resource.write(f'{self.prefix}.levelv = {value:E}')
-            self.resource.query('*OPC?')
+        self.resource.write(f'{self.prefix}.levelv = {value:E}')
+        self.resource.query('*OPC?')
 
     @property
+    @lock_resource
     def leveli(self):
-        with self.lock:
-            return float(self.resource.query(f'print({self.prefix}.leveli)'))
+        return float(self.resource.query(f'print({self.prefix}.leveli)'))
 
     @leveli.setter
+    @lock_resource
     def leveli(self, value):
-        with self.lock:
-            self.resource.write(f'{self.prefix}.leveli = {value:E}')
-            self.resource.query('*OPC?')
+        self.resource.write(f'{self.prefix}.leveli = {value:E}')
+        self.resource.query('*OPC?')
 
     @property
+    @lock_resource
     def limitv(self):
-        with self.lock:
-            return float(self.resource.query(f'print({self.prefix}.limitv)'))
+        return float(self.resource.query(f'print({self.prefix}.limitv)'))
 
     @limitv.setter
+    @lock_resource
     def limitv(self, value):
-        with self.lock:
-            self.resource.write(f'{self.prefix}.limitv = {value:E}')
-            self.resource.query('*OPC?')
+        self.resource.write(f'{self.prefix}.limitv = {value:E}')
+        self.resource.query('*OPC?')
 
     @property
+    @lock_resource
     def limiti(self):
-        with self.lock:
-            return float(self.resource.query(f'print({self.prefix}.limiti)'))
+        return float(self.resource.query(f'print({self.prefix}.limiti)'))
 
     @limiti.setter
+    @lock_resource
     def limiti(self, value):
-        with self.lock:
-            self.resource.write(f'{self.prefix}.limiti = {value:E}')
-            self.resource.query('*OPC?')
+        self.resource.write(f'{self.prefix}.limiti = {value:E}')
+        self.resource.query('*OPC?')
 
 class K2657A(IEC60488):
     """Keihtley Model 2657A High Power System SourceMeter."""

@@ -9,7 +9,18 @@ import visa
 import comet
 from .collection import Collection
 
-__all__ = ['Device', 'DeviceManager', 'DeviceMixin']
+__all__ = ['lock_resource', 'Device', 'DeviceManager', 'DeviceMixin']
+
+def lock_resource(method):
+    """Resource lock decorator."""
+    def f(self, *args, **kwargs):
+        with self.lock:
+            print(">>>>> ON")
+            r = method(self, *args, **kwargs)
+            print(r)
+            print("<<<<< OFF")
+            return r
+    return f
 
 class Mapping:
     def __init__(self, d):
@@ -35,10 +46,6 @@ class Node:
     @property
     def options(self):
         return self.__parent.options
-
-    @property
-    def lock(self):
-        return self.__parent.lock
 
     @property
     def resource(self):
@@ -95,13 +102,11 @@ class Device(ContextDecorator):
     >>> class MyDevice(comet.Device):
     ...     @property
     ...     def voltage(self):
-    ...         with self.lock:
-    ...             return float(self.resource.query(':VOLT?'))
+    ...         return float(self.resource.query(':VOLT?'))
     ...     @voltage.setter
     ...     def voltage(self, value):
-    ...         with self.lock:
-    ...             self.resource.write(f':VOLT {value:.3f}; *OPC?')
-    ...             self.resource.read()
+    ...         self.resource.write(f':VOLT {value:.3f}; *OPC?')
+    ...         self.resource.read()
     ...
     >>> with MyDevice('GPIB::15') as device:
     ...     device.voltage = 42
@@ -113,11 +118,13 @@ class Device(ContextDecorator):
     options = {}
     """Default options passed on to VISA resource."""
 
+    __resource_locks = {}
+
     def __init__(self, resource_name, **options):
         options.update(dict(resource_name=resource_name))
         self.options.update(options)
         self.__resource = None
-        self.__lock = threading.RLock()
+        self.__context_lock = threading.Lock()
 
     @property
     def resource(self):
@@ -125,9 +132,11 @@ class Device(ContextDecorator):
 
     @property
     def lock(self):
-        return self.__lock
+        resource_name = self.options.get('resource_name')
+        return self.__class__.__resource_locks.setdefault(resource_name, threading.RLock())
 
     def __enter__(self):
+        self.__context_lock.acquire()
         resource_name = self.options.get('resource_name')
         visa_library = comet.app().settings.get('visaLibrary', '@py') if comet.app() else '@py' # TODO!
         logging.info("opening resource: '%s' with options %s", resource_name, self.options)
@@ -138,6 +147,7 @@ class Device(ContextDecorator):
         logging.info("closing resource: '%s'", self.__resource.resource_name)
         self.__resource.close()
         self.__resource = None
+        self.__context_lock.release()
         return False
 
 class DeviceManager(Collection):

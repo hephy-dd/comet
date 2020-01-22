@@ -2,6 +2,7 @@ import re
 import time
 
 from comet.devices import IEC60488
+from comet.device import lock_resource
 from comet.device import Node, Mapping
 
 __all__ = ['K2400']
@@ -17,29 +18,29 @@ class System(Node):
         return self.__beeper
 
     @property
+    @lock_resource
     def error(self):
         """Returns current instrument error.
 
         >>> system.error
         (0, "No error")
         """
-        with self.lock:
-            result = self.resource.query(':SYST:ERR?').split(',')
-            return int(result[0]), result[1].strip('"')
+        result = self.resource.query(':SYST:ERR?').split(',')
+        return int(result[0]), result[1].strip('"')
 
 class Beeper(Node):
 
     @property
+    @lock_resource
     def status(self) -> bool:
-        with self.lock:
-            result = self.resource.query(':SYST:BEEP:STAT?')
-            return bool(int(result))
+        result = self.resource.query(':SYST:BEEP:STAT?')
+        return bool(int(result))
 
     @status.setter
+    @lock_resource
     def status(self, value: bool):
-        with self.lock:
-            self.resource.write(f':SYST:BEEP:STAT {value:d}')
-            self.resource.query('*OPC?')
+        self.resource.write(f':SYST:BEEP:STAT {value:d}')
+        self.resource.query('*OPC?')
 
 class Source(Node):
 
@@ -54,15 +55,15 @@ class Source(Node):
 class Voltage(Node):
 
     @property
+    @lock_resource
     def level(self) -> float:
-        with self.lock:
-            return float(self.resource.query('SOUR:VOLT:LEV?'))
+        return float(self.resource.query('SOUR:VOLT:LEV?'))
 
     @level.setter
+    @lock_resource
     def level(self, value: float):
-        with self.lock:
-            self.resource.write(f'SOUR:VOLT:LEV {value:E}')
-            self.resource.query('*OPC?')
+        self.resource.write(f'SOUR:VOLT:LEV {value:E}')
+        self.resource.query('*OPC?')
 
 class K2400(IEC60488):
     """Keithley Series 2400 SourceMeter."""
@@ -93,30 +94,32 @@ class K2400(IEC60488):
         return self.__source
 
     @property
+    @lock_resource
     def output(self):
         """Returns True if output enabled, else retruns False."""
         value = self.resource.query('OUTP?').strip()
         return self.Output.get_key(value)
 
     @output.setter
+    @lock_resource
     def output(self, value):
         value = self.Output.get_value(value)
-        with self.lock:
-            self.resource.write(f'OUTP {value}')
-            self.resource.query('*OPC?')
+        self.resource.write(f'OUTP {value}')
+        self.resource.query('*OPC?')
 
+    @lock_resource
     def init(self):
-        with self.lock:
-            self.resource.write('*CLS')
-            self.resource.write(':INIT')
-            self.resource.write('*OPC')
-            # Poll for OPC flag (bit 0)
-            for i in range(self.poll_count):
-                if int(self.resource.query('*ESR?')) & 0x1:
-                    return
-                time.sleep(self.poll_interval)
-            raise RuntimeError("Failed to poll for OPC flag in ESR.")
+        self.resource.write('*CLS')
+        self.resource.write(':INIT')
+        self.resource.write('*OPC')
+        # Poll for OPC flag (bit 0)
+        for i in range(self.poll_count):
+            if int(self.resource.query('*ESR?')) & 0x1:
+                return
+            time.sleep(self.poll_interval)
+        raise RuntimeError("Failed to poll for OPC flag in ESR.")
 
+    @lock_resource
     def read(self):
         """A high level command to perform a singleshot measurement.
         It resets the trigger model(idle), initiates it, and fetches a new
