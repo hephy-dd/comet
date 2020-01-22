@@ -24,6 +24,9 @@ class CoreApplication(ProcessMixin, DeviceMixin):
     def __init__(self, name=None, version=None):
         self.__qt = self.QtBaseClass(sys.argv)
 
+        # Setup logger
+        logging.getLogger().setLevel(logging.INFO)
+
         # Store reference to application
         CoreApplication.__app = self
 
@@ -119,9 +122,6 @@ class Application(CoreApplication):
         # Application properties
         self.title = title
         self.about = about
-
-        # Setup logger
-        logging.getLogger().setLevel(logging.INFO)
 
     @property
     def title(self):
