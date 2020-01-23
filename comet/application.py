@@ -5,7 +5,7 @@ import sys
 from PyQt5 import QtCore, QtWidgets
 
 from .version import __version__
-from .settings import SettingsMixin
+from .settings import Settings
 from .widgets import MainWindow
 from .device import DeviceMixin
 from .process import ProcessMixin
@@ -14,7 +14,7 @@ from .ui.layout import Layout
 
 __all__ = ['CoreApplication', 'Application']
 
-class CoreApplication(SettingsMixin, ProcessMixin, DeviceMixin):
+class CoreApplication(ProcessMixin, DeviceMixin):
     """Base class for COMET application classes."""
 
     QtBaseClass = QtCore.QCoreApplication
