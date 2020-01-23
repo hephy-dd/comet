@@ -4,7 +4,7 @@ import random
 from .application import *
 from .ui import *
 from .process import *
-from .device import *
+from .driver import *
 from .functions import Range
 from .version import __version__
 
