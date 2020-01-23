@@ -5,7 +5,7 @@ import sys
 from PyQt5 import QtCore, QtWidgets
 
 from .version import __version__
-from .settings import Settings
+from .settings import SettingsMixin
 from .widgets import MainWindow
 from .device import DeviceMixin
 from .process import ProcessMixin
@@ -14,12 +14,12 @@ from .ui.layout import Layout
 
 __all__ = ['CoreApplication', 'Application']
 
-class CoreApplication(ProcessMixin, DeviceMixin):
+class CoreApplication(SettingsMixin, ProcessMixin, DeviceMixin):
     """Base class for COMET application classes."""
 
     QtBaseClass = QtCore.QCoreApplication
 
-    __app = None
+    __instance = None
 
     def __init__(self, name=None, version=None):
         self.__qt = self.QtBaseClass(sys.argv)
@@ -28,21 +28,17 @@ class CoreApplication(ProcessMixin, DeviceMixin):
         logging.getLogger().setLevel(logging.INFO)
 
         # Store reference to application
-        CoreApplication.__app = self
+        CoreApplication.__instance = self
 
         # Application settings
         self.name = name
         self.version = version
-        self.display_name = "COMET"
         self.organization_name = "HEPHY"
         self.organization_domain = "hephy.at"
 
-        # Initialize global settings
-        self.__settings = Settings(self)
-
     @classmethod
     def app(cls):
-        return cls.__app
+        return cls.__instance
 
     @property
     def qt(self):
@@ -65,14 +61,6 @@ class CoreApplication(ProcessMixin, DeviceMixin):
         self.qt.setApplicationVersion("" if version is None else format(version))
 
     @property
-    def display_name(self):
-        return self.qt.applicationDisplayName()
-
-    @display_name.setter
-    def display_name(self, name):
-        self.qt.setApplicationDisplayName("" if name is None else format(name))
-
-    @property
     def organization_name(self):
         return self.qt.organizationName()
 
@@ -90,10 +78,30 @@ class CoreApplication(ProcessMixin, DeviceMixin):
 
     @property
     def settings(self):
-        return self.__settings
+        """Return settings instance."""
+        return Settings(self)
+
+    def __signal_handler(self, signum, frame):
+        """Interupt signal handler, trying to close application windows."""
+        if signum == signal.SIGINT:
+            self.quit()
+
+    def quit(self):
+        """Request quit application."""
+        self.qt.quit()
 
     def run(self):
         """Run application event loop."""
+
+        # Register interupt signal handler
+        signal.signal(signal.SIGINT, self.__signal_handler)
+
+        # Run timer to process interrupt signals
+        timer = QtCore.QTimer()
+        timer.timeout.connect(lambda: None)
+        timer.start(250)
+
+        # Run event loop
         result = self.qt.exec_()
 
         # Stop processes
@@ -120,8 +128,17 @@ class Application(CoreApplication):
         self.qt.window.setCentralWidget(self.__widget.qt)
 
         # Application properties
+        self.display_name = "COMET"
         self.title = title
         self.about = about
+
+    @property
+    def display_name(self):
+        return self.qt.applicationDisplayName()
+
+    @display_name.setter
+    def display_name(self, name):
+        self.qt.setApplicationDisplayName("" if name is None else format(name))
 
     @property
     def title(self):
@@ -176,30 +193,12 @@ class Application(CoreApplication):
     def show_exception(self, e):
         self.qt.window.showException(e)
 
-    def __update_window_title(self):
-        if self.qt.window:
-            tokens = []
-            if self.title is not None:
-                tokens.append(format(self.title))
-            if self.version is not None:
-                tokens.append(format(self.version))
-            self.qt.window.setWindowTitle(" ".join(tokens))
-
-    def __handler(self, signum, frame):
-        """Interupt signal handler, trying to close application windows."""
-        if signum == signal.SIGINT:
-            self.qt.closeAllWindows()
+    def quit(self):
+        """Request quit application."""
+        self.qt.closeAllWindows()
 
     def run(self):
         """Run application event loop."""
-
-        # Register interupt signal handler
-        signal.signal(signal.SIGINT, self.__handler)
-
-        # Run timer to process interrupt signals
-        timer = QtCore.QTimer()
-        timer.timeout.connect(lambda: None)
-        timer.start(250)
 
         # Show main window
         self.qt.window.show()
