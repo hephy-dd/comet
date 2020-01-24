@@ -6,6 +6,7 @@ from .ui import *
 from .process import *
 from .device import *
 from .functions import Range
+from .ureg import *
 from .version import __version__
 
 def app():
