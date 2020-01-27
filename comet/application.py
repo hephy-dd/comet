@@ -7,14 +7,14 @@ from PyQt5 import QtCore, QtWidgets
 from .version import __version__
 from .settings import Settings
 from .widgets import MainWindow
-from .device import DeviceMixin
+from .driver import InstrumentMixin
 from .process import ProcessMixin
 from .ui.widget import Widget
 from .ui.layout import Layout
 
 __all__ = ['CoreApplication', 'Application']
 
-class CoreApplication(ProcessMixin, DeviceMixin):
+class CoreApplication(ProcessMixin, InstrumentMixin):
     """Base class for COMET application classes."""
 
     QtBaseClass = QtCore.QCoreApplication

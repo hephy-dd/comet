@@ -5,41 +5,17 @@ from contextlib import ContextDecorator
 
 import visa
 
-__all__ = ['lock', 'opc_wait', 'opc_poll', 'Resource', 'Driver']
+from .collection import Collection
+
+
+__all__ = ['lock', 'Resource', 'Driver']
 
 def lock(function):
-    """Decorator function, locks decorated functions to a resource specific
-    RLock."""
+    """Decorator function, locks decorated functions to a resource specific RLock."""
     def lock(obj, *args, **kwargs):
         with obj.resource.lock:
             return function(obj, *args, **kwargs)
     return lock
-
-def opc_wait(function):
-    """Decorator function, locks the resource and waits for `*OPC?` after
-    function execution."""
-    @lock
-    def opc_wait(obj, *args, **kwargs):
-        result = function(obj, *args, **kwargs)
-        obj.resource.query("*OPC?")
-        return result
-    return opc_wait
-
-def opc_poll(function, interval=.250, retries=40):
-    """Decorator function, locks the resource, writes `*CLS` and `*OPC` before
-    the function call and polls after function execution for `*ESR?` bit 0 to be
-    set."""
-    @lock
-    def opc_poll(obj, *args, **kwargs):
-        obj.resource.write("*CLS")
-        obj.resource.write("*OPC")
-        result = function(obj, *args, **kwargs)
-        for i in range(retries):
-            if 1 == int(obj.resource.query("*ESR?")) & 0x1:
-                return result
-            time.sleep(interval)
-        raise RuntimeError("failed to poll for ESR")
-    return opc_poll
 
 class Resource:
 
@@ -87,7 +63,7 @@ class Resource:
 
 class Driver:
     """Base class for custom VISA instrument drivers.
-    >>> class MyDevice(comet.Driver):
+    >>> class MyInstrument(comet.Driver):
     ...     @property
     ...     def voltage(self):
     ...         return float(self.resource.query(":VOLT?"))
@@ -96,9 +72,9 @@ class Driver:
     ...         self.resource.write(f":VOLT {value:.3f}; *OPC?")
     ...         self.resource.read()
     ...
-    >>> with MyDevice(Resource("GPIB0::15")) as device:
-    ...     device.voltage = 42
-    ...     print(device.voltage)
+    >>> with MyInstrument(Resource("GPIB0::15")) as instr:
+    ...     instr.voltage = 42
+    ...     print(instr.voltage)
     ...
     42.0
     """
@@ -124,3 +100,18 @@ class Driver:
     def __exit__(self, *exc):
         self.resource.__exit__(*exc)
         return False
+
+class InstrumentManager(Collection):
+
+    ValueType = Driver
+
+    def resources(self):
+        return {name: instrument.resource.resource_name for name, instrument in self.items()}
+
+class InstrumentMixin:
+
+    __instruments = InstrumentManager()
+
+    @property
+    def instruments(self):
+        return self.__class__.__instruments

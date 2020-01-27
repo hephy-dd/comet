@@ -7,7 +7,7 @@ import logging
 
 from PyQt5 import QtCore, QtWidgets
 
-from .device import DeviceMixin
+from .driver import InstrumentMixin
 from .collection import Collection
 
 __all__ = ['Process', 'StopRequest', 'ProcessManager', 'ProcessMixin']
@@ -28,7 +28,7 @@ class StopRequest(Exception):
     """Step process exception."""
     pass
 
-class Process(QtCore.QObject, DeviceMixin):
+class Process(QtCore.QObject, InstrumentMixin):
 
     __begin_signal = QtCore.pyqtSignal()
     """Emitted if process execution started."""

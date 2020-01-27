@@ -3,12 +3,12 @@ from PyQt5 import QtCore, QtWidgets, uic
 
 import comet
 
-from ..device import DeviceMixin
+from ..driver import InstrumentMixin
 from .uiloader import UiLoaderMixin
 
 __all__ = ['PreferencesDialog']
 
-class PreferencesDialog(QtWidgets.QDialog, UiLoaderMixin, DeviceMixin):
+class PreferencesDialog(QtWidgets.QDialog, UiLoaderMixin, InstrumentMixin):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -26,7 +26,7 @@ class PreferencesDialog(QtWidgets.QDialog, UiLoaderMixin, DeviceMixin):
         self.ui.operatorListWidget.clear()
         self.ui.operatorListWidget.addItems(operators)
 
-        resources = self.devices.resources()
+        resources = self.instruments.resources()
         # Update default resources with stored settings
         for key, value in (settings.get('resources', {}) or {}).items():
             if key in resources:
