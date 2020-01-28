@@ -83,7 +83,7 @@ class MeasureMixin:
         >>> instr.fetch()
         [{'VDC': -4.32962079e-05, 'SECS': 0.0, 'RDNG': 0.0}, ...]
         """
-        result = self.resource.query(':READ?')
+        result = self.resource.query(':FETC?')
         return parse_reading(result)
 
     def read(self) -> List[Dict[str, float]]:

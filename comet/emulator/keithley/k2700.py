@@ -4,21 +4,13 @@ import time
 from comet.emulator.emulator import message, run
 from comet.emulator.iec60488 import IEC60488Handler
 
-__all__ = ['K2400Handler']
+__all__ = ['K2700Handler']
 
-class K2400Handler(IEC60488Handler):
-    """Generic Keithley 2400 series compliant request handler."""
+class K2700Handler(IEC60488Handler):
+    """Generic Keithley 2700 series compliant request handler."""
 
-    identification = "Spanish Inquisition Inc., Model 2400, 12345678, v1.0"
+    identification = "Spanish Inquisition Inc., Model 2700, 12345678, v1.0"
     readings = 10
-
-    @message(r':?(SYST):(ERR)\?')
-    def query_syst_err(self, message):
-        return '0,"no error"'
-
-    @message(r':?(OUTP)\?')
-    def query_outp(self, message):
-        return "1"
 
     @message(r':?(INIT)')
     def write_init(self, message):
@@ -35,4 +27,4 @@ class K2400Handler(IEC60488Handler):
         return ",".join(values)
 
 if __name__ == "__main__":
-    run(K2400Handler)
+    run(K2700Handler)
