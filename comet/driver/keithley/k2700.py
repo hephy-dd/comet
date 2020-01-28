@@ -1,8 +1,8 @@
 import re
 import time
 
-from comet.instruments import IEC60488
-from comet.instruments.iec60488 import opc_wait, opc_poll
+from comet.driver import IEC60488
+from comet.driver.iec60488 import opc_wait, opc_poll
 
 from .k2400 import System
 from .k2400 import MeasureMixin

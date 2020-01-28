@@ -7,12 +7,13 @@ import logging
 
 from PyQt5 import QtCore, QtWidgets
 
-from .driver import InstrumentMixin
+from .device import DeviceMixin
 from .collection import Collection
 
 __all__ = ['Process', 'StopRequest', 'ProcessManager', 'ProcessMixin']
 
 class Thread(threading.Thread):
+    """Thread class with extended stop property."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -28,7 +29,7 @@ class StopRequest(Exception):
     """Step process exception."""
     pass
 
-class Process(QtCore.QObject, InstrumentMixin):
+class Process(QtCore.QObject, DeviceMixin):
 
     __begin_signal = QtCore.pyqtSignal()
     """Emitted if process execution started."""
@@ -169,18 +170,22 @@ class Process(QtCore.QObject, InstrumentMixin):
         raise NotImplemented()
 
 class ProcessManager(Collection):
+    """Process manager."""
 
     ValueType = Process
 
     def stop(self):
+        """Stop all registered processes."""
         for process in self.values():
             process.stop()
 
     def join(self):
+        """Join all registered processes."""
         for process in self.values():
             process.join()
 
 class ProcessMixin:
+    """Mixin class to access global process manager."""
 
     __processes = ProcessManager()
 

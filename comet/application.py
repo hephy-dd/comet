@@ -5,16 +5,16 @@ import sys
 from PyQt5 import QtCore, QtWidgets
 
 from .version import __version__
-from .settings import Settings
 from .widgets import MainWindow
-from .driver import InstrumentMixin
+from .settings import SettingsMixin
+from .device import DeviceMixin
 from .process import ProcessMixin
 from .ui.widget import Widget
 from .ui.layout import Layout
 
 __all__ = ['CoreApplication', 'Application']
 
-class CoreApplication(ProcessMixin, InstrumentMixin):
+class CoreApplication(SettingsMixin, ProcessMixin, DeviceMixin):
     """Base class for COMET application classes."""
 
     QtBaseClass = QtCore.QCoreApplication
@@ -75,11 +75,6 @@ class CoreApplication(ProcessMixin, InstrumentMixin):
     @organization_domain.setter
     def organization_domain(self, domain):
         self.qt.setOrganizationDomain("" if domain is None else format(domain))
-
-    @property
-    def settings(self):
-        """Return settings instance."""
-        return Settings(self)
 
     def __signal_handler(self, signum, frame):
         """Interupt signal handler, trying to close application windows."""

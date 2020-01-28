@@ -1,4 +1,4 @@
-from comet.instruments import IEC60488
+from comet.driver import IEC60488
 
 __all__ = ['E4980A']
 

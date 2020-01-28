@@ -1,6 +1,6 @@
 from comet.driver import lock, Driver
-from comet.instruments import IEC60488
-from comet.instruments.iec60488 import opc_wait, opc_poll
+from comet.driver import IEC60488
+from comet.driver.iec60488 import opc_wait, opc_poll
 
 __all__ = ['K2657A']
 
