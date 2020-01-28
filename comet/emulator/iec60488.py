@@ -6,9 +6,11 @@ __all__ = ['IEC60488Handler']
 class IEC60488Handler(RequestHandler):
     """Generic IEC60488 compliant instrument request handler."""
 
+    identification = "Generic IEC60488 Instrument, Spanish Inquisition Inc."
+
     @message(r'\*(IDN)\?')
     def query_idn(self, message):
-        return "Generic Instrument, Spanish Inquisition Inc."
+        return self.identification
 
     @message(r'\*(CLS)')
     def write_cls(self, message):
@@ -25,10 +27,6 @@ class IEC60488Handler(RequestHandler):
     @message(r'\*(ESR)\?')
     def query_esr(self, message):
         return format(random.randint(0, 1))
-
-    @message(r':?(INIT)')
-    def write_init(self, message):
-        pass
 
 if __name__ == "__main__":
     run(IEC60488Handler)
