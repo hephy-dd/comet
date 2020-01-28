@@ -4,8 +4,8 @@ from comet.driver import lock, Driver
 
 __all__ = ['BrandBox']
 
-class ShuntBox(Driver):
-    """HEPHY "Brand" box providing switches and temperature sensors.
+class BrandBox(Driver):
+    """HEPHY Brandy's box providing switches and temperature sensors.
     """
 
     @property

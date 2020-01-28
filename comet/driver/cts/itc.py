@@ -1,5 +1,5 @@
 import datetime
-from typing import Tuples
+from typing import Tuple
 from collections import namedtuple
 
 from comet.driver import lock, Driver

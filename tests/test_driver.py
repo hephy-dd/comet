@@ -4,6 +4,12 @@ import os
 
 from comet.driver import Resource, Driver
 
+# Check default imports
+from comet.driver.cts import *
+from comet.driver.hephy import *
+from comet.driver.keithley import *
+from comet.driver.keysight import *
+
 class DeviceTest(unittest.TestCase):
 
     def testDriver(self):
