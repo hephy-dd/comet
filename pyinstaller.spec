@@ -7,6 +7,7 @@
 
 import os
 import comet
+from comet import utils
 
 # Application name
 name = 'comet'
@@ -15,14 +16,16 @@ name = 'comet'
 organization = 'HEPHY'
 
 # Application version
-version = '0.5.0'
+version = comet.__version__
 
 # Application package
 package = 'comet'
 
-# Paths
-comet_root = os.path.join(os.path.dirname(comet.__file__))
-comet_icon = os.path.join(comet_root, 'assets', 'icons', 'comet.ico')
+# Application datas
+package_datas = []
+
+# Application hidden imports
+package_hiddenimports = []
 
 # Windows version info template
 version_info = """
@@ -68,16 +71,16 @@ if __name__ == '__main__':
 # Create pyinstaller entry point
 with open('entry_point.pyw', 'w') as f:
     f.write(entry_point.format(
-        package=package,
+        package=package
     ))
 
 # Create windows version info
 with open('version_info.txt', 'w') as f:
     f.write(version_info.format(
         name=name,
-        organization=organization
+        organization=organization,
         version=version.split('.'),
-        license='GPLv3',
+        license='GPLv3'
     ))
 
 a = Analysis(['entry_point.pyw'],
@@ -86,17 +89,15 @@ a = Analysis(['entry_point.pyw'],
     ],
     binaries=[],
     datas=[
-        (os.path.join(comet_root, 'widgets', '*.ui'), os.path.join('comet', 'widgets')),
-        (os.path.join(comet_root, 'assets', 'icons', '*.svg'), os.path.join('comet', 'assets', 'icons')),
-        (os.path.join(comet_root, 'assets', 'icons', '*.ico'), os.path.join('comet', 'assets', 'icons')),
-        # Add your package data here
-    ],
+        (utils.make_path('widgets', '*.ui'), os.path.join('comet', 'widgets')),
+        (utils.make_path('assets', 'icons', '*.svg'), os.path.join('comet', 'assets', 'icons')),
+        (utils.make_path('assets', 'icons', '*.ico'), os.path.join('comet', 'assets', 'icons')),
+    ] + package_datas,
     hiddenimports=[
         'pyvisa-sim',
         'pyvisa-py',
         'PyQt5.sip',
-        # Add your hidden imports here
-    ],
+    ] + package_hiddenimports,
     hookspath=[],
     runtime_hooks=[],
     excludes=[],
@@ -126,5 +127,5 @@ exe = EXE(
     upx_exclude=[],
     runtime_tmpdir=None,
     console=False,
-    icon=comet_icon,
+    icon=utils.make_path('assets', 'icons', 'comet.ico'),
 )
