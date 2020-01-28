@@ -22,6 +22,12 @@ class UtiltiesTest(unittest.TestCase):
         ref = 'nobody_expects_the_spanish_inquisition'
         self.assertEqual(utils.make_id('Nobody expects the spanish inquisition!'), ref)
 
+    def testEscapeString(self):
+        self.assertEqual(utils.escape_string('\r\n\t\\r\\n\\t'), '\\r\\n\\t\\\\r\\\\n\\\\t')
+
+    def testUnescapeString(self):
+        self.assertEqual(utils.unescape_string('\\\\r\\\\n\\\\t\\r\\n\\t\r\n\t'), '\\r\\n\\t\r\n\t\r\n\t')
+
     def testReplaceExt(self):
         values = (
             ('module.txt', '.dat', 'module.dat'),

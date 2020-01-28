@@ -12,6 +12,8 @@ __all__ = [
     'make_label',
     'make_id',
     'make_iso',
+    'escape_string',
+    'unescape_string',
     'replace_ext',
     'switch_dir',
 ]
@@ -53,6 +55,22 @@ def make_iso(dt=None):
     if not isinstance(dt, datetime.datetime):
         dt = datetime.datetime.fromtimestamp(dt)
     return dt.replace(microsecond=0).isoformat().replace(':', '-')
+
+def escape_string(s):
+    """Returns string with encoded escaped special characters.
+
+    >>> escape_string("\r\n")
+    '\\r\\n'
+    """
+    return s.encode('unicode-escape').decode()
+
+def unescape_string(s):
+    """Returns string with decoded escaped special characters.
+
+    >>> unescape_string("\\r\\n")
+    '\r\n'
+    """
+    return bytes(s, encoding='ascii').decode('unicode-escape')
 
 def replace_ext(filename, ext):
     """Replaces a filename extension.

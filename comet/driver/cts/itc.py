@@ -1,15 +1,29 @@
 import datetime
+from typing import Tuples
 from collections import namedtuple
 
-from comet import Device
-from comet.device import lock_resource
+from comet.driver import lock, Driver
 
 __all__ = ['ITC']
 
-class ITC(Device):
-    """Interface for CTS Climate Chambers."""
+class ITCDriver(Driver):
+    """ITC driver base class."""
 
-    AnalogChannels = {
+    @lock
+    def query_bytes(self, message, count) -> str:
+        """Raw query for bytes.
+
+        >>> instr.query_bytes('P', 4)
+        'P001'
+        """
+        if not isinstance(message, bytes):
+            message = message.encode()
+        self.resource.write_raw(message)
+        return self.resource.read_bytes(count).decode()
+
+class AnalogChannel(ITCDriver):
+
+    Mapping = {
         1: b'A0',
         2: b'A1',
         3: b'A2',
@@ -29,6 +43,33 @@ class ITC(Device):
     }
     """Mapping analog channel index to channel code. When writing convert to
     lower case."""
+
+    def __getitem__(self, index: int) -> Tuple[float, float]:
+        """Read analog channel, returns tuple containing actual value and target value.
+
+        >>> instr.analog_channel[1] # read temperature target/actual
+        (24.5, 25.0)
+        """
+        code = self.Mapping[index]
+        result, actual, target = self.query_bytes(code, 14).split()
+        if result != code.decode():
+            raise RuntimeError("invalid channel returned: '{}'".format(result))
+        return float(actual), float(target)
+
+    def __setitem__(self, index: int, value: float):
+        """Set target value for analog channel.
+
+        >>> instr.set_analog_channel[1] = 42.0
+        """
+        if not 1 <= index <= 7:
+            raise ValueError("invalid channel number: '{}'".format(index))
+        code = self.Mapping[index].lower().decode() # write requires lower case 'a'
+        result = self.query_bytes("{} {:05.1f}".format(code, value), 1)
+        if result != 'a':
+            raise RuntimeError("failed to set target for channel '{}'".format(index))
+
+class ITC(ITCDriver):
+    """Interface for CTS Climate Chambers."""
 
     WarningMessages = {
         '\x01': "Wassernachfüllen",
@@ -69,68 +110,44 @@ class ITC(Device):
     """Error messages."""
 
     Status = namedtuple('Status', ('running', 'warning', 'error', 'channels'))
+    """Status type container."""
 
-    @lock_resource
-    def query_bytes(self, message, count):
-        """Raw query for bytes.
+    analog_channel = AnalogChannel()
 
-        >>> device.query_bytes('P', 4)
-        'P001'
-        """
-        if not isinstance(message, bytes):
-            message = message.encode()
-        self.resource.write_raw(message)
-        return self.resource.read_bytes(count).decode()
+    @property
+    def identification(self):
+        """Returns instrument identification."""
+        return "ITC climate chamber"
 
     @property
     def time(self) -> object:
         """Returns current date and time of device as datetime object.
 
-        >>> device.time
+        >>> instr.time
         datetime.datetime(2019, 6, 12, 13, 01, 21)
         """
         result = self.query_bytes('T', 13)
         return datetime.datetime.strptime(result, 'T%d%m%y%H%M%S')
 
     @time.setter
-    def time(self, dt) -> None:
+    def time(self, dt: object):
         """Update device date and time, returns updated data and time as datetime object.
 
-        >>> device.time = datetime.now()
+        >>> instr.time = datetime.now()
         """
         datetime_format = 't%d%m%y%H%M%S'
         result = self.query_bytes(dt.strftime(datetime_format), 13)
         if dt != datetime.datetime.strptime(result, datetime_format):
             raise RuntimeError("failed to set date and time")
 
-    def analog_channel(self, index):
-        """Read analog channel, returns tuple containing actual value and target value.
-        >>> device.analogChannel(1) # read temperature target/actual
-        (24.5, 25.0)
-        """
-        code = self.AnalogChannels[index]
-        result, actual, target = self.query_bytes(code, 14).split()
-        if result != code.decode():
-            raise RuntimeError("invalid channel returned: '{}'".format(result))
-        return float(actual), float(target)
-
-    def set_analog_channel(self, index, value):
-        """Set target value for analog channel.
-        >>> device.set_analog_channel(1, 42.0)
-        """
-        if not 1 <= index <= 7:
-            raise ValueError("invalid channel number: '{}'".format(index))
-        code = self.AnalogChannels[index].lower().decode() # write requires lower case 'a'
-        result = self.query_bytes("{} {:05.1f}".format(code, value), 1)
-        if result != 'a':
-            raise RuntimeError("failed to set target for channel '{}'".format(index))
-
     @property
     def status(self) -> object:
         """Returns device status as object.
 
-        >>> device.status
+        >>> instr.status
         Status(running=False, warning=None, error=None, channels={})
+        >>> instr.status.running
+        False
         """
         result = self.query_bytes('S', 10)
         running = bool(int(result[1]))
@@ -145,7 +162,7 @@ class ITC(Device):
     def error_message(self) -> str:
         """Returns current error message.
 
-        >>> device.error_message
+        >>> instr.error_message
         'Wasserbad Abschlaemmen'
         """
         result = self.query_bytes('F', 33)
@@ -155,35 +172,35 @@ class ITC(Device):
     def program(self) -> int:
         """Returns number of running program or 0 if no program is running.
 
-        >>> device.program
+        >>> instr.program
         42
         """
         result = self.query_bytes('P', 4)
         return int(result[1:])
 
     @program.setter
-    def program(self, number: int) -> None:
+    def program(self, number: int):
         """Starts a program. Returns program number or 0 for no program.
 
-        >>> device.program = 42
+        >>> instr.program = 42
         """
         result = self.query_bytes(f'P{number:03d}', 4)
         if number != int(result[1:]):
             raise RuntimeError(f"failed to start program '{number}'")
 
-    def start(self) -> None:
+    def start(self):
         """Switch climate chamber ON.
 
-        >>> device.start()
+        >>> instr.start()
         """
         result = self.query_bytes('s1 1', 2)
         if result != 's1':
             raise RuntimeError("failed to start instrument")
 
-    def stop(self) -> None:
+    def stop(self):
         """Switch climate chamber OFF.
 
-        >>> device.stop()
+        >>> instr.stop()
         """
         result = self.query_bytes('s1 0', 2)
         if result != 's1':

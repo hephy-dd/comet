@@ -9,7 +9,7 @@ import time
 import signal
 import socketserver
 
-__all__ = ['RequestHandler', 'SCPIRequestHandler', 'TCPServer']
+__all__ = ['RequestHandler', 'TCPServer']
 
 _expressions = {}
 
@@ -55,42 +55,6 @@ class RequestHandler(socketserver.BaseRequestHandler):
                         if result is not None:
                             self.send(result)
 
-class SCPIRequestHandler(RequestHandler):
-
-    @message(r'\*(IDN)\?')
-    def query_idn(self, message):
-        return "Generic Instrument, Spanish Inquisition Inc."
-
-    @message(r'\*(CLS)')
-    def write_cls(self, message):
-        pass
-
-    @message(r'\*(OPC)\?')
-    def query_opc(self, message):
-        return "1"
-
-    @message(r'\*(OPC)')
-    def write_opc(self, message):
-        pass
-
-    @message(r'\*(ESR)\?')
-    def query_esr(self, message):
-        return format(random.randint(0, 1))
-
-    @message(r':?(INIT)')
-    def write_init(self, message):
-        pass
-
-    # TODO
-    @message(r':?(FETC[H]?)\?')
-    def query_read(self, message):
-        values = []
-        for i in range(10):
-            vdc = random.uniform(.00025,.001)
-            values.append("{:E}VDC,+0.000SECS,+0.0000RDNG#".format(vdc))
-        time.sleep(random.uniform(.5, 1.0)) # rev B10 ;)
-        return ",".join(values)
-
 class TCPServer:
 
     def __init__(self, handler):
@@ -111,7 +75,8 @@ class TCPServer:
 
         logging.info("Instrument emulation stopped.")
 
-def main():
+def run(handler):
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--host', default='localhost')
     parser.add_argument('--port', default=10001, type=int)
@@ -119,11 +84,11 @@ def main():
 
     logging.getLogger().setLevel(logging.INFO)
 
-    SCPIRequestHandler.read_termination = "\r"
-    SCPIRequestHandler.write_termination = "\r"
+    handler.read_termination = "\r"
+    handler.write_termination = "\r"
 
-    server = TCPServer(SCPIRequestHandler)
+    server = TCPServer(handler)
     server.run(args.host, args.port)
 
 if __name__ == "__main__":
-    main()
+    run(RequestHandler)
