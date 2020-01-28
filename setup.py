@@ -2,14 +2,16 @@ from setuptools import setup, find_packages
 
 setup(
     name='comet',
-    version='0.5.0',
+    version='0.6.0',
     author="Bernhard Arnold",
     author_email="bernhard.arnold@oeaw.ac.at",
+    description="Control and Measurement Toolkit",
     packages=find_packages(exclude=['tests']),
     install_requires=[
-        'PyVISA',
+        'PyVISA>=1.10',
         'PyVISA-py',
         'PyVISA-sim',
+        'pint>=0.10',
         'numpy>=1.17',
         'PyQt5>=5.13',
         'QCharted>=1.1',

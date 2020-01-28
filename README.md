@@ -14,19 +14,22 @@ See the documentation on https://hephy-dd.github.io/comet/
 Install from GitHub using pip
 
 ```bash
-pip install git+https://github.com/hephy-dd/comet.git@0.5.0
+pip install git+https://github.com/hephy-dd/comet.git@0.6.0
 ```
 
 ## Quick start
 
-The following minimal example invokes the application's main window.
+The following minimal example invokes the application's main window, adds a
+button and connects its `click` event to a lambda function printing a message.
 
 ```python
 import comet
 
 app = comet.Application()
-window = comet.MainWindow()
-window.show()
+app.layout = comet.Button(
+  text="Hello World!",
+  click=lambda event: print("clicked me!")
+)
 app.run()
 ```
 

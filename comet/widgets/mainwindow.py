@@ -28,6 +28,7 @@ class MainWindow(QtWidgets.QMainWindow, UiLoaderMixin, ProcessMixin):
         self.__progressBar = QtWidgets.QProgressBar(self)
         self.__progressBar.hide()
         self.statusBar().addPermanentWidget(self.__progressBar)
+        self.__aboutText = ""
 
     @QtCore.pyqtSlot()
     def showPreferences(self):
@@ -44,7 +45,15 @@ class MainWindow(QtWidgets.QMainWindow, UiLoaderMixin, ProcessMixin):
     def showAbout(self):
         """Show modal about dialog."""
         dialog = AboutDialog(self)
+        if self.aboutText():
+            dialog.setAboutText(self.aboutText())
         dialog.exec_()
+
+    def aboutText(self):
+        return self.__aboutText
+
+    def setAboutText(self, text):
+        self.__aboutText = text
 
     @QtCore.pyqtSlot()
     def showAboutQt(self):
@@ -54,7 +63,6 @@ class MainWindow(QtWidgets.QMainWindow, UiLoaderMixin, ProcessMixin):
     def setCentralWidget(self, widget):
         super().setCentralWidget(widget)
         self.setWindowTitle(widget.windowTitle())
-
 
     def messageLabel(self):
         return self.__messageLabel
@@ -90,14 +98,6 @@ class MainWindow(QtWidgets.QMainWindow, UiLoaderMixin, ProcessMixin):
         self.showMessage(self.tr("Error"))
         self.hideProgress()
 
-    def connectProcess(self, process):
-        """Connect process signals to main window slots."""
-        process.failed.connect(self.showException)
-        process.messageChanged.connect(self.showMessage)
-        process.messageCleared.connect(self.clearMessage)
-        process.progressChanged.connect(self.showProgress)
-        process.progressHidden.connect(self.hideProgress)
-
     @QtCore.pyqtSlot(object)
     def closeEvent(self, event):
         dialog = QtWidgets.QMessageBox(self)
@@ -108,7 +108,7 @@ class MainWindow(QtWidgets.QMainWindow, UiLoaderMixin, ProcessMixin):
 
         if dialog.result() == dialog.Ok:
             self.closeRequest.emit()
-            if len(self.processes()):
+            if self.processes:
                 dialog = ProcessDialog(self)
                 dialog.exec_()
             event.accept()
@@ -126,8 +126,8 @@ class ProcessDialog(QtWidgets.QProgressDialog, ProcessMixin):
 
     @QtCore.pyqtSlot()
     def close(self):
-        self.processes().stop()
-        self.processes().join()
+        self.processes.stop()
+        self.processes.join()
         super().close()
 
     def exec_(self):

@@ -1,5 +1,6 @@
 from PyQt5 import QtGui, QtWidgets
 
+from ..version import __version__
 from ..utils import make_path
 from .uiloader import UiLoaderMixin
 
@@ -12,3 +13,10 @@ class AboutDialog(QtWidgets.QDialog, UiLoaderMixin):
         self.loadUi()
         icon = QtGui.QPixmap(make_path('assets', 'icons', 'comet.svg'))
         self.ui.iconLabel.setPixmap(icon)
+        self.ui.titleLabel.setText(f"COMET {__version__}")
+
+    def aboutText(self):
+        return self.ui.aboutTextEdit.plainText()
+
+    def setAboutText(self, text):
+          self.ui.aboutTextEdit.setPlainText(text)

@@ -1,8 +1,15 @@
+import time
+import random
+
 from .application import *
-from .widgets import *
+from .ui import *
 from .process import *
+from .driver import *
 from .device import *
-from .mixins import *
-from .dataseries import *
 from .functions import Range
+from .ureg import *
 from .version import __version__
+
+def app():
+    """Returns reference to global application object."""
+    return CoreApplication.app()

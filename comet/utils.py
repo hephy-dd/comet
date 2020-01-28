@@ -1,19 +1,21 @@
 """Utility functions and paths."""
 
 import contextlib
+import datetime
 import os
 import re
 import sys
-from collections import OrderedDict
 
 __all__ = [
     'PACKAGE_PATH',
     'make_path',
     'make_label',
     'make_id',
+    'make_iso',
+    'escape_string',
+    'unescape_string',
     'replace_ext',
     'switch_dir',
-    'Collection',
 ]
 
 PACKAGE_PATH = os.path.abspath(os.path.dirname(__file__))
@@ -40,6 +42,36 @@ def make_id(name):
     """
     return re.sub(r'[^a-z0-9]+', '_', name.lower()).rstrip('_')
 
+def make_iso(dt=None):
+    """Returns filesystem safe ISO date time.
+
+    >>> make_iso()
+    '2019-12-24T12-21-42'
+    >>> make_iso(1423456789.8)
+    '2015-02-09T05-39-49'
+    """
+    if dt is None:
+        dt = datetime.datetime.now()
+    if not isinstance(dt, datetime.datetime):
+        dt = datetime.datetime.fromtimestamp(dt)
+    return dt.replace(microsecond=0).isoformat().replace(':', '-')
+
+def escape_string(s):
+    """Returns string with encoded escaped special characters.
+
+    >>> escape_string("\r\n")
+    '\\r\\n'
+    """
+    return s.encode('unicode-escape').decode()
+
+def unescape_string(s):
+    """Returns string with decoded escaped special characters.
+
+    >>> unescape_string("\\r\\n")
+    '\r\n'
+    """
+    return bytes(s, encoding='ascii').decode('unicode-escape')
+
 def replace_ext(filename, ext):
     """Replaces a filename extension.
     >>> replace_ext('/tmp/module.py', '.ui')
@@ -61,37 +93,3 @@ def switch_dir(path):
     os.chdir(path)
     yield
     os.chdir(cwd)
-
-class Collection(object):
-
-    def __init__(self, items=None, base=None):
-        self.__items = OrderedDict()
-        self.__base = base
-        if items is not None:
-            for key, value in items:
-                self.add(key, value)
-
-    def __len__(self):
-        return len(self.__items)
-
-    def keys(self):
-        return self.__items.keys()
-
-    def values(self):
-        return self.__items.values()
-
-    def get(self, key):
-        if key not in self.__items:
-            raise KeyError("key down not exists '{}'".format(key))
-        return self.__items.get(key)
-
-    def add(self, key, value):
-        if self.__base is not None:
-            if not isinstance(value, self.__base):
-                raise TypeError("value must inherit from {}".format(self.__base))
-        if key in self.keys():
-            raise KeyError("key is already defined: '{}'".format(key))
-        self.__items[key] = value
-
-    def __str__(self):
-        return format(self.__items)

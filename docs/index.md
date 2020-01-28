@@ -27,7 +27,7 @@ graphical user interface. COMET works on Linux and Windows operating systems.
 Install from GitHub using pip
 
 ```bash
-pip install git+https://github.com/hephy-dd/comet.git@0.5.0
+pip install git+https://github.com/hephy-dd/comet.git@0.6.0
 ```
 
 ### Quick start
@@ -36,7 +36,7 @@ COMET provides a basic application window and a set of modules for instrument co
 and threaded processes.
 
 The following minimal example invokes the application's main window containing a text
-field and some buttone.
+field and some button.
 
 ```python
 import comet
@@ -53,7 +53,7 @@ app.run()
 
 ## About the project
 
-COMET is &copy; 2019 by [Bernhard Arnold](https://github.com/arnobaer/).
+COMET is &copy; 2019-2020 by [Bernhard Arnold](https://github.com/arnobaer/).
 
 ### License
 

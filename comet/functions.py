@@ -4,7 +4,7 @@ import itertools
 
 __all__ = ['Range']
 
-class Range(object):
+class Range:
     """Linear range function generator class.
 
     Range is bound to [begin, end].

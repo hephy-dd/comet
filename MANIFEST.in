@@ -4,5 +4,6 @@ include LICENSE
 include docs/_config.yml
 recursive-include docs/ *.md
 
+include comet/assets/icons/*.ico
 include comet/assets/icons/*.svg
 include comet/widgets/*.ui
