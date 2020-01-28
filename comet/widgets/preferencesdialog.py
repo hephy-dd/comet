@@ -1,133 +1,234 @@
-import os
-from PyQt5 import QtCore, QtWidgets, uic
+from PyQt5 import QtCore, QtWidgets
 
-import comet
+from comet.settings import SettingsMixin
+from comet.device import DeviceMixin
+from comet.utils import escape_string, unescape_string
 
-from ..device import DeviceMixin
-from ..settings import SettingsMixin
-from .uiloader import UiLoaderMixin
+class ResourcesTab(QtWidgets.QWidget):
 
-__all__ = ['PreferencesDialog']
+    DefaultReadTermination = '\n'
 
-class PreferencesDialog(QtWidgets.QDialog, UiLoaderMixin, SettingsMixin, DeviceMixin):
+    DefaultWriteTermination = '\n'
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.loadUi()
-        self.loadSettings()
+    DefaultVisaLibrary = '@py'
 
-    def loadSettings(self):
-        visaLibrary = self.settings.get('visaLibrary', '@py')
-        self.ui.visaComboBox.setCurrentText(visaLibrary)
-
-        operators = self.settings.get('operators', []) or [] # HACK
-        self.ui.operatorListWidget.clear()
-        self.ui.operatorListWidget.addItems(operators)
-
-        resources = self.devices.resources()
-        # Update default resources with stored settings
-        for key, value in (self.settings.get('resources', {}) or {}).items():
-            if key in resources:
-                resources[key] = value
-        self.ui.resourcesTableWidget.clearContents()
-        self.ui.resourcesTableWidget.setRowCount(len(resources))
-        for i, resource in enumerate(resources.items()):
-            name, resource = resource
-            self.ui.resourcesTableWidget.setItem(i, 0, QtWidgets.QTableWidgetItem(name))
-            self.ui.resourcesTableWidget.setItem(i, 1, QtWidgets.QTableWidgetItem(resource))
-        self.ui.resourcesTableWidget.resizeRowsToContents()
-        self.ui.resourcesTableWidget.resizeColumnsToContents()
-
-        self.ui.operatorListWidget.itemSelectionChanged.connect(self.updateOperatorButtons)
-        self.ui.resourcesTableWidget.itemSelectionChanged.connect(self.updateResourceButtons)
-
-    def updateOperatorButtons(self):
-        select = self.ui.operatorListWidget.selectionModel()
-        self.ui.editOperatorPushButton.setEnabled(select.hasSelection())
-        self.ui.removeOperatorPushButton.setEnabled(select.hasSelection())
-
-    def updateResourceButtons(self):
-        select = self.ui.resourcesTableWidget.selectionModel()
-        self.ui.editResourcePushButton.setEnabled(select.hasSelection())
-
-    def saveSettings(self):
-        self.settings['visaLibrary'] = self.visaLibrary()
-        self.settings['operators'] = self.operators()
-        self.settings['resources'] = self.resources()
-
-    def accept(self):
-        self.saveSettings()
-        QtWidgets.QMessageBox.information(self,
-            self.tr("Preferences"),
-            self.tr("Application restart required for changes to take effect.")
-        )
-        super().accept()
-
-    def visaLibrary(self):
-        """Returns selected state of VISA library combo box."""
-        return self.ui.visaComboBox.currentText()
-
-    def operators(self):
-        """Returns current list of operators."""
-        table = self.ui.operatorListWidget
-        operators = []
-        for row in range(table.count()):
-            operators.append(table.item(row).text())
-        return operators
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle(self.tr("Resources"))
+        self.treeWidget = QtWidgets.QTreeWidget()
+        self.treeWidget.setColumnCount(2)
+        self.treeWidget.headerItem().setText(0, self.tr("Resource"))
+        self.treeWidget.headerItem().setText(1, self.tr("Value"))
+        self.treeWidget.itemDoubleClicked.connect(lambda item, column: self.editResource())
+        self.treeWidget.itemSelectionChanged.connect(self.selectionChanged)
+        self.editButton = QtWidgets.QPushButton(self.tr("&Edit"))
+        self.editButton.setEnabled(False)
+        self.editButton.clicked.connect(self.editResource)
+        layout = QtWidgets.QGridLayout()
+        layout.addWidget(self.treeWidget, 0, 0, 2, 1)
+        layout.addWidget(self.editButton, 0, 1)
+        layout.addItem(QtWidgets.QSpacerItem(0, 0), 1, 1)
+        self.setLayout(layout)
 
     def resources(self):
-        """Returns list of resources containing name and resource."""
-        table = self.ui.resourcesTableWidget
+        """Returns dictionary of resource options."""
+        root = self.treeWidget.topLevelItem(0)
         resources = {}
-        for row in range(table.rowCount()):
-            name = table.item(row, 0).text()
-            resource = table.item(row, 1).text()
-            resources[name] = resource
+        for i in range(self.treeWidget.topLevelItemCount()):
+            item = self.treeWidget.topLevelItem(i)
+            name = item.text(0)
+            options = {}
+            for j in range(item.childCount()):
+                child = item.child(j)
+                key = child.text(0)
+                value = child.text(1)
+                if key in ['read_termination', 'write_termination']:
+                    value = unescape_string(value)
+                options[key] = value
+            resources[name] = options
         return resources
 
-    def addOperator(self):
-        """Add operator slot."""
-        text, ok = QtWidgets.QInputDialog.getText(self,
-                self.tr("Operator"),
-                self.tr("Name:"),
-                QtWidgets.QLineEdit.Normal
-            )
-        if ok and text:
-            table = self.ui.operatorListWidget
-            item = table.addItem(text)
-            table.setCurrentItem(item)
+    def setResources(self, resources):
+        """Set dictionary of resource options."""
+        self.treeWidget.clear()
+        items = []
+        for name, options in resources.items():
+            item = QtWidgets.QTreeWidgetItem([name])
+            item.addChild(QtWidgets.QTreeWidgetItem([
+                'resource_name',
+                options.get('resource_name')
+            ]))
+            item.addChild(QtWidgets.QTreeWidgetItem([
+                'read_termination',
+                escape_string(options.get('read_termination', self.DefaultReadTermination))
+            ]))
+            item.addChild(QtWidgets.QTreeWidgetItem([
+                'write_termination',
+                escape_string(options.get('write_termination', self.DefaultWriteTermination))
+            ]))
+            item.addChild(QtWidgets.QTreeWidgetItem([
+                'visa_library',
+                options.get('visa_library', self.DefaultVisaLibrary)
+            ]))
+            self.treeWidget.insertTopLevelItem(0, item)
+            self.treeWidget.expandItem(item)
+        self.treeWidget.resizeColumnToContents(0)
 
-    def editOperator(self):
-        """Edit operator slot."""
-        item = self.ui.operatorListWidget.currentItem()
-        if item is not None:
-            text, ok = QtWidgets.QInputDialog.getText(self,
-                self.tr("Operator"),
-                self.tr("Name:"),
-                QtWidgets.QLineEdit.Normal,
-                item.text()
-            )
-            if ok:
-                item.setText(text)
-
-    def removeOperator(self):
-        """Remove operator slot."""
-        table = self.ui.operatorListWidget
-        row = table.currentRow()
-        if row is not None:
-            table.takeItem(row)
-
+    @QtCore.pyqtSlot()
     def editResource(self):
-        """Edit device resource slot."""
-        table = self.ui.resourcesTableWidget
-        row = table.currentRow()
-        item = table.item(row, 1)
-        if item is not None:
-            text, ok = QtWidgets.QInputDialog.getText(self,
-                self.tr("Device"),
-                self.tr("Resource:"),
+        item = self.treeWidget.currentItem()
+        if item.parent():
+            text, ok = QtWidgets.QInputDialog.getText(
+                self,
+                self.tr("Resource {}").format(item.parent().text(0)),
+                item.text(0),
                 QtWidgets.QLineEdit.Normal,
-                item.text()
+                item.text(1)
             )
-            if ok:
-                item.setText(text)
+            if ok and text:
+                item.setText(1, text)
+
+    @QtCore.pyqtSlot()
+    def selectionChanged(self):
+        item = self.treeWidget.currentItem()
+        self.editButton.setEnabled(item.parent() is not None)
+
+class OperatorsTab(QtWidgets.QWidget):
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle(self.tr("Operators"))
+        self.listWidget = QtWidgets.QListWidget()
+        self.listWidget.itemDoubleClicked.connect(self.editOperator)
+        self.listWidget.itemSelectionChanged.connect(self.selectionChanged)
+        self.addButton = QtWidgets.QPushButton(self.tr("&Add"))
+        self.addButton.clicked.connect(self.addOperator)
+        self.editButton = QtWidgets.QPushButton(self.tr("&Edit"))
+        self.editButton.setEnabled(False)
+        self.editButton.clicked.connect(self.editOperator)
+        self.removeButton = QtWidgets.QPushButton(self.tr("&Remove"))
+        self.removeButton.setEnabled(False)
+        self.removeButton.clicked.connect(self.removeOperator)
+        layout = QtWidgets.QGridLayout()
+        layout.addWidget(self.listWidget, 0, 0, 4, 1)
+        layout.addWidget(self.addButton, 0, 1)
+        layout.addWidget(self.editButton, 1, 1)
+        layout.addWidget(self.removeButton, 2, 1)
+        layout.addItem(QtWidgets.QSpacerItem(0, 0), 3, 1)
+        self.setLayout(layout)
+
+    def operators(self):
+        """Returns list of operators."""
+        return [self.listWidget.item(i).text() for i in range(self.listWidget.count())]
+
+    def setOperators(self, operators):
+        """Set list of operators."""
+        self.listWidget.clear()
+        for text in operators:
+            self.listWidget.addItem(text)
+
+    @QtCore.pyqtSlot()
+    def addOperator(self):
+        text, ok = QtWidgets.QInputDialog.getText(
+            self,
+            self.tr("Operator"),
+            self.tr("Name"),
+            QtWidgets.QLineEdit.Normal
+        )
+        if ok and text:
+            item = self.listWidget.addItem(text)
+            self.listWidget.setCurrentItem(item)
+
+    @QtCore.pyqtSlot()
+    def editOperator(self):
+        item = self.listWidget.currentItem()
+        text, ok = QtWidgets.QInputDialog.getText(
+            self,
+            self.tr("Operator"),
+            self.tr("Name"),
+            QtWidgets.QLineEdit.Normal,
+            item.text()
+        )
+        if ok and text:
+            item.setText(text)
+
+    @QtCore.pyqtSlot()
+    def removeOperator(self):
+        item = self.listWidget.currentItem()
+        if item is not None:
+            row = self.listWidget.row(item)
+            self.listWidget.takeItem(row)
+
+    @QtCore.pyqtSlot()
+    def selectionChanged(self):
+        item = self.listWidget.currentItem()
+        self.editButton.setEnabled(item is not None)
+        self.removeButton.setEnabled(item is not None)
+
+class PreferencesDialog(QtWidgets.QDialog, DeviceMixin, SettingsMixin):
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle(self.tr("Preferences"))
+        self.resize(480, 320)
+        self.tabWidget = QtWidgets.QTabWidget()
+        self.resourcesTab = ResourcesTab()
+        self.tabWidget.addTab(self.resourcesTab, self.resourcesTab.windowTitle())
+        self.operatorsTab = OperatorsTab()
+        self.tabWidget.addTab(self.operatorsTab, self.operatorsTab.windowTitle())
+        self.buttonBox = QtWidgets.QDialogButtonBox()
+        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
+        self.buttonBox.setStandardButtons(
+            QtWidgets.QDialogButtonBox.Cancel |
+            QtWidgets.QDialogButtonBox.Apply |
+            QtWidgets.QDialogButtonBox.RestoreDefaults
+        )
+        self.buttonBox.clicked.connect(self.handleButton)
+        self.buttonBox.rejected.connect(self.reject)
+        layout = QtWidgets.QVBoxLayout()
+        layout.addWidget(self.tabWidget)
+        layout.addWidget(self.buttonBox)
+        self.setLayout(layout)
+        self.loadSettings()
+
+    @QtCore.pyqtSlot(QtWidgets.QAbstractButton)
+    def handleButton(self, button):
+        button = self.buttonBox.standardButton(button)
+        if button == QtWidgets.QDialogButtonBox.Apply:
+            self.saveSettings()
+            QtWidgets.QMessageBox.information(self,
+                self.tr("Preferences"),
+                self.tr("Application restart required for changes to take effect.")
+            )
+            self.accept()
+        if button == QtWidgets.QDialogButtonBox.RestoreDefaults:
+            self.resetSettings()
+
+    def saveSettings(self):
+        self.settings['operators'] = self.operatorsTab.operators()
+        self.settings['resources'] = self.resourcesTab.resources()
+
+    def loadSettings(self):
+        resources = {}
+        for name, device in self.devices.items():
+            options = {}
+            options['resource_name'] = device.resource.resource_name
+            options['read_termination'] = device.resource.options.get('read_termination', '\n')
+            options['write_termination'] = device.resource.options.get('write_termination', '\n')
+            options['visa_library'] = device.resource.visa_library
+            resources[name] = options
+        # Update default resources with stored settings
+        for name, options in (self.settings.get('resources', {}) or {}).items():
+            # Migrate old style settings
+            if isinstance(options, str):
+                options = {'resource_name': options}
+            if name in resources:
+                for key, value in options.items():
+                    resources[name][key] = value
+        self.resourcesTab.setResources(resources)
+        operators = self.settings.get('operators', []) or [] # HACK
+        self.operatorsTab.setOperators(operators)
+
+    def resetSettings(self):
+        self.operatorsTab.setOperators([])
+        self.resourcesTab.setResources({})
