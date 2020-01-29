@@ -84,18 +84,20 @@ class Axis(Driver):
         assert value == 50 or value == 100
         self.resource.write(f'{value:d} {self.axis_id} setpolepairs')
 
-    def __get__(self, instance, classname) -> int:
+    @property
+    def enabled(self) -> int:
         """Returns axis state.
 
-        >>> instr.x
+        >>> instr.x.enabled
         1
         """
         return int(self.resource.query(f'{self.axis_id} getaxis'))
 
-    def __set__(self, instance, value: int):
+    @enabled.setter
+    def enabled(self, value: int):
         """Set axis state.
 
-        >>> instr.x = 1
+        >>> instr.x.enabled = 1
         """
         assert 0 <= value <= 4
         self.resource.write(f'{value:d} {self.axis_id} setaxis')
@@ -216,7 +218,7 @@ class Axis(Driver):
         >>> instr.x.nlimit
         (0.0, 12.0)
         """
-        return tuple(map(float, self.resource.query(f'{self.axis_id} getnlimit')))
+        return tuple(map(float, self.resource.query(f'{self.axis_id} getnlimit').split()))
 
     # TODO org()
 
@@ -370,20 +372,25 @@ class Venus1(Driver):
         return tuple(map(int, values))
 
     @property
+    @lock
     def polepairs(self) -> Tuple[int]:
         """Returns tuple containing step motor pole pairs.
 
         >>> instr.polepairs
         (50, 50, 50)
         """
-        values = self.resource.query('-1 getpolepairs').split()
+        self.resource.write('-1 getpolepairs')
+        values = []
+        values.append(self.resource.read())
+        values.append(self.resource.read())
+        values.append(self.resource.read())
         return tuple(map(int, values))
 
     @property
-    def axes(self):
-        """Returns axes states.
+    def enabled(self):
+        """Returns axes enabled states.
 
-        >>> instr.axes
+        >>> instr.enabled
         (1, 1, 0)
         """
         values = self.resource.query('-1 getaxis').split()
@@ -408,11 +415,12 @@ class Venus1(Driver):
         self.resource.write(f'{value:d} setpowerup')
 
     @property
-    def phaseares(self) -> Tuple[int]:
+    @lock
+    def phaseares(self) -> Tuple[int, int ,int]:
         """Returns tuple containing phase A resolution.
 
         >>> instr.phaseares
-        (50, 50, 50)
+        (16, 16, 16)
         """
         self.resource.write('-1 getphaseares')
         values = []
@@ -437,7 +445,7 @@ class Venus1(Driver):
         >>> instr.ipadr
         '192.168.1.2'
         """
-        self.resource.query('getipadr')
+        return self.resource.query('getipadr')
 
     # @ipadr.setter
     # def ipadr(self, value: str):
@@ -669,9 +677,9 @@ class Venus1(Driver):
         """
         self.resource.write('-1 getpdisplay')
         values = []
-        values.append(tuple(map(int, self.resource.read())))
-        values.append(tuple(map(int, self.resource.read())))
-        values.append(tuple(map(int, self.resource.read())))
+        values.append(tuple(map(int, self.resource.read().split())))
+        values.append(tuple(map(int, self.resource.read().split())))
+        values.append(tuple(map(int, self.resource.read().split())))
         return tuple(values)
 
     # TODO ugly
@@ -751,8 +759,8 @@ class Venus1(Driver):
         return bool(int(self.resource.query('getjoystick')))
 
     @joystick.setter
-    def joystick(self, enable: bool):
-        """Enable or disable joystick.
+    def joystick(self, value: bool):
+        """Set True to enable joystick.
 
         >>> instr.joystick = True
         """
