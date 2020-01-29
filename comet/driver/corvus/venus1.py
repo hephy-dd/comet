@@ -7,13 +7,17 @@ __all__ = ['Venus1']
 class Axis(Driver):
 
     @property
+    def _axis(self):
+        return self.kwargs.get('axis')
+
+    @property
     def pitch(self) -> float:
         """Returns axis pitch.
 
         >>> instr.x.pitch
         2.0
         """
-        return float(self.resource.query(f'{self.axis_id} getpitch'))
+        return float(self.resource.query(f'{self._axis} getpitch'))
 
     @pitch.setter
     def pitch(self, value: float):
@@ -21,7 +25,7 @@ class Axis(Driver):
 
         >>> instr.x.pitch = 2.0
         """
-        self.resource.write(f'{value:.6f} {self.axis_id} setpitch')
+        self.resource.write(f'{value:.6f} {self._axis} setpitch')
 
     @property
     def unit(self):
@@ -30,7 +34,7 @@ class Axis(Driver):
         >>> instr.x.unit
         2
         """
-        return int(self.resource.query(f'{self.axis_id} getunit'))
+        return int(self.resource.query(f'{self._axis} getunit'))
 
     @property
     def umotmin(self) -> Tuple[int]:
@@ -39,7 +43,7 @@ class Axis(Driver):
         >>> instr.x.umotmin
         1850
         """
-        return int(self.resource.query(f'{self.axis_id} getumotmin'))
+        return int(self.resource.query(f'{self._axis} getumotmin'))
 
     @umotmin.setter
     def umotmin(self, value: int):
@@ -47,7 +51,7 @@ class Axis(Driver):
 
         >>> instr.x.umotmin = 1850
         """
-        self.resource.write(f'{value:d} {self.axis_id} setumotmin')
+        self.resource.write(f'{value:d} {self._axis} setumotmin')
 
     @property
     def umotgrad(self) -> int:
@@ -56,7 +60,7 @@ class Axis(Driver):
         >>> instr.x.umotgrad
         55
         """
-        return int(self.resource.query(f'{self.axis_id} getumotgrad'))
+        return int(self.resource.query(f'{self._axis} getumotgrad'))
 
     @umotgrad.setter
     def umotgrad(self, value: int):
@@ -64,7 +68,7 @@ class Axis(Driver):
 
         >>> instr.x.umotgrad = 55
         """
-        self.resource.write(f'{value:d} {self.axis_id} setumotgrad')
+        self.resource.write(f'{value:d} {self._axis} setumotgrad')
 
     @property
     def polepairs(self) -> int:
@@ -73,7 +77,7 @@ class Axis(Driver):
         >>> instr.x.polepairs
         50
         """
-        return int(self.resource.query(f'{self.axis_id} getpolepairs'))
+        return int(self.resource.query(f'{self._axis} getpolepairs'))
 
     @polepairs.setter
     def polepairs(self, value: int):
@@ -82,7 +86,7 @@ class Axis(Driver):
         >>> instr.x.polepairs = 50
         """
         assert value == 50 or value == 100
-        self.resource.write(f'{value:d} {self.axis_id} setpolepairs')
+        self.resource.write(f'{value:d} {self._axis} setpolepairs')
 
     @property
     def enabled(self) -> int:
@@ -91,7 +95,7 @@ class Axis(Driver):
         >>> instr.x.enabled
         1
         """
-        return int(self.resource.query(f'{self.axis_id} getaxis'))
+        return int(self.resource.query(f'{self._axis} getaxis'))
 
     @enabled.setter
     def enabled(self, value: int):
@@ -100,7 +104,7 @@ class Axis(Driver):
         >>> instr.x.enabled = 1
         """
         assert 0 <= value <= 4
-        self.resource.write(f'{value:d} {self.axis_id} setaxis')
+        self.resource.write(f'{value:d} {self._axis} setaxis')
 
     @property
     def phaseares(self) -> int:
@@ -109,7 +113,7 @@ class Axis(Driver):
         >>> instr.x.phaseares
         16
         """
-        return int(self.resource.query(f'{self.axis_id} getphaseares'))
+        return int(self.resource.query(f'{self._axis} getphaseares'))
 
     @phaseares.setter
     def phaseares(self, value: int):
@@ -118,7 +122,7 @@ class Axis(Driver):
         >>> instr.x.polepairs = 16
         """
         assert 2<= value <= 16
-        self.resource.write(f'{value:d} {self.axis_id} setphaseares')
+        self.resource.write(f'{value:d} {self._axis} setphaseares')
 
     @property
     def motiondir(self) -> int:
@@ -127,7 +131,7 @@ class Axis(Driver):
         >>> instr.x.motiondir
         0
         """
-        return int(self.resource.query(f'{self.axis_id} getmotiondir'))
+        return int(self.resource.query(f'{self._axis} getmotiondir'))
 
     @motiondir.setter
     def motiondir(self, value: int):
@@ -136,7 +140,7 @@ class Axis(Driver):
         >>> instr.x.motiondir = 0
         """
         assert 0<= value <= 1
-        self.resource.write(f'{value:d} {self.axis_id} setmotiondir')
+        self.resource.write(f'{value:d} {self._axis} setmotiondir')
 
     # TODO ncalvel
 
@@ -147,14 +151,14 @@ class Axis(Driver):
 
         >>> instr.x.speed(-0.1)
         """
-        self.resource.write(f'{value:.6f} {self.axis_id} speed')
+        self.resource.write(f'{value:.6f} {self._axis} speed')
 
     def test(self, value: float):
         """Executes axis test routine.
 
         >>> instr.x.test(10.0)
         """
-        self.resource.write(f'{value:.6f} {self.axis_id} test')
+        self.resource.write(f'{value:.6f} {self._axis} test')
 
     @property
     def caldone(self) -> int:
@@ -163,7 +167,7 @@ class Axis(Driver):
         >>> instr.x.caldone
         1
         """
-        return int(self.resource.query(f'{self.axis_id} getcaldone'))
+        return int(self.resource.query(f'{self._axis} getcaldone'))
 
     @property
     def sw(self) -> Tuple[int, int]:
@@ -173,7 +177,7 @@ class Axis(Driver):
         >>> instr.x.sw
         (0, 0)
         """
-        values = self.resource.query(f'{self.axis_id} getsw').split()
+        values = self.resource.query(f'{self._axis} getsw').split()
         return tuple(map(int, values))
 
     # TODO sw
@@ -187,7 +191,7 @@ class Axis(Driver):
         >>> instr.calswdist
         0.0
         """
-        return float(self.resource.query(f'{self.axis_id} getcalswdist'))
+        return float(self.resource.query(f'{self._axis} getcalswdist'))
 
     @calswdist.setter
     def calswdist(self, value: float):
@@ -195,21 +199,21 @@ class Axis(Driver):
 
         >>> instr.calswdist = 0.0
         """
-        self.resource.write(f'{value:.6f} {self.axis_id} setcalswdist')
+        self.resource.write(f'{value:.6f} {self._axis} setcalswdist')
 
     def ncal(self):
         """Calibrate axis.
 
         >>> instr.x.ncal()
         """
-        self.resource.write(f'{self.axis_id} ncal')
+        self.resource.write(f'{self._axis} ncal')
 
     def nrm(self):
         """Rangemove axis.
 
         >>> instr.x.nrm()
         """
-        self.resource.write(f'{self.axis_id} nrm')
+        self.resource.write(f'{self._axis} nrm')
 
     @property
     def nlimit(self) -> Tuple[float, float]:
@@ -218,7 +222,7 @@ class Axis(Driver):
         >>> instr.x.nlimit
         (0.0, 12.0)
         """
-        return tuple(map(float, self.resource.query(f'{self.axis_id} getnlimit').split()))
+        return tuple(map(float, self.resource.query(f'{self._axis} getnlimit').split()))
 
     # TODO org()
 
@@ -237,7 +241,7 @@ class Axis(Driver):
         >>> instr.x.mp
         1
         """
-        return int(self.resource.query(f'{self.axis_id} getmp'))
+        return int(self.resource.query(f'{self._axis} getmp'))
 
     @mp.setter
     def mp(self, value: int):
@@ -246,7 +250,7 @@ class Axis(Driver):
         >>> instr.x.mp = 1
         """
         assert 0<= value <= 1
-        self.resource.write(f'{value:d} {self.axis_id} getmp')
+        self.resource.write(f'{value:d} {self._axis} getmp')
 
     # TODO pdisplay
 
@@ -259,18 +263,6 @@ class Axis(Driver):
     # TODO wheelratio
 
     # TODO wheelbratio
-
-class AxisX(Axis):
-
-    axis_id = 1
-
-class AxisY(Axis):
-
-    axis_id = 2
-
-class AxisZ(Axis):
-
-    axis_id = 3
 
 class System(Driver):
 
@@ -362,9 +354,11 @@ class System(Driver):
 class Venus1(Driver):
     """Venus-1 driver for Corvus TT/eco controllers."""
 
-    x = AxisX()
-    y = AxisY()
-    z = AxisZ()
+    x = Axis(axis=1)
+    y = Axis(axis=2)
+    z = Axis(axis=3)
+
+    system = System()
 
     @property
     def identification(self) -> str:
@@ -465,10 +459,10 @@ class Venus1(Driver):
         return tuple(map(int, values))
 
     @property
-    def enabled(self):
-        """Returns axes enabled states.
+    def axes(self):
+        """Returns axes states.
 
-        >>> instr.enabled
+        >>> instr.axes
         (1, 1, 0)
         """
         values = self.resource.query('-1 getaxis').split()
@@ -849,5 +843,3 @@ class Venus1(Driver):
     # TODO joybspeed
 
     # TODO wheel
-
-    system = System()

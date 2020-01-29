@@ -15,6 +15,7 @@ def lock(function):
 
 class Driver(ContextDecorator):
     """Base class for custom VISA instrument drivers.
+
     >>> class MyInstrument(comet.Driver):
     ...     @property
     ...     def voltage(self):
@@ -33,17 +34,29 @@ class Driver(ContextDecorator):
 
     __instances = weakref.WeakKeyDictionary()
 
-    def __init__(self, resource=None):
+    def __init__(self, resource=None, **kwargs):
         self.__resource = resource
+        self.__kwargs = kwargs
+
+    def __construct(self, instance):
+        kwargs = self.kwargs.copy()
+        kwargs.update(instance.kwargs.copy())
+        return type(self)(resource=instance.resource, **kwargs)
 
     @property
     def resource(self):
         return self.__resource
 
-    def __get__(self, obj, cls):
+    @property
+    def kwargs(self):
+        return self.__kwargs.copy()
+
+    def __get__(self, instance, classname):
         if self not in type(self).__instances:
-            type(self).__instances[self] = type(self)(obj.resource)
-        return type(self).__instances.get(self)
+            type(self).__instances[self] = weakref.WeakKeyDictionary()
+        if instance not in type(self).__instances.get(self):
+            type(self).__instances[self][instance] = self.__construct(instance)
+        return type(self).__instances.get(self).get(instance)
 
     def __enter__(self):
         self.resource.__enter__()
