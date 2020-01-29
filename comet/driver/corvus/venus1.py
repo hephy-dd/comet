@@ -272,6 +272,93 @@ class AxisZ(Axis):
 
     axis_id = 3
 
+class System(Driver):
+
+    def save(self):
+        """Save paramerters.
+
+        >>> instr.system.save()
+        """
+        self.resource.write('save')
+
+    def restore(self):
+        """Restore saved parameters.
+
+        >>> instr.system.restore()
+        """
+        self.resource.write('restore')
+
+    def fpara(self):
+        """Restores factory defaults.
+
+        >>> instr.system.fpara()
+        """
+        self.resource.write('getfpara')
+
+    def clear(self):
+        """Clears content of parameter stack.
+
+        >>> instr.system.clear()
+        """
+        self.resource.write('clear')
+
+    def reset(self):
+        """Reboot the instrument. Sockets are closed.
+
+        >>> instr.system.reset()
+        """
+        self.resource.write('reset')
+
+    def beep(self, value: int):
+        """Beep.
+
+        Note: Corvus TT only.
+
+        >>> instr.beep(1000) # beep 1 sec
+        """
+        assert 1<= value <= 10000
+        self.resource.write(f'{value:d} beep')
+
+    @property
+    def version(self) -> str:
+        """Returns firmware version.
+
+        >>> instr.system.version
+        '1.42'
+        """
+        return self.resource.query('version').strip()
+
+    @property
+    def macadr(self) -> str:
+        """Returns MAC address.
+
+        Note: Corvus TT only.
+
+        >>> instr.system.macadr
+        '00:50:C2:10:91:91'
+        """
+        return self.resource.query('getmacadr').strip()
+
+    @property
+    def identify(self) -> str:
+        """Returns Corvus TT identification.
+
+        Note: Corvus TT only
+
+        >>> instr.system.identify
+        'Corvus 1 462 1 380'
+        """
+        return self.resource.query('identify')
+
+    @property
+    def options(self) -> int:
+        """Returns available instrument options.
+
+        >>> instr.system.options
+        8
+        """
+        return int(self.resource.query('getoptions'))
+
 class Venus1(Driver):
     """Venus-1 driver for Corvus TT/eco controllers."""
 
@@ -286,16 +373,7 @@ class Venus1(Driver):
         >>> instr.identification
         'Corvus 1 462 1 380'
         """
-        return self.resource.query('identify')
-
-    @property
-    def version(self) -> str:
-        """Returns firmware version.
-
-        >>> instr.version
-        '1.42'
-        """
-        return self.resource.query('version').strip()
+        return self.system.identify
 
     @property
     @lock
@@ -772,4 +850,4 @@ class Venus1(Driver):
 
     # TODO wheel
 
-    # TODO
+    system = System()
