@@ -29,6 +29,26 @@ class Relays(Driver):
         if result != 'OK':
             raise RuntimeError(f"returned unexpected value: '{result}'")
 
+    @property
+    def all(self) -> List[bool]:
+        """Returns all relays enabled states.
+
+        >>> instr.relays.all
+        [True, True, ..., False, False]
+        """
+        result = self.resource.query('GET:REL ALL').strip()
+        return [bool(int(value)) for value in result.split(',') if value.strip()][:self.channels]
+
+    @all.setter
+    def all(self, enabled: bool):
+        """Enable or disable all relays.
+
+        >>> instr.relays.all = False # switch off all channels
+        """
+        result = self.resource.query('SET:REL_{} ALL'.format('ON' if enabled else 'OFF')).strip()
+        if result != 'OK':
+            raise RuntimeError(f"returned unexpected value: '{result}'")
+
     def __len__(self):
         return ShuntBox.channels
 
@@ -40,7 +60,9 @@ class ShuntBox(Driver):
     channels = 10
     """Number of instrument channels."""
 
-    relays = Relays()
+    def __init__(self, resource):
+        super().__init__(resource)
+        relays = Relays(resource)
 
     @property
     def identification(self) -> str:
@@ -79,23 +101,3 @@ class ShuntBox(Driver):
         """
         result = self.resource.query('GET:TEMP ALL').strip()
         return [float(value) for value in result.split(',') if value.strip()][:self.channels] # avoid trailing commas
-
-    @property
-    def relays_all(self) -> List[bool]:
-        """Returns all relays enabled states.
-
-        >>> instr.relays_all
-        [True, True, ..., False, False]
-        """
-        result = self.resource.query('GET:REL ALL').strip()
-        return [bool(int(value)) for value in result.split(',') if value.strip()][:self.channels]
-
-    @relays_all.setter
-    def relays_all(self, enabled: bool):
-        """Enable or disable all relays.
-
-        >>> instr.relays_all = False # switch off all channels
-        """
-        result = self.resource.query('SET:REL_{} ALL'.format('ON' if enabled else 'OFF')).strip()
-        if result != 'OK':
-            raise RuntimeError(f"returned unexpected value: '{result}'")

@@ -15,6 +15,7 @@ def lock(function):
 
 class Driver(ContextDecorator):
     """Base class for custom VISA instrument drivers.
+
     >>> class MyInstrument(comet.Driver):
     ...     @property
     ...     def voltage(self):
@@ -31,19 +32,18 @@ class Driver(ContextDecorator):
     42.0
     """
 
-    __instances = weakref.WeakKeyDictionary()
-
-    def __init__(self, resource=None):
+    def __init__(self, resource):
         self.__resource = resource
 
     @property
     def resource(self):
         return self.__resource
 
-    def __get__(self, obj, cls):
-        if self not in type(self).__instances:
-            type(self).__instances[self] = type(self)(obj.resource)
-        return type(self).__instances.get(self)
+    def __setattr__(self, name, value):
+        """Prevent overriding driver attributes."""
+        if hasattr(self, name) and isinstance(getattr(self, name), Driver):
+            raise AttributeError("can't set attribute")
+        super().__setattr__(name, value)
 
     def __enter__(self):
         self.resource.__enter__()
