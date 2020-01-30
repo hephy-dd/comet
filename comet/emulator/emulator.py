@@ -84,8 +84,8 @@ def run(handler):
 
     logging.getLogger().setLevel(logging.INFO)
 
-    handler.read_termination = "\r"
-    handler.write_termination = "\r"
+    handler.read_termination = "\n"
+    handler.write_termination = "\n"
 
     server = TCPServer(handler)
     server.run(args.host, args.port)
