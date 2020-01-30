@@ -32,31 +32,18 @@ class Driver(ContextDecorator):
     42.0
     """
 
-    __instances = weakref.WeakKeyDictionary()
-
-    def __init__(self, resource=None, **kwargs):
+    def __init__(self, resource):
         self.__resource = resource
-        self.__kwargs = kwargs
-
-    def __construct(self, instance):
-        kwargs = self.kwargs.copy()
-        kwargs.update(instance.kwargs.copy())
-        return type(self)(resource=instance.resource, **kwargs)
 
     @property
     def resource(self):
         return self.__resource
 
-    @property
-    def kwargs(self):
-        return self.__kwargs.copy()
-
-    def __get__(self, instance, classname):
-        if self not in type(self).__instances:
-            type(self).__instances[self] = weakref.WeakKeyDictionary()
-        if instance not in type(self).__instances.get(self):
-            type(self).__instances[self][instance] = self.__construct(instance)
-        return type(self).__instances.get(self).get(instance)
+    def __setattr__(self, instance, value):
+        """Prevent overriding driver attributes."""
+        if isinstance(self.__dict__.get(instance), Driver):
+            raise AttributeError("can't set attribute")
+        super().__setattr__(instance, value)
 
     def __enter__(self):
         self.resource.__enter__()

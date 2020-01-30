@@ -6,9 +6,9 @@ def opc_wait(function):
     """Decorator function, locks the resource and waits for `*OPC?` after
     function execution."""
     @lock
-    def opc_wait(obj, *args, **kwargs):
-        result = function(obj, *args, **kwargs)
-        obj.operation_complete
+    def opc_wait(instance, *args, **kwargs):
+        result = function(instance, *args, **kwargs)
+        instance.resource.query('*OPC?')
         return result
     return opc_wait
 
@@ -17,12 +17,12 @@ def opc_poll(function, interval=.250, retries=40):
     the function call and polls after function execution for `*ESR?` bit 0 to be
     set."""
     @lock
-    def opc_poll(obj, *args, **kwargs):
-        obj.clear()
-        obj.complete_operation()
-        result = function(obj, *args, **kwargs)
+    def opc_poll(instance, *args, **kwargs):
+        instance.resource.write('*CLS')
+        instance.resource.write('*OPC')
+        result = function(instance, *args, **kwargs)
         for i in range(retries):
-            if 1 == obj.event_status & 0x1:
+            if 1 == int(instance.resource.query('*ESR?')) & 0x1:
                 return result
             time.sleep(interval)
         raise RuntimeError("failed to poll for ESR")
