@@ -9,11 +9,9 @@ from .k2400 import MeasureMixin
 
 __all__ = ['K2700']
 
-class System(System):
-
-    pass
-
 class K2700(IEC60488, MeasureMixin):
     """Keithley Model 2700 Multimeter/Switch."""
 
-    system = System()
+    def __init__(self, resource):
+        super().__init__(resource)
+        self.system = System(resource)

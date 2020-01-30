@@ -53,7 +53,7 @@ class AnalogChannel(ITCDriver):
         code = self.Mapping[index]
         result, actual, target = self.query_bytes(code, 14).split()
         if result != code.decode():
-            raise RuntimeError("invalid channel returned: '{}'".format(result))
+            raise RuntimeError(f"invalid channel returned: '{result}'")
         return float(actual), float(target)
 
     def __setitem__(self, index: int, value: float):
@@ -62,11 +62,11 @@ class AnalogChannel(ITCDriver):
         >>> instr.set_analog_channel[1] = 42.0
         """
         if not 1 <= index <= 7:
-            raise ValueError("invalid channel number: '{}'".format(index))
+            raise ValueError(f"invalid channel number: {index}")
         code = self.Mapping[index].lower().decode() # write requires lower case 'a'
-        result = self.query_bytes("{} {:05.1f}".format(code, value), 1)
+        result = self.query_bytes(f"{code} {value:05.1f}", 1)
         if result != 'a':
-            raise RuntimeError("failed to set target for channel '{}'".format(index))
+            raise RuntimeError(f"failed to set target for channel {index}")
 
 class ITC(ITCDriver):
     """Interface for CTS Climate Chambers."""
@@ -112,11 +112,14 @@ class ITC(ITCDriver):
     Status = namedtuple('Status', ('running', 'warning', 'error', 'channels'))
     """Status type container."""
 
-    analog_channel = AnalogChannel()
+    def __init__(self, resource):
+        super().__init__(resource)
+        analog_channel = AnalogChannel()
 
     @property
     def identification(self):
         """Returns instrument identification."""
+        self.time # provide device access
         return "ITC climate chamber"
 
     @property

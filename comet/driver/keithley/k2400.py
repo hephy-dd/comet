@@ -31,7 +31,9 @@ class Beeper(Driver):
 
 class System(Driver):
 
-    beeper = Beeper()
+    def __init__(self, resource):
+        super().__init__(resource)
+        self.beeper = Beeper(resource)
 
     @property
     def error(self) -> Tuple[int, str]:
@@ -56,7 +58,9 @@ class Voltage(Driver):
 
 class Source(Driver):
 
-    voltage = Voltage()
+    def __init__(self, resource):
+        super().__init__(resource)
+        self.voltage = Voltage(resource)
 
 class PowerMixin:
 
@@ -99,5 +103,7 @@ class MeasureMixin:
 class K2400(IEC60488, MeasureMixin, PowerMixin):
     """Keithley Series 2400 SourceMeter."""
 
-    system = System()
-    source = Source()
+    def __init__(self, resource):
+        super().__init__(resource)
+        self.system = System(resource)
+        self.source = Source(resource)
