@@ -761,16 +761,22 @@ class Venus1(Driver):
 
         >>> instr.align(0, 0, 10, 10, axis=1)
         """
-        self.resource.write(f'{x} {y} {org_x} {org_y} align')
+        self.resource.write(f'{x} {y} {org_x} {org_y} {axis} align')
 
-    def ico(self):
+    def reset_ico(self):
         """Reset rotated coordinate system.
 
-        >>> instr.ico()
+        >>> instr.reset_ico()
         """
         self.resource.write('ico')
 
-    # TODO (get)ico
+    @property
+    def ico(self):
+        """Reset rotated coordinate system.
+
+        >>> instr.ico
+        """
+        return int(self.resource.query('getico'))
 
     # TODO decode register
     @property
@@ -818,7 +824,11 @@ class Venus1(Driver):
         """
         return int(self.resource.query('getticks'))
 
-    # TODO ...
+    # TODO out
+
+    # TODO aout
+
+    # TODO in
 
     # TODO joysticktype
 
