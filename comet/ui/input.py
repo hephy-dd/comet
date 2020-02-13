@@ -299,7 +299,7 @@ class CheckBox(Input):
 
     @property
     def checked(self):
-        return self.qt.state() == QtCore.Qt.Checked
+        return self.qt.checkState() == QtCore.Qt.Checked
 
     @checked.setter
     def checked(self, checked):
