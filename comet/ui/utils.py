@@ -21,6 +21,7 @@ class MessageBox(QtWidgets.QMessageBox):
         super().__init__(icon, title, text)
         self.setDetailedText(details)
         layout = self.layout()
+        # Workaround to resize message box
         layout.addItem(QtWidgets.QSpacerItem(460, 0), layout.rowCount(), 0, 1, layout.columnCount())
 
 def show_info(title, text, details=None):
@@ -55,7 +56,7 @@ def show_exception(exception):
     ... except NameError as e:
     ...     show_exception(e)
     """
-    show_error("An exception occured", format(exception), details=traceback.format_exc())
+    show_error(title="An exception occured", text=format(exception), details=traceback.format_exc())
 
 def show_question(title, text, details=None):
     """Show question message box, returns True for yes and False for no.
