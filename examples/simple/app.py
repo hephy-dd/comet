@@ -46,7 +46,7 @@ def main():
     measure = Measure(
         finish=on_finish,
         fail=app.show_exception,
-        slots={"reading": on_reading}
+        reading=on_reading
     )
     app.processes.add("measure", measure)
 

@@ -41,28 +41,20 @@ class Process(QtCore.QObject, DeviceMixin):
     """Emitted if exception occured in method `run`, provides exception as argument.
     """
 
-    __push_signal = QtCore.pyqtSignal(str, object, object)
+    __callback_signal = QtCore.pyqtSignal(str, object, object)
     """Emmited on push() to propagate data from inside a thread."""
 
-    __message_signal = QtCore.pyqtSignal(str)
-
-    __progress_signal = QtCore.pyqtSignal(int, int)
-
-    def __init__(self, begin=None, finish=None, fail=None, slots={}, parent=None):
-        super().__init__(parent)
+    def __init__(self, begin=None, finish=None, fail=None, **callbacks):
+        super().__init__()
         self.__thread = None
         self.begin = begin
         self.finish = finish
         self.fail = fail
-        self.__slots = slots or {}
-        self.message = None
-        self.progress = None
+        self.__callbacks = callbacks
         self.__begin_signal.connect(self.__begin_handler)
         self.__finish_signal.connect(self.__finish_handler)
         self.__fail_signal.connect(self.__fail_handler)
-        self.__push_signal.connect(self.__push_handler)
-        self.__message_signal.connect(self.__message_handler)
-        self.__progress_signal.connect(self.__progress_handler)
+        self.__callback_signal.connect(self.__callback_handler)
 
     def __begin_handler(self):
         if callable(self.begin):
@@ -100,27 +92,19 @@ class Process(QtCore.QObject, DeviceMixin):
     def fail(self, fn):
         self.__fail = fn
 
+    @property
+    def callbacks(self):
+        return self.__callbacks
+
     def push(self, key, *args, **kwargs):
         """Emit a user callback to the main thread."""
-        self.__push_signal.emit(key, args, kwargs)
+        self.__callback_signal.emit(key, args, kwargs)
 
-    def __push_handler(self, key, args, kwargs):
-        if key in self.__slots:
-            fn = self.__slots.get(key)
+    def __callback_handler(self, key, args, kwargs):
+        if key in self.__callbacks:
+            fn = self.__callbacks.get(key)
             if callable(fn):
                 fn(*args, **kwargs)
-
-    @property
-    def slots(self):
-        return self.__slots
-
-    def __message_handler(self, message):
-        if callable(self.message):
-            self.message(message)
-
-    def __progress_handler(self, value, maximum):
-        if callable(self.progress):
-            self.progress(value, maximum)
 
     def __run(self):
         self.__begin_signal.emit()
@@ -153,12 +137,6 @@ class Process(QtCore.QObject, DeviceMixin):
     @property
     def running(self):
         return self.alive and self.__thread.is_running()
-
-    def sleep(self, seconds):
-        time.sleep(seconds)
-
-    def time(self):
-        return time.time()
 
     def __handle_exception(self, e):
         e.details = traceback.format_exc()

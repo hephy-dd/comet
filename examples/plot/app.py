@@ -32,7 +32,7 @@ class FakeDataProcess(comet.Process):
         source = FakeDataProducer()
         while self.running:
             self.push("reading", source.read())
-            self.sleep(random.uniform(.250, .500))
+            time.sleep(random.uniform(.250, .500))
 
 def main():
     app = comet.Application()
@@ -65,9 +65,10 @@ def main():
         else:
             plot.fit()
 
-    process = FakeDataProcess()
-    process.slots["reading"] = on_reading
-    process.fail = app.show_exception
+    process = FakeDataProcess(
+        reading=on_reading,
+        fail=app.show_exception
+    )
     process.start()
     app.processes.add("process", process)
 

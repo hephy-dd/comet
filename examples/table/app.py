@@ -25,8 +25,8 @@ def main():
             f"Unnamed{i}",
             "OK",
             "",
-            "0.0 uA",
-            "0.0 degC",
+            "n/a",
+            "n/a",
             "1200 ohm"
         ])
         table[i][0].checked = random.choice([True, False])
@@ -106,11 +106,9 @@ def main():
                 item[1].value = None
 
     process = app.processes.add("Process", Process(
-        slots={
-            "hv": on_hv,
-            "temp": on_temp,
-            "status": on_status,
-        }
+        hv=on_hv,
+        temp=on_temp,
+        status=on_status,
     ))
     process.start()
 
