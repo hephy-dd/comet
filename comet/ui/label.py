@@ -5,6 +5,7 @@ from .widget import Widget
 __all__ = ['Label']
 
 class Label(Widget):
+    """A text label."""
 
     QtBaseClass = QtWidgets.QLabel
 
@@ -14,9 +15,8 @@ class Label(Widget):
 
     @property
     def text(self):
-        return self.__text
+        return self.qt.text()
 
     @text.setter
     def text(self, text):
-        self.__text = text
         self.qt.setText("" if text is None else format(text))
