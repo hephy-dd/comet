@@ -6,5 +6,6 @@ from .label import *
 from .layout import *
 from .tabs import *
 from .table import *
+from .tree import *
 from .plot import *
 from .utils import *
