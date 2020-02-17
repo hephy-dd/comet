@@ -5,5 +5,6 @@ from .input import *
 from .label import *
 from .layout import *
 from .tabs import *
+from .table import *
 from .plot import *
 from .utils import *
