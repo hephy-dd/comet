@@ -9,7 +9,7 @@ def main():
 
     app.layout = comet.Column(
         comet.Table(
-            id="table2",
+            id="table",
             stretch=True,
             header=["Name", "Status", "HV", "Current", "Temp.", "Calib."]
         ),
@@ -19,7 +19,11 @@ def main():
         )
     )
 
-    table = app.get("table2")
+    def on_entered(item):
+        comet.show_info("Item", format(item.value))
+
+    table = app.get("table")
+    table.entered = on_entered
     for i in range(10):
         table.append([
             f"Unnamed{i}",

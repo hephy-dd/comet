@@ -46,7 +46,7 @@ def main():
     plot.add_series("temp", "x", "y1", text="Temperature", color="red")
     plot.add_series("humid", "x", "y2", text="Humidity", color="blue")
 
-    def on_reset(event):
+    def on_reset():
         for series in plot.series.values():
             series.clear()
         plot.fit()

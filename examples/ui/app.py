@@ -53,6 +53,14 @@ def main():
         stretch=(0, 1)
     ))
 
+    tab3 = comet.Tab(title="Tab 3", layout=comet.Column(
+        comet.Table(id="table", header=["Key", "Value"])
+    ))
+
+    tab4 = comet.Tab(title="Tab 4", layout=comet.Column(
+        comet.Tree(id="tree", header=["Key", "Value"])
+    ))
+
     app.layout = comet.Row(
         comet.Column(
             comet.FieldSet(title="FieldSet 1", layout=comet.Column(
@@ -76,9 +84,32 @@ def main():
             )),
             comet.Stretch()
         ),
-        comet.Tabs(tab1, tab2),
+        comet.Tabs(tab1, tab2, tab3, tab4, id="tabs"),
         stretch=(2, 7)
     )
+
+    # Populate table
+    table = app.layout.get("table")
+    spam = table.append(["Spam", 42])
+    spam[0].checked = True
+    #spam[0].enabled = False
+    ham = table.append(["Ham", 41])
+    ham[0].checked = True
+    #ham[0].enabled = False
+
+    # Populate tree
+    tree = app.layout.get("tree")
+    spam = tree.append(["Spam", 42])
+    spam[0].checked = True
+    spam.append(["Ham", 41])
+    spam.append(["Eggs", 40])
+
+    # Add an remove tab
+    tabs = app.layout.get("tabs")
+    tab = comet.Tab()
+    tabs.insert(0, tab)
+    tab.title = "Spam"
+    tabs.remove(tab)
 
     app.message = "Notification message..."
     app.progress = 3, 4

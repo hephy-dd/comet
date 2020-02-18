@@ -27,21 +27,21 @@ def main():
     def on_reading(value):
         app.layout.get("current").value = value
 
-    def on_start(event):
+    def on_start():
         app.layout.get("start").enabled = False
         app.layout.get("stop").enabled = True
         measure = app.processes.get("measure")
         measure.start()
 
-    def on_stop(event):
+    def on_stop():
         app.layout.get("start").enabled = False
         app.layout.get("stop").enabled = False
         measure = app.processes.get("measure")
         measure.stop()
 
-    def on_voltage(event):
+    def on_voltage(value):
         measure = app.processes.get("measure")
-        measure.voltage = event.value
+        measure.voltage = value
 
     measure = Measure(
         finish=on_finish,
@@ -52,7 +52,7 @@ def main():
 
     app.layout = comet.Column(
         comet.Label("Voltage"),
-        comet.Number(value=0, maximum=1000, decimals=1, suffix="V", change=on_voltage),
+        comet.Number(id="voltage", value=0, maximum=1000, decimals=1, suffix="V", change=on_voltage),
         comet.Label("Current"),
         comet.Number(id="current", readonly=True, value=0, maximum=1000, decimals=3, suffix="mA"),
         comet.Button(id="start", text="Start", click=on_start),
