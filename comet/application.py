@@ -9,12 +9,13 @@ from .widgets import MainWindow
 from .settings import SettingsMixin
 from .device import DeviceMixin
 from .process import ProcessMixin
+from .ui.core import Base
 from .ui.widget import Widget
 from .ui.layout import Layout
 
 __all__ = ['CoreApplication', 'Application']
 
-class CoreApplication(SettingsMixin, ProcessMixin, DeviceMixin):
+class CoreApplication(Base, SettingsMixin, ProcessMixin, DeviceMixin):
     """Base class for COMET application classes."""
 
     QtBaseClass = QtCore.QCoreApplication
@@ -22,7 +23,7 @@ class CoreApplication(SettingsMixin, ProcessMixin, DeviceMixin):
     __instance = None
 
     def __init__(self, name=None, version=None):
-        self.__qt = self.QtBaseClass(sys.argv)
+        super().__init__(sys.argv)
 
         # Setup logger
         logging.getLogger().setLevel(logging.INFO)
@@ -39,10 +40,6 @@ class CoreApplication(SettingsMixin, ProcessMixin, DeviceMixin):
     @classmethod
     def app(cls):
         return cls.__instance
-
-    @property
-    def qt(self):
-        return self.__qt
 
     @property
     def name(self):
@@ -142,6 +139,22 @@ class Application(CoreApplication):
     @title.setter
     def title(self, title):
         self.qt.window.setWindowTitle("" if title is None else format(title))
+
+    @property
+    def width(self):
+        return self.qt.window.width()
+
+    @width.setter
+    def width(self, width):
+        self.qt.window.resize(width, self.height)
+
+    @property
+    def height(self):
+        return self.qt.window.height()
+
+    @height.setter
+    def height(self, height):
+        self.qt.window.resize(self.width, height)
 
     @property
     def about(self):

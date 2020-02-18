@@ -1,6 +1,7 @@
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtCore
+from PyQt5 import QtWidgets
 
-from .core import Event
+from .core import callback
 from .widget import Widget
 
 __all__ = [
@@ -20,13 +21,13 @@ class Text(Input):
 
     QtBaseClass = QtWidgets.QLineEdit
 
-    def __init__(self, value=None, readonly=False, clearable=False, change=None, **kwargs):
+    def __init__(self, value=None, readonly=False, clearable=False, changed=None, **kwargs):
         super().__init__(**kwargs)
         self.value = value
         self.readonly = readonly
         self.clearable = clearable
-        self.change = change
-        self.qt.textChanged.connect(self.__change_handler)
+        self.changed = changed
+        self.qt.textChanged.connect(self.__changed_handler)
 
     @property
     def value(self):
@@ -53,16 +54,17 @@ class Text(Input):
         self.qt.setClearButtonEnabled(clearable)
 
     @property
-    def change(self):
-        return self.__change
+    def changed(self):
+        return self.__changed
 
-    @change.setter
-    def change(self, change):
-        self.__change = change
+    @changed.setter
+    def changed(self, changed):
+        self.__changed = changed
 
-    def __change_handler(self, text):
-        if callable(self.change):
-            self.change(Event(self, text=text))
+    @callback
+    def __changed_handler(self, text):
+        if callable(self.changed):
+            self.changed(text)
 
 class Number(Input):
 
@@ -71,7 +73,7 @@ class Number(Input):
     prefix_format = "{} "
     suffix_format = " {}"
 
-    def __init__(self, value=0, minimum=0, maximum=100, step=1, decimals=0, prefix=None, suffix=None, readonly=False, change=None, **kwargs):
+    def __init__(self, value=0, minimum=0, maximum=100, step=1, decimals=0, prefix=None, suffix=None, readonly=False, changed=None, **kwargs):
         super().__init__(**kwargs)
         self.value = value
         self.minimum = minimum
@@ -81,8 +83,8 @@ class Number(Input):
         self.prefix = prefix
         self.suffix = suffix
         self.readonly = readonly
-        self.change = change
-        self.qt.valueChanged.connect(self.__change_handler)
+        self.changed = changed
+        self.qt.valueChanged.connect(self.__changed_handler)
 
     @property
     def value(self):
@@ -163,29 +165,30 @@ class Number(Input):
             self.qt.setButtonSymbols(self.qt.UpDownArrows)
 
     @property
-    def change(self):
-        return self.__change
+    def changed(self):
+        return self.__changed
 
-    @change.setter
-    def change(self, change):
-        self.__change = change
+    @changed.setter
+    def changed(self, changed):
+        self.__changed = changed
 
-    def __change_handler(self, value):
-        if callable(self.change):
-            self.change(Event(self, value=value))
+    @callback
+    def __changed_handler(self, value):
+        if callable(self.changed):
+            self.changed(value)
 
 class Select(Input):
 
     QtBaseClass = QtWidgets.QComboBox
 
-    def __init__(self, values=[], default=None, change=None, **kwargs):
+    def __init__(self, values=[], default=None, changed=None, **kwargs):
         super().__init__(**kwargs)
         self.values = values
         if values and default is None:
             default = values[0]
         self.default = default
-        self.change = change
-        self.qt.currentIndexChanged.connect(self.__change_handler)
+        self.changed = changed
+        self.qt.currentIndexChanged.connect(self.__changed_handler)
 
     @property
     def values(self):
@@ -221,28 +224,29 @@ class Select(Input):
         self.qt.setCurrentIndex(index)
 
     @property
-    def change(self):
-        return self.__change
+    def changed(self):
+        return self.__changed
 
-    @change.setter
-    def change(self, change):
-        self.__change = change
+    @changed.setter
+    def changed(self, changed):
+        self.__changed = changed
 
-    def __change_handler(self, index):
-        if callable(self.change):
+    @callback
+    def __changed_handler(self, index):
+        if callable(self.changed):
             value = self.values[index]
-            self.change(Event(self, value=value, index=index))
+            self.changed(value, index)
 
 class List(Input):
 
     QtBaseClass = QtWidgets.QListWidget
 
-    def __init__(self, values=[], default=None, change=None, **kwargs):
+    def __init__(self, values=[], default=None, changed=None, **kwargs):
         super().__init__(**kwargs)
         self.values = values
         self.default = default
-        self.change = change
-        self.qt.currentRowChanged[int].connect(self.__change_handler)
+        self.changed = changed
+        self.qt.currentRowChanged[int].connect(self.__changed_handler)
 
     @property
     def values(self):
@@ -266,28 +270,29 @@ class List(Input):
         self.qt.removeItem(self.qt.findData(default))
 
     @property
-    def change(self):
-        return self.__change
+    def changed(self):
+        return self.__changed
 
-    @change.setter
-    def change(self, change):
-        self.__change = change
+    @changed.setter
+    def changed(self, changed):
+        self.__changed = changed
 
-    def __change_handler(self, index):
-        if callable(self.change):
+    @callback
+    def __changed_handler(self, index):
+        if callable(self.changed):
             value = self.values[index]
-            self.change(Event(self, value=value, index=index))
+            self.changed(value, index)
 
 class CheckBox(Input):
 
     QtBaseClass = QtWidgets.QCheckBox
 
-    def __init__(self, text=None, checked=False, change=None, **kwargs):
+    def __init__(self, text=None, checked=False, changed=None, **kwargs):
         super().__init__(**kwargs)
         self.text = text
         self.checked = checked
-        self.change = change
-        self.qt.stateChanged.connect(self.__change_handler)
+        self.changed = changed
+        self.qt.stateChanged.connect(self.__changed_handler)
 
     @property
     def text(self):
@@ -306,32 +311,33 @@ class CheckBox(Input):
         self.qt.setChecked(QtCore.Qt.Checked if checked else QtCore.Qt.Unchecked)
 
     @property
-    def change(self):
-        return self.__change
+    def changed(self):
+        return self.__changed
 
-    @change.setter
-    def change(self, change):
-        self.__change = change
+    @changed.setter
+    def changed(self, changed):
+        self.__changed = changed
 
-    def __change_handler(self, state):
-        if callable(self.change):
-            self.change(Event(self, checked=state==QtCore.Qt.Checked))
+    @callback
+    def __changed_handler(self, state):
+        if callable(self.changed):
+            self.changed(state == QtCore.Qt.Checked)
 
 class Button(Input):
 
     QtBaseClass = QtWidgets.QPushButton
 
-    def __init__(self, text=None, checkable=False, checked=False, click=None, toggle=None, **kwargs):
+    def __init__(self, text=None, checkable=False, checked=False, clicked=None, toggled=None, **kwargs):
         super().__init__(**kwargs)
         self.qt.setAutoDefault(False)
         self.qt.setDefault(False)
         self.text = text
         self.checkable = checkable
         self.checked = checked
-        self.click = click
-        self.toggle = toggle
-        self.qt.clicked.connect(self.__click_handler)
-        self.qt.toggled.connect(self.__toggle_handler)
+        self.clicked = clicked
+        self.toggled = toggled
+        self.qt.clicked.connect(self.__clicked_handler)
+        self.qt.toggled.connect(self.__toggled_handler)
 
     @property
     def text(self):
@@ -358,25 +364,27 @@ class Button(Input):
         self.qt.setChecked(bool(checked))
 
     @property
-    def click(self):
-        return self.__click
+    def clicked(self):
+        return self.__clicked
 
-    @click.setter
-    def click(self, click):
-        self.__click = click
+    @clicked.setter
+    def clicked(self, clicked):
+        self.__clicked = clicked
 
-    def __click_handler(self, checked):
-        if callable(self.click):
-            self.click(Event(self, checked=checked))
+    @callback
+    def __clicked_handler(self, checked):
+        if callable(self.clicked):
+            self.clicked()
 
     @property
-    def toggle(self):
-        return self.__toggle
+    def toggled(self):
+        return self.__toggled
 
-    @toggle.setter
-    def toggle(self, toggle):
-        self.__toggle = toggle
+    @toggled.setter
+    def toggled(self, toggled):
+        self.__toggled = toggled
 
-    def __toggle_handler(self, checked):
-        if callable(self.toggle):
-            self.toggle(Event(self, checked=checked))
+    @callback
+    def __toggled_handler(self, checked):
+        if callable(self.toggled):
+            self.toggled(checked)

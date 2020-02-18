@@ -32,7 +32,7 @@ class FakeDataProcess(comet.Process):
         source = FakeDataProducer()
         while self.running:
             self.push("reading", source.read())
-            self.sleep(random.uniform(.250, .500))
+            time.sleep(random.uniform(.250, .500))
 
 def main():
     app = comet.Application()
@@ -46,14 +46,14 @@ def main():
     plot.add_series("temp", "x", "y1", text="Temperature", color="red")
     plot.add_series("humid", "x", "y2", text="Humidity", color="blue")
 
-    def on_reset(event):
+    def on_reset():
         for series in plot.series.values():
             series.clear()
         plot.fit()
 
     app.layout = comet.Column(
         plot,
-        comet.Button(text="Reset", click=on_reset)
+        comet.Button(text="Reset", clicked=on_reset)
     )
 
     def on_reading(value):
@@ -65,9 +65,10 @@ def main():
         else:
             plot.fit()
 
-    process = FakeDataProcess()
-    process.slots["reading"] = on_reading
-    process.fail = app.show_exception
+    process = FakeDataProcess(
+        reading=on_reading,
+        failed=app.show_exception
+    )
     process.start()
     app.processes.add("process", process)
 

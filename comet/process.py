@@ -31,99 +31,83 @@ class StopRequest(Exception):
 
 class Process(QtCore.QObject, DeviceMixin):
 
-    __begin_signal = QtCore.pyqtSignal()
+    __started_signal = QtCore.pyqtSignal()
     """Emitted if process execution started."""
 
-    __finish_signal = QtCore.pyqtSignal()
+    __finished_signal = QtCore.pyqtSignal()
     """Emitted if process execution finished."""
 
-    __fail_signal = QtCore.pyqtSignal(object)
+    __failed_signal = QtCore.pyqtSignal(object, object)
     """Emitted if exception occured in method `run`, provides exception as argument.
     """
 
-    __push_signal = QtCore.pyqtSignal(str, object, object)
+    __callback_signal = QtCore.pyqtSignal(str, object, object)
     """Emmited on push() to propagate data from inside a thread."""
 
-    __message_signal = QtCore.pyqtSignal(str)
-
-    __progress_signal = QtCore.pyqtSignal(int, int)
-
-    def __init__(self, begin=None, finish=None, fail=None, slots={}, parent=None):
-        super().__init__(parent)
+    def __init__(self, started=None, finished=None, failed=None, **callbacks):
+        super().__init__()
         self.__thread = None
-        self.begin = begin
-        self.finish = finish
-        self.fail = fail
-        self.__slots = slots or {}
-        self.message = None
-        self.progress = None
-        self.__begin_signal.connect(self.__begin_handler)
-        self.__finish_signal.connect(self.__finish_handler)
-        self.__fail_signal.connect(self.__fail_handler)
-        self.__push_signal.connect(self.__push_handler)
-        self.__message_signal.connect(self.__message_handler)
-        self.__progress_signal.connect(self.__progress_handler)
-
-    def __begin_handler(self):
-        if callable(self.begin):
-            self.begin()
+        self.started = started
+        self.finished = finished
+        self.failed = failed
+        self.__callbacks = callbacks
+        self.__started_signal.connect(self.__started_handler)
+        self.__finished_signal.connect(self.__finished_handler)
+        self.__failed_signal.connect(self.__failed_handler)
+        self.__callback_signal.connect(self.__callback_handler)
 
     @property
-    def begin(self):
-        return self.__begin
+    def started(self):
+        return self.__started
 
-    @begin.setter
-    def begin(self, fn):
-        self.__begin = fn
+    @started.setter
+    def started(self, fn):
+        self.__started = fn
 
-    def __finish_handler(self):
-        if callable(self.finish):
-            self.finish()
-
-    @property
-    def finish(self):
-        return self.__finish
-
-    @finish.setter
-    def finish(self, fn):
-        self.__finish = fn
-
-    def __fail_handler(self, e):
-        if callable(self.fail):
-            self.fail(e)
+    def __started_handler(self):
+        if callable(self.started):
+            self.started()
 
     @property
-    def fail(self):
-        return self.__fail
+    def finished(self):
+        return self.__finished
 
-    @fail.setter
-    def fail(self, fn):
-        self.__fail = fn
+    @finished.setter
+    def finished(self, fn):
+        self.__finished = fn
+
+    def __finished_handler(self):
+        if callable(self.finished):
+            self.finished()
+
+    @property
+    def failed(self):
+        return self.__failed
+
+    @failed.setter
+    def failed(self, fn):
+        self.__failed = fn
+
+    def __failed_handler(self, exc, tb):
+        if callable(self.failed):
+            self.failed(exc, tb)
+
+    @property
+    def callbacks(self):
+        return self.__callbacks
 
     def push(self, key, *args, **kwargs):
         """Emit a user callback to the main thread."""
-        self.__push_signal.emit(key, args, kwargs)
+        self.__callback_signal.emit(key, args, kwargs)
 
-    def __push_handler(self, key, args, kwargs):
-        if key in self.__slots:
-            fn = self.__slots.get(key)
+    def __callback_handler(self, key, args, kwargs):
+        if key in self.__callbacks:
+            fn = self.__callbacks.get(key)
             if callable(fn):
                 fn(*args, **kwargs)
 
-    @property
-    def slots(self):
-        return self.__slots
-
-    def __message_handler(self, message):
-        if callable(self.message):
-            self.message(message)
-
-    def __progress_handler(self, value, maximum):
-        if callable(self.progress):
-            self.progress(value, maximum)
-
     def __run(self):
-        self.__begin_signal.emit()
+        self.__started_signal.emit()
         try:
             self.run()
         except StopRequest:
@@ -131,7 +115,7 @@ class Process(QtCore.QObject, DeviceMixin):
         except Exception as e:
             self.__handle_exception(e)
         finally:
-            self.__finish_signal.emit()
+            self.__finished_signal.emit()
 
     def start(self):
         if not self.alive:
@@ -154,17 +138,11 @@ class Process(QtCore.QObject, DeviceMixin):
     def running(self):
         return self.alive and self.__thread.is_running()
 
-    def sleep(self, seconds):
-        time.sleep(seconds)
-
-    def time(self):
-        return time.time()
-
-    def __handle_exception(self, e):
-        e.details = traceback.format_exc()
-        logging.error(e.details)
-        logging.error(e)
-        self.__fail_signal.emit(e)
+    def __handle_exception(self, exc):
+        tb = traceback.format_exc()
+        logging.error(tb)
+        logging.error(exc)
+        self.__failed_signal.emit(exc, tb)
 
     def run(self):
         raise NotImplemented()
