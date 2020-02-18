@@ -11,9 +11,43 @@ class Tree(Widget):
 
     QtBaseClass = QtWidgets.QTreeWidget
 
-    def __init__(self, header=[], **kwargs):
+    def __init__(self, header=[], changed=None, entered=None, **kwargs):
         super().__init__(**kwargs)
         self.header = header
+        self.changed = changed
+        self.entered = entered
+        self.qt.itemChanged.connect(self.__changed_handler)
+        self.qt.itemActivated.connect(self.__entered_handler)
+
+    @property
+    def changed(self):
+        return self.__changed
+
+    @changed.setter
+    def changed(self, changed):
+        self.__changed = changed
+
+    @callback
+    def __changed_handler(self, item, index):
+        if callable(self.changed):
+            item = item.data(0, item.UserType)
+            if item is not None:
+                self.changed(index, item)
+
+    @property
+    def entered(self):
+        return self.__entered
+
+    @entered.setter
+    def entered(self, entered):
+        self.__entered = entered
+
+    @callback
+    def __entered_handler(self, item, index):
+        if callable(self.entered):
+            item = item.data(0, item.UserType)
+            if item is not None:
+                self.entered(index, item)
 
     @property
     def header(self):

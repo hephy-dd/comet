@@ -16,15 +16,13 @@ class ProcessTest(unittest.TestCase):
 
     def testProcess(self):
         p = Process()
-        self.assertEqual(p.begin, None)
-        self.assertEqual(p.finish, None)
-        self.assertEqual(p.fail, None)
-        self.assertEqual(p.message, None)
-        self.assertEqual(p.progress, None)
-        p = Process(begin=1, finish=2, fail=3)
-        self.assertEqual(p.begin, 1)
-        self.assertEqual(p.finish, 2)
-        self.assertEqual(p.fail, 3)
+        self.assertEqual(p.started, None)
+        self.assertEqual(p.finished, None)
+        self.assertEqual(p.failed, None)
+        p = Process(started=1, finished=2, failed=3)
+        self.assertEqual(p.started, 1)
+        self.assertEqual(p.finished, 2)
+        self.assertEqual(p.failed, 3)
 
     def testProcessManager(self):
         p = Process()

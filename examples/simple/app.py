@@ -44,19 +44,19 @@ def main():
         measure.voltage = value
 
     measure = Measure(
-        finish=on_finish,
-        fail=app.show_exception,
+        finished=on_finish,
+        failed=app.show_exception,
         reading=on_reading
     )
     app.processes.add("measure", measure)
 
     app.layout = comet.Column(
         comet.Label("Voltage"),
-        comet.Number(id="voltage", value=0, maximum=1000, decimals=1, suffix="V", change=on_voltage),
+        comet.Number(id="voltage", value=0, maximum=1000, decimals=1, suffix="V", changed=on_voltage),
         comet.Label("Current"),
         comet.Number(id="current", readonly=True, value=0, maximum=1000, decimals=3, suffix="mA"),
-        comet.Button(id="start", text="Start", click=on_start),
-        comet.Button(id="stop", text="Stop", enabled=False, click=on_stop),
+        comet.Button(id="start", text="Start", clicked=on_start),
+        comet.Button(id="stop", text="Stop", enabled=False, clicked=on_stop),
         comet.Stretch()
     )
 

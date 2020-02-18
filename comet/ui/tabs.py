@@ -48,6 +48,14 @@ class Tabs(Widget):
         del self.__tabs[index]
 
     @property
+    def current(self):
+        return self.qt.currentIndex()
+
+    @current.setter
+    def current(self, index):
+        self.qt.setCurrentIndex(index)
+
+    @property
     def children(self):
         return self.__tabs.copy()
 

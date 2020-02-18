@@ -53,7 +53,7 @@ def main():
 
     app.layout = comet.Column(
         plot,
-        comet.Button(text="Reset", click=on_reset)
+        comet.Button(text="Reset", clicked=on_reset)
     )
 
     def on_reading(value):
@@ -67,7 +67,7 @@ def main():
 
     process = FakeDataProcess(
         reading=on_reading,
-        fail=app.show_exception
+        failed=app.show_exception
     )
     process.start()
     app.processes.add("process", process)

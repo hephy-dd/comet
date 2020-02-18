@@ -34,11 +34,16 @@ def main():
             "1200 ohm"
         ])
         table[i][0].checked = random.choice([True, False])
-        table[i][0].readonly = True
+        table[i][0].checkable = True
+        #table[i][0].readonly = True
 
     table.fit()
 
+    def on_entered(index, item):
+        comet.show_info("Item", format(item[index].value))
+
     tree = app.get("tree")
+    tree.entered = on_entered
     tree.append(["Flute 1", "OK"])
     tree.clear()
     tree.append(["Flute 2", "OK"])

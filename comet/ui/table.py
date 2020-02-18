@@ -34,7 +34,7 @@ class Table(Widget):
 
     @callback
     def __changed_handler(self, item):
-        if self.changed is not None:
+        if callable(self.changed):
             item = item.data(item.UserType)
             if item is not None:
                 self.changed(item)
@@ -49,7 +49,7 @@ class Table(Widget):
 
     @callback
     def __entered_handler(self, item):
-        if self.entered is not None:
+        if callable(self.entered):
             item = item.data(item.UserType)
             if item is not None:
                 self.entered(item)
@@ -184,9 +184,9 @@ class TableItem(Base):
     @readonly.setter
     def readonly(self, state):
         if state:
-            self.qt.setFlags(self.qt.flags() & ~(QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsUserCheckable))
+            self.qt.setFlags(self.qt.flags() & ~QtCore.Qt.ItemIsEditable)
         else:
-            self.qt.setFlags(self.qt.flags() | (QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsUserCheckable))
+            self.qt.setFlags(self.qt.flags() | QtCore.Qt.ItemIsEditable)
 
     @property
     def checked(self):

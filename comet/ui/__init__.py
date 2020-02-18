@@ -8,4 +8,4 @@ from .tabs import *
 from .table import *
 from .tree import *
 from .plot import *
-from .utils import *
+from .dialogs import *

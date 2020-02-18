@@ -8,6 +8,7 @@ from .driver import *
 from .device import *
 from .functions import Range
 from .ureg import *
+from .utils import *
 from .version import __version__
 
 def app():

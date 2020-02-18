@@ -31,66 +31,66 @@ class StopRequest(Exception):
 
 class Process(QtCore.QObject, DeviceMixin):
 
-    __begin_signal = QtCore.pyqtSignal()
+    __started_signal = QtCore.pyqtSignal()
     """Emitted if process execution started."""
 
-    __finish_signal = QtCore.pyqtSignal()
+    __finished_signal = QtCore.pyqtSignal()
     """Emitted if process execution finished."""
 
-    __fail_signal = QtCore.pyqtSignal(object)
+    __failed_signal = QtCore.pyqtSignal(object, object)
     """Emitted if exception occured in method `run`, provides exception as argument.
     """
 
     __callback_signal = QtCore.pyqtSignal(str, object, object)
     """Emmited on push() to propagate data from inside a thread."""
 
-    def __init__(self, begin=None, finish=None, fail=None, **callbacks):
+    def __init__(self, started=None, finished=None, failed=None, **callbacks):
         super().__init__()
         self.__thread = None
-        self.begin = begin
-        self.finish = finish
-        self.fail = fail
+        self.started = started
+        self.finished = finished
+        self.failed = failed
         self.__callbacks = callbacks
-        self.__begin_signal.connect(self.__begin_handler)
-        self.__finish_signal.connect(self.__finish_handler)
-        self.__fail_signal.connect(self.__fail_handler)
+        self.__started_signal.connect(self.__started_handler)
+        self.__finished_signal.connect(self.__finished_handler)
+        self.__failed_signal.connect(self.__failed_handler)
         self.__callback_signal.connect(self.__callback_handler)
 
-    def __begin_handler(self):
-        if callable(self.begin):
-            self.begin()
+    @property
+    def started(self):
+        return self.__started
+
+    @started.setter
+    def started(self, fn):
+        self.__started = fn
+
+    def __started_handler(self):
+        if callable(self.started):
+            self.started()
 
     @property
-    def begin(self):
-        return self.__begin
+    def finished(self):
+        return self.__finished
 
-    @begin.setter
-    def begin(self, fn):
-        self.__begin = fn
+    @finished.setter
+    def finished(self, fn):
+        self.__finished = fn
 
-    def __finish_handler(self):
-        if callable(self.finish):
-            self.finish()
-
-    @property
-    def finish(self):
-        return self.__finish
-
-    @finish.setter
-    def finish(self, fn):
-        self.__finish = fn
-
-    def __fail_handler(self, e):
-        if callable(self.fail):
-            self.fail(e)
+    def __finished_handler(self):
+        if callable(self.finished):
+            self.finished()
 
     @property
-    def fail(self):
-        return self.__fail
+    def failed(self):
+        return self.__failed
 
-    @fail.setter
-    def fail(self, fn):
-        self.__fail = fn
+    @failed.setter
+    def failed(self, fn):
+        self.__failed = fn
+
+    def __failed_handler(self, exc, tb):
+        if callable(self.failed):
+            self.failed(exc, tb)
 
     @property
     def callbacks(self):
@@ -107,7 +107,7 @@ class Process(QtCore.QObject, DeviceMixin):
                 fn(*args, **kwargs)
 
     def __run(self):
-        self.__begin_signal.emit()
+        self.__started_signal.emit()
         try:
             self.run()
         except StopRequest:
@@ -115,7 +115,7 @@ class Process(QtCore.QObject, DeviceMixin):
         except Exception as e:
             self.__handle_exception(e)
         finally:
-            self.__finish_signal.emit()
+            self.__finished_signal.emit()
 
     def start(self):
         if not self.alive:
@@ -138,11 +138,11 @@ class Process(QtCore.QObject, DeviceMixin):
     def running(self):
         return self.alive and self.__thread.is_running()
 
-    def __handle_exception(self, e):
-        e.details = traceback.format_exc()
-        logging.error(e.details)
-        logging.error(e)
-        self.__fail_signal.emit(e)
+    def __handle_exception(self, exc):
+        tb = traceback.format_exc()
+        logging.error(tb)
+        logging.error(exc)
+        self.__failed_signal.emit(exc, tb)
 
     def run(self):
         raise NotImplemented()
