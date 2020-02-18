@@ -141,6 +141,22 @@ class Application(CoreApplication):
         self.qt.window.setWindowTitle("" if title is None else format(title))
 
     @property
+    def width(self):
+        return self.qt.window.width()
+
+    @width.setter
+    def width(self, width):
+        self.qt.window.resize(width, self.height)
+
+    @property
+    def height(self):
+        return self.qt.window.height()
+
+    @height.setter
+    def height(self, height):
+        self.qt.window.resize(self.width, height)
+
+    @property
     def about(self):
         return self.qt.window.aboutText()
 

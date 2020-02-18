@@ -8,11 +8,13 @@ class Widget(Object):
 
     QtBaseClass = QtWidgets.QWidget
 
-    def __init__(self, title=None, enabled=True, visible=True, layout=None, **kwargs):
+    def __init__(self, title=None, enabled=True, visible=True, width=None, height=None, layout=None, **kwargs):
         super().__init__(**kwargs)
         self.title = title
         self.enabled = enabled
         self.visible = visible
+        self.width = width
+        self.height = height
         self.layout = layout
 
     @property
@@ -38,6 +40,32 @@ class Widget(Object):
     @visible.setter
     def visible(self, visible):
         self.qt.setVisible(visible)
+
+    @property
+    def width(self):
+        return self.qt.width()
+
+    @width.setter
+    def width(self, width):
+        if width is None:
+            self.qt.setMinimumWidth(0)
+            self.qt.setMaximumWidth(QtWidgets.QWIDGETSIZE_MAX)
+        else:
+            self.qt.setMinimumWidth(width)
+            self.qt.setMaximumWidth(width)
+
+    @property
+    def height(self):
+        return self.qt.height()
+
+    @height.setter
+    def height(self, height):
+        if height is None:
+            self.qt.setMinimumHeight(0)
+            self.qt.setMaximumHeight(QtWidgets.QWIDGETSIZE_MAX)
+        else:
+            self.qt.setMinimumHeight(height)
+            self.qt.setMaximumHeight(height)
 
     @property
     def layout(self):
