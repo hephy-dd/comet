@@ -1,4 +1,6 @@
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtCore
+from PyQt5 import QtGui
+from PyQt5 import QtWidgets
 
 from .core import Base, callback
 from .widget import Widget
@@ -17,20 +19,36 @@ class Table(Widget):
         self.stretch = stretch
         self.changed = changed
         self.entered = entered
-        self.qt.itemChanged.connect(self.__changed)
-        self.qt.itemActivated.connect(self.__entered)
+        self.qt.itemChanged.connect(self.__changed_handler)
+        self.qt.itemActivated.connect(self.__entered_handler)
         self.qt.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
         self.qt.horizontalHeader().setHighlightSections(False)
 
+    @property
+    def changed(self):
+        return self.__changed
+
+    @changed.setter
+    def changed(self, changed):
+        self.__changed = changed
+
     @callback
-    def __changed(self, item):
+    def __changed_handler(self, item):
         if self.changed is not None:
             item = item.data(item.UserType)
             if item is not None:
                 self.changed(item)
 
+    @property
+    def entered(self):
+        return self.__entered
+
+    @entered.setter
+    def entered(self, entered):
+        self.__entered = entered
+
     @callback
-    def __entered(self, item):
+    def __entered_handler(self, item):
         if self.entered is not None:
             item = item.data(item.UserType)
             if item is not None:
@@ -48,13 +66,14 @@ class Table(Widget):
     def append(self, items):
         row = self.qt.rowCount()
         self.qt.setRowCount(self.qt.rowCount() + 1)
-        self.insert(row, items)
+        return self.insert(row, items)
 
     def insert(self, row, items):
         for column, item in enumerate(items):
             if not isinstance(item, TableItem):
                 item = TableItem(value=item)
             self.qt.setItem(row, column, item.qt)
+        return self[row]
 
     def clear(self):
         self.qt.clearContents()
@@ -99,7 +118,7 @@ class TableItem(Base):
 
     QtBaseClass = QtWidgets.QTableWidgetItem
 
-    def __init__(self, value=None, color=None, background=None, enabled=True, readonly=True, checked=None, **kwargs):
+    def __init__(self, value=None, color=None, background=None, enabled=True, readonly=True, checked=None, checkable=False, **kwargs):
         super().__init__(**kwargs)
         self.qt.setData(self.qt.UserType, self)
         self.__default_foreground = self.qt.foreground()
@@ -110,6 +129,7 @@ class TableItem(Base):
         self.enabled = enabled
         self.readonly = readonly
         self.checked = checked
+        self.checkable = checkable
 
     @property
     def value(self):
@@ -174,10 +194,16 @@ class TableItem(Base):
 
     @checked.setter
     def checked(self, state):
-        if state is None:
-            flags = self.qt.flags() & ~QtCore.Qt.ItemIsUserCheckable
-            self.qt.setFlags(flags)
-        else:
+        self.qt.setCheckState(QtCore.Qt.Checked if state else QtCore.Qt.Unchecked)
+
+    @property
+    def checkable(self):
+        return self.qt.flags() & ~QtCore.Qt.ItemIsUserCheckable
+
+    @checkable.setter
+    def checkable(self, state):
+        if state:
             flags = self.qt.flags() | QtCore.Qt.ItemIsUserCheckable
-            self.qt.setFlags(flags)
-            self.qt.setCheckState(QtCore.Qt.Checked if state else QtCore.Qt.Unchecked)
+        else:
+            flags = self.qt.flags() & ~QtCore.Qt.ItemIsUserCheckable
+        self.qt.setFlags(flags)

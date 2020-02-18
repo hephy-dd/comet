@@ -9,7 +9,20 @@ __all__ = [
 
 class Tab(Widget):
 
-    pass
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    @property
+    def title(self):
+        return self.qt.windowTitle()
+
+    @title.setter
+    def title(self, title):
+        self.qt.setWindowTitle(title)
+        if self.qt.parent():
+            if self.qt.parent().parent():
+                index = self.qt.parent().parent().indexOf(self.qt)
+                self.qt.parent().parent().setTabText(index, title)
 
 class Tabs(Widget):
 
@@ -22,5 +35,30 @@ class Tabs(Widget):
             self.append(tab)
 
     def append(self, tab):
-        self.__tabs.append(tab)
         self.qt.addTab(tab.qt, tab.title)
+        self.__tabs.append(tab)
+
+    def insert(self, index, tab):
+        self.qt.insertTab(index, tab.qt, tab.title)
+        self.__tabs.insert(index, tab)
+
+    def remove(self, tab):
+        index = self.__tabs.index(tab)
+        self.qt.removeTab(index)
+        del self.__tabs[index]
+
+    @property
+    def children(self):
+        return self.__tabs.copy()
+
+    def __len__(self):
+        return self.qt.count()
+
+    def __iter__(self):
+        return iter(self.children)
+
+    def __getitem__(self, index):
+        return self.children[index]
+
+    def __setitem__(self, index, tab):
+        self.insert(index, tab)
