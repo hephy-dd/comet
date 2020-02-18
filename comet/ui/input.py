@@ -1,6 +1,7 @@
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtCore
+from PyQt5 import QtWidgets
 
-from .core import Event
+from .core import callback
 from .widget import Widget
 
 __all__ = [
@@ -60,9 +61,10 @@ class Text(Input):
     def change(self, change):
         self.__change = change
 
+    @callback
     def __change_handler(self, text):
         if callable(self.change):
-            self.change(Event(self, text=text))
+            self.change(text)
 
 class Number(Input):
 
@@ -170,9 +172,10 @@ class Number(Input):
     def change(self, change):
         self.__change = change
 
+    @callback
     def __change_handler(self, value):
         if callable(self.change):
-            self.change(Event(self, value=value))
+            self.change(value)
 
 class Select(Input):
 
@@ -228,10 +231,11 @@ class Select(Input):
     def change(self, change):
         self.__change = change
 
+    @callback
     def __change_handler(self, index):
         if callable(self.change):
             value = self.values[index]
-            self.change(Event(self, value=value, index=index))
+            self.change(value, index)
 
 class List(Input):
 
@@ -273,10 +277,11 @@ class List(Input):
     def change(self, change):
         self.__change = change
 
+    @callback
     def __change_handler(self, index):
         if callable(self.change):
             value = self.values[index]
-            self.change(Event(self, value=value, index=index))
+            self.change(value, index)
 
 class CheckBox(Input):
 
@@ -313,9 +318,10 @@ class CheckBox(Input):
     def change(self, change):
         self.__change = change
 
+    @callback
     def __change_handler(self, state):
         if callable(self.change):
-            self.change(Event(self, checked=state==QtCore.Qt.Checked))
+            self.change(state == QtCore.Qt.Checked)
 
 class Button(Input):
 
@@ -365,9 +371,10 @@ class Button(Input):
     def click(self, click):
         self.__click = click
 
+    @callback
     def __click_handler(self, checked):
         if callable(self.click):
-            self.click(Event(self, checked=checked))
+            self.click()
 
     @property
     def toggle(self):
@@ -377,6 +384,7 @@ class Button(Input):
     def toggle(self, toggle):
         self.__toggle = toggle
 
+    @callback
     def __toggle_handler(self, checked):
         if callable(self.toggle):
-            self.toggle(Event(self, checked=checked))
+            self.toggle(checked)

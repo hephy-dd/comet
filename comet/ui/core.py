@@ -1,7 +1,8 @@
 import weakref
 import logging
 
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtCore
+from PyQt5 import QtWidgets
 
 __all__ = []
 
@@ -30,20 +31,10 @@ def get(id):
     return ElementStore.get(id)
 
 def callback(method):
+    """UI element callback method decorator."""
     def callback(*args, **kwargs):
         return method(*args, **kwargs)
     return callback
-
-class Event:
-
-    def __init__(self, target, **kwargs):
-        self.__target = weakref.ref(target)
-        for k, v in kwargs.items():
-            setattr(self, k, v)
-
-    @property
-    def target(self):
-        return self.__target()
 
 class Base:
     """Case class for any UI elements."""
