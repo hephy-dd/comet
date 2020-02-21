@@ -376,11 +376,18 @@ class System(Driver):
 class Venus1(Driver):
     """Venus-1 driver for Corvus TT/eco controllers."""
 
+    X_AXIS = 1
+    Y_AXIS = 2
+    Z_AXIS = 3
+
+    HOST_MODE = 0
+    TERMINAL_MODE = 1
+
     def __init__(self, resource):
         super().__init__(resource)
-        self.x = Axis(resource, 1)
-        self.y = Axis(resource, 2)
-        self.z = Axis(resource, 3)
+        self.x = Axis(resource, self.X_AXIS)
+        self.y = Axis(resource, self.Y_AXIS)
+        self.z = Axis(resource, self.Z_AXIS)
         self.system = System(resource)
 
     @property
@@ -531,14 +538,17 @@ class Venus1(Driver):
         values.append(self.resource.read())
         return tuple(map(int, values))
 
-    def __mode(self, value: int):
-        """Set command mode, 0 for host mode, 1 for terminal mode.
+    def mode(self, value: int):
+        """Set command mode.
 
-        >>> instr.mode = 0
+        0: HOST_MODE
+        1: TERMINAL_MODE
+
+        >>> instr.mode = instr.HOST_MODE
         """
-        assert 0<= value <= 1
+        assert value in (self.HOST_MODE, self.TERMINAL_MODE)
         self.resource.write(f'{value:d} mode')
-    mode = property(None, __mode)
+    mode = property(None, mode)
 
     @property
     def ipadr(self) -> str:
