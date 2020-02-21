@@ -30,11 +30,33 @@ class Axis(Driver):
     @property
     def unit(self):
         """Returns axis unit.
+        0: Microstep
+        1: μm
+        2: mm
+        3: cm
+        4: m
+        5: inch
+        6: mil (1/1000 inch)
 
         >>> instr.x.unit
         2
         """
         return int(self.resource.query(f'{self._index} getunit'))
+
+    @unit.setter
+    def unit(self, value: int):
+        """Set axis unit.
+        0: Microstep
+        1: μm
+        2: mm
+        3: cm
+        4: m
+        5: inch
+        6: mil (1/1000 inch)
+
+        >>> instr.x.unit = 2
+        """
+        self.resource.write(f'{value:d} {self._index} setunit')
 
     @property
     def umotmin(self) -> Tuple[int]:
@@ -407,6 +429,13 @@ class Venus1(Driver):
     @property
     def unit(self):
         """Returns tuple containing units.
+        0: Microstep
+        1: μm
+        2: mm
+        3: cm
+        4: m
+        5: inch
+        6: mil (1/1000 inch)
 
         >>> instr.unit
         (2.0, 2.0, 2.0, 2.0)
@@ -610,7 +639,7 @@ class Venus1(Driver):
 
         >>> instr.move(2, 4, 0)
         """
-        return self.resource.query(f'{x:.6f} {y:.6f} {z:.6f} move')
+        self.resource.write(f'{x:.6f} {y:.6f} {z:.6f} move')
 
     m = move
 
@@ -619,7 +648,7 @@ class Venus1(Driver):
 
         >>> instr.rmove(1, 1, 0)
         """
-        return self.resource.query(f'{x:.6f} {y:.6f} {z:.6f} rmove')
+        self.resource.write(f'{x:.6f} {y:.6f} {z:.6f} rmove')
 
     r = rmove
 
