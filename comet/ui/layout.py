@@ -31,9 +31,21 @@ class BoxLayout(Layout):
         return self.__children.copy()
 
     def append(self, child):
+        """Append a widget as child."""
         self.__children.append(child)
         self.qt.layout().addWidget(child.qt)
         self.stretch = self.stretch
+
+    def insert(self, index, child):
+        """Insert a widget as child at index position."""
+        self.__children.insert(index, child)
+        self.qt.layout().insertWidget(index, child.qt)
+        self.stretch = self.stretch
+
+    def remove(self, child):
+        """Remove a child widget."""
+        self.qt.removeWidget(child)
+        self.__children.remove(child)
 
     @property
     def stretch(self):
