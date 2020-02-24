@@ -548,6 +548,9 @@ class Venus1(Driver):
         """
         assert value in (self.HOST_MODE, self.TERMINAL_MODE)
         self.resource.write(f'{value:d} mode')
+        # Workaround: clear clogged control characters from internal
+        # buffer by reading querying instrument identity.
+        self.resource.query('identify')
     mode = property(None, mode)
 
     @property
