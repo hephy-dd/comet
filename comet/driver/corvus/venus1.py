@@ -280,6 +280,23 @@ class Axis(Driver):
 
     # TODO joyassign
 
+    @property
+    def joyspeed(self) -> float:
+        """Returns maximum joystick speed for axis in mm/s.
+
+        >>> instr.x.joyspeed
+        20.0
+        """
+        return float(self.resource.query(f'{self._axis} getnjoyspeed'))
+
+    @joyspeed.setter
+    def joyspeed(self, value: float):
+        """Set maximum joystick speed for axis in mm/s.
+
+        >>> instr.x.joyspeed = 20.0
+        """
+        self.resource.write(f'{value:.6f} {self._axis} setnjoyspeed')
+
     # TODO wheelres
 
     # TODO wheelratio
@@ -906,8 +923,38 @@ class Venus1(Driver):
         """
         self.resource.write(f'{value:d} joystick')
 
-    # TODO joyspeed
+    @property
+    def joyspeed(self) -> float:
+        """Returns maximum joystick speed in mm/s.
 
-    # TODO joybspeed
+        >>> instr.joyspeed
+        20.0
+        """
+        return float(self.resource.query('getjoyspeed'))
+
+    @joyspeed.setter
+    def joyspeed(self, value: float):
+        """Set maximum joystick speed in mm/s.
+
+        >>> instr.joyspeed = 20.0
+        """
+        self.resource.write(f'{value:.6f} setjoyspeed')
+
+    @property
+    def joybspeed(self) -> float:
+        """Returns special joystick button speed in mm/s.
+
+        >>> instr.joybspeed
+        0.01
+        """
+        return float(self.resource.query('getjoybspeed'))
+
+    @joybspeed.setter
+    def joybspeed(self, value: float):
+        """Set special joystick button speed in mm/s.
+
+        >>> instr.joybspeed = 0.01
+        """
+        self.resource.write(f'{value:.6f} setjoybspeed')
 
     # TODO wheel
