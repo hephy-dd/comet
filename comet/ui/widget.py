@@ -79,11 +79,13 @@ class Widget(Object):
 
     @layout.setter
     def layout(self, layout):
-        if self.qt.layout():
-            self.qt.layout().removeItem(self.__layout)
+        if self.qt.layout() is not None:
+            self.qt.layout().removeWidget(self.__layout.qt)
+            self.__layout.qt.setParent(None)
+            self.__layout.qt.hide()
         self.__layout = layout
         if layout is not None:
-            if not self.qt.layout():
+            if self.qt.layout() is None:
                 self.qt.setLayout(QtWidgets.QVBoxLayout())
             self.qt.layout().addWidget(layout.qt)
 

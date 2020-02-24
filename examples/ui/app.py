@@ -62,9 +62,13 @@ def main():
         comet.Tree(id="tree", header=["Key", "Value"])
     ))
 
-    tab5 = comet.Tab(title="Tab 5", layout=comet.Column(
+    first = comet.Button(text="Click")
+    second = comet.Column(
         comet.ScrollArea(id="scroll", layout=comet.Column(*[comet.CheckBox(text=f"Option {i+1}", checked=random.choice([True, False])) for i in range(64)]))
-    ))
+    )
+    tab5 = comet.Tab(id="tab5", title="Tab 5", layout=first)
+    tab5.layout = second
+    del first
 
     app.layout = comet.Row(
         comet.Column(
