@@ -8,11 +8,13 @@ class Widget(Object):
 
     QtBaseClass = QtWidgets.QWidget
 
-    def __init__(self, title=None, enabled=True, visible=True, width=None, height=None, layout=None, tooltip=None, tooltip_duration=None, stylesheet=None, **kwargs):
+    def __init__(self, title=None, enabled=True, visible=None, width=None, height=None, layout=None, tooltip=None, tooltip_duration=None, stylesheet=None, **kwargs):
         super().__init__(**kwargs)
         self.title = title
         self.enabled = enabled
-        self.visible = visible
+        # Prevent visual glitch.
+        if visible is not None:
+            self.visible = visible
         self.width = width
         self.height = height
         self.layout = layout
