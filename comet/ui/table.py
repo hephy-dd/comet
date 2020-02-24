@@ -251,7 +251,13 @@ class TableItem(Base):
 
     @checked.setter
     def checked(self, state):
-        self.qt.setCheckState(QtCore.Qt.Checked if state else QtCore.Qt.Unchecked)
+        if state is None:
+            flags = self.qt.flags() & ~QtCore.Qt.ItemIsUserCheckable
+            self.qt.setFlags(flags)
+        else:
+            flags = self.qt.flags() | QtCore.Qt.ItemIsUserCheckable
+            self.qt.setFlags(flags)
+            self.qt.setCheckState(QtCore.Qt.Checked if state else QtCore.Qt.Unchecked)
 
     @property
     def checkable(self):
