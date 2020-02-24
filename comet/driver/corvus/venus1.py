@@ -426,9 +426,9 @@ class Venus1(Driver):
         >>> instr.identification
         'Corvus 2.62 19091073'
         """
-        model = instr.system.identify.split()[0]
-        version = instr.system.version
-        serialno = instr.system.serialno
+        model = self.system.identify.split()[0]
+        version = self.system.version
+        serialno = self.system.serialno
         return f'{model} {version} {serialno}'
 
     @property
