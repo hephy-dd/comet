@@ -355,7 +355,8 @@ class System(Driver):
 
     @property
     def identify(self) -> str:
-        """Returns Corvus TT identification.
+        """Returns Corvus TT identification in the following format:
+        <Model> <HW-Rev> <SW-Rev> <Board-SW> <DIP-Sw>
 
         Note: Corvus TT only
 
@@ -372,6 +373,16 @@ class System(Driver):
         8
         """
         return int(self.resource.query('getoptions'))
+
+    @property
+    def serialno(self) -> str:
+        """Returns instrument serial in the following format:
+        <YY><HW><SERIAL>
+
+        >>> isntr.system.serialno
+        '19091234'
+        """
+        return self.resource.query('getserialno')
 
 class Venus1(Driver):
     """Venus-1 driver for Corvus TT/eco controllers."""
@@ -392,12 +403,16 @@ class Venus1(Driver):
 
     @property
     def identification(self) -> str:
-        """Returns instrument identification.
+        """Returns instrument identification consisting of model, version and
+        serial number.
 
         >>> instr.identification
-        'Corvus 1 462 1 380'
+        'Corvus 2.62 19091073'
         """
-        return self.system.identify
+        model = instr.system.identify.split()[0]
+        version = instr.system.version
+        serialno = instr.system.serialno
+        return f'{model} {version} {serialno}'
 
     @property
     @lock
