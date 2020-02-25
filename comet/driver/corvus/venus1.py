@@ -419,6 +419,7 @@ class Venus1(Driver):
         self.system = System(resource)
 
     @property
+    @lock
     def identification(self) -> str:
         """Returns instrument identification consisting of model, version and
         serial number.
