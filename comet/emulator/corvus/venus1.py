@@ -26,4 +26,4 @@ class Venus1Handler(RequestHandler):
         return self.serialno
 
 if __name__ == "__main__":
-    run(ShuntBoxHandler)
+    run(Venus1Handler)
