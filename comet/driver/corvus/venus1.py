@@ -28,7 +28,7 @@ class Axis(Driver):
         self.resource.write(f'{value:.6f} {self._index} setpitch')
 
     @property
-    def unit(self):
+    def unit(self) -> int:
         """Returns axis unit.
         0: Microstep
         1: μm
@@ -467,7 +467,7 @@ class Venus1(Driver):
         self.resource.write(f'{value:d} setdim')
 
     @property
-    def unit(self):
+    def unit(self) -> Tuple[int]:
         """Returns tuple containing units.
         0: Microstep
         1: μm
@@ -478,10 +478,10 @@ class Venus1(Driver):
         6: mil (1/1000 inch)
 
         >>> instr.unit
-        (2.0, 2.0, 2.0, 2.0)
+        (2, 1, 1, 1)
         """
         values = self.resource.query('-1 getunit').split()
-        return tuple(map(float, values))
+        return tuple(map(int, values))
 
     @property
     @lock
