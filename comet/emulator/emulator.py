@@ -79,13 +79,10 @@ def run(handler):
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--host', default='localhost')
-    parser.add_argument('--port', default=10001, type=int)
+    parser.add_argument('-p', '--port', default=10001, type=int)
     args = parser.parse_args()
 
     logging.getLogger().setLevel(logging.INFO)
-
-    handler.read_termination = "\n"
-    handler.write_termination = "\n"
 
     server = TCPServer(handler)
     server.run(args.host, args.port)
