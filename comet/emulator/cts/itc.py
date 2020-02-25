@@ -106,3 +106,6 @@ class ITCHandler(RequestHandler):
     @message(r'a[0-6]\s+\d+\.\d+')
     def query_set_a(self, message):
         return 'a'
+
+if __name__ == "__main__":
+    run(ITCHandler)
