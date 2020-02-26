@@ -22,17 +22,19 @@ class Tree(Widget):
 
     QtBaseClass = QtWidgets.QTreeWidget
 
-    def __init__(self, header=[], activated=None, changed=None, clicked=None, double_clicked=None, **kwargs):
+    def __init__(self, header=[], activated=None, changed=None, clicked=None, double_clicked=None, selected=None, **kwargs):
         super().__init__(**kwargs)
         self.header = header
         self.activated = activated
         self.changed = changed
         self.clicked = clicked
         self.double_clicked = double_clicked
+        self.selected = selected
         self.qt.itemActivated.connect(self.__activated_handler)
         self.qt.itemChanged.connect(self.__changed_handler)
         self.qt.itemClicked.connect(self.__clicked_handler)
         self.qt.itemDoubleClicked.connect(self.__double_clicked_handler)
+        self.qt.itemSelectionChanged.connect(self.__selected_handler)
 
     @property
     def activated(self):
@@ -92,6 +94,22 @@ class Tree(Widget):
             item = item.data(0, item.UserType)
             if item is not None:
                 self.double_clicked(index, item)
+
+    @property
+    def selected(self):
+        return self.__selected
+
+    @selected.setter
+    def selected(self, selected):
+        self.__selected = selected
+
+    @callback
+    def __selected_handler(self):
+        if callable(self.selected):
+            items = self.qt.selectedItems()
+            if items:
+                item = items[0].data(0, items[0].UserType)
+                self.selected(item)
 
     @property
     def header(self):

@@ -22,8 +22,12 @@ def main():
     def on_activated(item):
         comet.show_info("Item", format(item.value))
 
+    def on_selected(item):
+        print("Item", format(item.value))
+
     table = app.get("table")
     table.activated = on_activated
+    table.selected = on_selected
     for i in range(10):
         table.append([
             f"Unnamed{i}",
@@ -41,11 +45,15 @@ def main():
 
     table.fit()
 
-    def on_entered(index, item):
+    def on_activated(index, item):
         comet.show_info("Item", format(item[index].value))
+
+    def on_selected(item):
+        print("Item", format(item[0].value))
 
     tree = app.get("tree")
     tree.activated = on_activated
+    tree.selected = on_selected
     tree.append(["Flute 1", "OK"])
     tree.clear()
     tree.append(["Flute 2", "OK"])
