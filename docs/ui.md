@@ -1,14 +1,14 @@
 ---
 layout: default
 title: UI
-nav_order: 2
+nav_order: 3
 ---
 
-## UI elements
+# UI elements
 
-### Layout
+## Layout
 
-#### Row
+### Row
 
 A horizontal layout
 
@@ -19,7 +19,7 @@ comet.Row(
 )
 ```
 
-#### Column
+### Column
 
 A vertical layout
 
@@ -30,7 +30,7 @@ comet.Column(
 )
 ```
 
-#### Stretch
+### Stretch
 
 An expanding stretch element for spaces.
 
@@ -42,9 +42,9 @@ comet.Column(
 )
 ```
 
-### Inputs
+## Inputs
 
-#### Button
+### Button
 
 A simple push button.
 
@@ -57,4 +57,4 @@ comet.Button(
 
 Callbacks:
 * `clicked`: on button click
-* `toggled`: on button toggle
+* `toggled`: on button toggle, passes argument `toggled`

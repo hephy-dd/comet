@@ -7,10 +7,10 @@ permalink: /
 
 # COMET - Control and Measurement Toolkit
 
-A PyQt5 powered rapid development tool for creating graphical measurement desktop applications,
-inspired by [QCoDeS](https://github.com/QCoDeS/Qcodes), [Lantz](https://github.com/LabPy/lantz),
-[Slave](https://github.com/p3trus/slave), [FluidLab](https://github.com/fluiddyn/fluidlab) and
-[Dash](https://github.com/plotly/dash).{: .fs-6 .fw-300 }
+A PyQt5 powered rapid development tool for creating graphical measurement desktop applications
+for scientific laboratory use. Inspired by [QCoDeS](https://github.com/QCoDeS/Qcodes),
+[Lantz](https://github.com/LabPy/lantz), [Slave](https://github.com/p3trus/slave),
+[FluidLab](https://github.com/fluiddyn/fluidlab) and [Dash](https://github.com/plotly/dash){: .fs-6 .fw-300 }
 
 [Get started now](#getting-started){: .btn .btn-blue .fs-5 .mb-4 .mb-md-0 .mr-2 } [View it on GitHub](https://github.com/hephy-dd/comet){: .btn .fs-5 .mb-4 .mb-md-0 }
 
@@ -56,7 +56,7 @@ app.devices.load_settings()
 # Define a callback
 def on_update():
   with app.devices.get("iec") as iec:
-      app.layout.get('idn').value =  iec.identification
+      app.layout.get("idn").value = iec.identification
 
 # Create UI layout
 app.layout = comet.Column(
