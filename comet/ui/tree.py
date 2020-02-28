@@ -150,6 +150,13 @@ class Tree(Widget):
         self.qt.clear()
 
     @property
+    def current(self):
+        """Returns current tree item or None."""
+        item = self.qt.currentItem()
+        if item is not None:
+            return item.data(0, item.UserType)
+
+    @property
     def stretch(self):
         return self.qt.header().stretchLastSection()
 

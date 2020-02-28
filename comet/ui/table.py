@@ -154,6 +154,13 @@ class Table(Widget):
         self.qt.clearContents()
 
     @property
+    def current(self):
+        """Returns current table item or None."""
+        item = self.qt.currentItem()
+        if item is not None:
+            return item.data(item.UserType)
+
+    @property
     def stretch(self):
         return self.qt.horizontalHeader().stretchLastSection()
 
