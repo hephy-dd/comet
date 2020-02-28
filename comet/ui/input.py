@@ -73,11 +73,11 @@ class Number(Input):
     prefix_format = "{} "
     suffix_format = " {}"
 
-    def __init__(self, value=0, minimum=0, maximum=100, step=1, decimals=0, prefix=None, suffix=None, readonly=False, changed=None, **kwargs):
+    def __init__(self, value=0, minimum=None, maximum=None, step=1, decimals=0, prefix=None, suffix=None, readonly=False, changed=None, **kwargs):
         super().__init__(**kwargs)
         self.value = value
-        self.minimum = minimum
-        self.maximum = maximum
+        self.minimum = -float('inf') if minimum is None else minimum
+        self.maximum = float('inf') if maximum is None else maximum
         self.step = step
         self.decimals = decimals
         self.prefix = prefix
