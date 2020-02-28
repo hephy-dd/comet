@@ -107,7 +107,7 @@ class Application(CoreApplication):
 
     QtBaseClass = QtWidgets.QApplication
 
-    def __init__(self, name=None, version=None, title=None, about=None):
+    def __init__(self, name=None, version=None, title=None, about=None, width=None, height=None):
         super().__init__(name, version)
 
         # Connections
@@ -123,6 +123,10 @@ class Application(CoreApplication):
         self.display_name = "COMET"
         self.title = title
         self.about = about
+        if width is not None:
+            self.width = width
+        if height is not None:
+            self.height = height
 
     @property
     def display_name(self):
