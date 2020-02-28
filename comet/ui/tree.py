@@ -8,16 +8,48 @@ from .widget import Widget
 __all__ = ['Tree']
 
 class Tree(Widget):
+    """Tree
+
+    >>> tree = comet.Tree(header=["Key", "Value"])
+    >>> tree.append(["Spam", "Eggs"])
+    >>> for item in tree:
+    ...     item[0].checked =True
+    ...     item[1].color = "blue"
+    ...     child = item.append(["Ham", "Spam"])
+    ...     child.checked = False
+    >>> tree.clear()
+    """
 
     QtBaseClass = QtWidgets.QTreeWidget
 
-    def __init__(self, header=[], changed=None, entered=None, **kwargs):
+    def __init__(self, header=[], activated=None, changed=None, clicked=None, double_clicked=None, selected=None, **kwargs):
         super().__init__(**kwargs)
         self.header = header
+        self.activated = activated
         self.changed = changed
-        self.entered = entered
+        self.clicked = clicked
+        self.double_clicked = double_clicked
+        self.selected = selected
+        self.qt.itemActivated.connect(self.__activated_handler)
         self.qt.itemChanged.connect(self.__changed_handler)
-        self.qt.itemActivated.connect(self.__entered_handler)
+        self.qt.itemClicked.connect(self.__clicked_handler)
+        self.qt.itemDoubleClicked.connect(self.__double_clicked_handler)
+        self.qt.itemSelectionChanged.connect(self.__selected_handler)
+
+    @property
+    def activated(self):
+        return self.__activated
+
+    @activated.setter
+    def activated(self, activated):
+        self.__activated = activated
+
+    @callback
+    def __activated_handler(self, item, index):
+        if callable(self.activated):
+            item = item.data(0, item.UserType)
+            if item is not None:
+                self.activated(index, item)
 
     @property
     def changed(self):
@@ -35,19 +67,49 @@ class Tree(Widget):
                 self.changed(index, item)
 
     @property
-    def entered(self):
-        return self.__entered
+    def clicked(self):
+        return self.__clicked
 
-    @entered.setter
-    def entered(self, entered):
-        self.__entered = entered
+    @clicked.setter
+    def clicked(self, clicked):
+        self.__clicked = clicked
 
     @callback
-    def __entered_handler(self, item, index):
-        if callable(self.entered):
+    def __clicked_handler(self, item, index):
+        if callable(self.clicked):
             item = item.data(0, item.UserType)
             if item is not None:
-                self.entered(index, item)
+                self.clicked(index, item)
+    @property
+    def double_clicked(self):
+        return self.__double_clicked
+
+    @double_clicked.setter
+    def double_clicked(self, double_clicked):
+        self.__double_clicked = double_clicked
+
+    @callback
+    def __double_clicked_handler(self, item, index):
+        if callable(self.double_clicked):
+            item = item.data(0, item.UserType)
+            if item is not None:
+                self.double_clicked(index, item)
+
+    @property
+    def selected(self):
+        return self.__selected
+
+    @selected.setter
+    def selected(self, selected):
+        self.__selected = selected
+
+    @callback
+    def __selected_handler(self):
+        if callable(self.selected):
+            items = self.qt.selectedItems()
+            if items:
+                item = items[0].data(0, items[0].UserType)
+                self.selected(item)
 
     @property
     def header(self):
@@ -59,6 +121,12 @@ class Tree(Widget):
         self.qt.setHeaderLabels(items)
 
     def append(self, item):
+        """Append item or item labels, returns appended item.
+
+        >>> tree.append(TreeItem(["Spam", "Eggs"]))
+        or
+        >>> tree.append(["Spam", "Eggs"])
+        """
         if not isinstance(item, TreeItem):
             item = TreeItem(item)
         self.qt.addTopLevelItem(item.qt)
@@ -66,6 +134,12 @@ class Tree(Widget):
         return item
 
     def insert(self, index, item):
+        """Insert item or item labels at index, returns inserted item.
+
+        >>> tree.insert(0, TreeItem(["Spam", "Eggs"]))
+        or
+        >>> tree.insert(0, ["Spam", "Eggs"])
+        """
         if not isinstance(item, TreeItem):
             item = TreeItem(item)
         self.qt.insertTopLevelItem(index, item.qt)
@@ -74,6 +148,13 @@ class Tree(Widget):
 
     def clear(self):
         self.qt.clear()
+
+    @property
+    def current(self):
+        """Returns current tree item or None."""
+        item = self.qt.currentItem()
+        if item is not None:
+            return item.data(0, item.UserType)
 
     @property
     def stretch(self):
@@ -205,3 +286,15 @@ class TreeItemColumn:
             flags = self.qt.flags() | QtCore.Qt.ItemIsUserCheckable
             self.qt.setFlags(flags)
             self.qt.setCheckState(self.column, QtCore.Qt.Checked if state else QtCore.Qt.Unchecked)
+
+    @property
+    def checkable(self):
+        return self.qt.flags() & ~QtCore.Qt.ItemIsUserCheckable
+
+    @checkable.setter
+    def checkable(self, state):
+        if state:
+            flags = self.qt.flags() | QtCore.Qt.ItemIsUserCheckable
+        else:
+            flags = self.qt.flags() & ~QtCore.Qt.ItemIsUserCheckable
+        self.qt.setFlags(flags)

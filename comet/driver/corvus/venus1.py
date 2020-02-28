@@ -28,13 +28,35 @@ class Axis(Driver):
         self.resource.write(f'{value:.6f} {self._index} setpitch')
 
     @property
-    def unit(self):
+    def unit(self) -> int:
         """Returns axis unit.
+        0: Microstep
+        1: μm
+        2: mm
+        3: cm
+        4: m
+        5: inch
+        6: mil (1/1000 inch)
 
         >>> instr.x.unit
         2
         """
         return int(self.resource.query(f'{self._index} getunit'))
+
+    @unit.setter
+    def unit(self, value: int):
+        """Set axis unit.
+        0: Microstep
+        1: μm
+        2: mm
+        3: cm
+        4: m
+        5: inch
+        6: mil (1/1000 inch)
+
+        >>> instr.x.unit = 2
+        """
+        self.resource.write(f'{value:d} {self._index} setunit')
 
     @property
     def umotmin(self) -> Tuple[int]:
@@ -258,6 +280,23 @@ class Axis(Driver):
 
     # TODO joyassign
 
+    @property
+    def joyspeed(self) -> float:
+        """Returns maximum joystick speed for axis in mm/s.
+
+        >>> instr.x.joyspeed
+        20.0
+        """
+        return float(self.resource.query(f'{self._axis} getnjoyspeed'))
+
+    @joyspeed.setter
+    def joyspeed(self, value: float):
+        """Set maximum joystick speed for axis in mm/s.
+
+        >>> instr.x.joyspeed = 20.0
+        """
+        self.resource.write(f'{value:.6f} {self._axis} setnjoyspeed')
+
     # TODO wheelres
 
     # TODO wheelratio
@@ -333,7 +372,8 @@ class System(Driver):
 
     @property
     def identify(self) -> str:
-        """Returns Corvus TT identification.
+        """Returns Corvus TT identification in the following format:
+        <Model> <HW-Rev> <SW-Rev> <Board-SW> <DIP-Sw>
 
         Note: Corvus TT only
 
@@ -351,24 +391,46 @@ class System(Driver):
         """
         return int(self.resource.query('getoptions'))
 
+    @property
+    def serialno(self) -> str:
+        """Returns instrument serial in the following format:
+        <YY><HW><SERIAL>
+
+        >>> isntr.system.serialno
+        '19091234'
+        """
+        return self.resource.query('getserialno')
+
 class Venus1(Driver):
     """Venus-1 driver for Corvus TT/eco controllers."""
 
+    X_AXIS = 1
+    Y_AXIS = 2
+    Z_AXIS = 3
+
+    HOST_MODE = 0
+    TERMINAL_MODE = 1
+
     def __init__(self, resource):
         super().__init__(resource)
-        self.x = Axis(resource, 1)
-        self.y = Axis(resource, 2)
-        self.z = Axis(resource, 3)
+        self.x = Axis(resource, self.X_AXIS)
+        self.y = Axis(resource, self.Y_AXIS)
+        self.z = Axis(resource, self.Z_AXIS)
         self.system = System(resource)
 
     @property
+    @lock
     def identification(self) -> str:
-        """Returns instrument identification.
+        """Returns instrument identification consisting of model, version and
+        serial number.
 
         >>> instr.identification
-        'Corvus 1 462 1 380'
+        'Corvus 2.62 19091073'
         """
-        return self.system.identify
+        model = self.system.identify.split()[0]
+        version = self.system.version
+        serialno = self.system.serialno
+        return f'{model} {version} {serialno}'
 
     @property
     @lock
@@ -405,14 +467,21 @@ class Venus1(Driver):
         self.resource.write(f'{value:d} setdim')
 
     @property
-    def unit(self):
+    def unit(self) -> Tuple[int]:
         """Returns tuple containing units.
+        0: Microstep
+        1: μm
+        2: mm
+        3: cm
+        4: m
+        5: inch
+        6: mil (1/1000 inch)
 
         >>> instr.unit
-        (2.0, 2.0, 2.0, 2.0)
+        (2, 1, 1, 1)
         """
         values = self.resource.query('-1 getunit').split()
-        return tuple(map(float, values))
+        return tuple(map(int, values))
 
     @property
     @lock
@@ -502,14 +571,20 @@ class Venus1(Driver):
         values.append(self.resource.read())
         return tuple(map(int, values))
 
-    def __mode(self, value: int):
-        """Set command mode, 0 for host mode, 1 for terminal mode.
+    def mode(self, value: int):
+        """Set command mode.
 
-        >>> instr.mode = 0
+        0: HOST_MODE
+        1: TERMINAL_MODE
+
+        >>> instr.mode = instr.HOST_MODE
         """
-        assert 0<= value <= 1
+        assert value in (self.HOST_MODE, self.TERMINAL_MODE)
         self.resource.write(f'{value:d} mode')
-    mode = property(None, __mode)
+        # Workaround: clear clogged control characters from internal
+        # buffer by reading querying instrument identity.
+        self.resource.query('identify')
+    mode = property(None, mode)
 
     @property
     def ipadr(self) -> str:
@@ -610,7 +685,7 @@ class Venus1(Driver):
 
         >>> instr.move(2, 4, 0)
         """
-        return self.resource.query(f'{x:.6f} {y:.6f} {z:.6f} move')
+        self.resource.write(f'{x:.6f} {y:.6f} {z:.6f} move')
 
     m = move
 
@@ -619,7 +694,7 @@ class Venus1(Driver):
 
         >>> instr.rmove(1, 1, 0)
         """
-        return self.resource.query(f'{x:.6f} {y:.6f} {z:.6f} rmove')
+        self.resource.write(f'{x:.6f} {y:.6f} {z:.6f} rmove')
 
     r = rmove
 
@@ -849,8 +924,38 @@ class Venus1(Driver):
         """
         self.resource.write(f'{value:d} joystick')
 
-    # TODO joyspeed
+    @property
+    def joyspeed(self) -> float:
+        """Returns maximum joystick speed in mm/s.
 
-    # TODO joybspeed
+        >>> instr.joyspeed
+        20.0
+        """
+        return float(self.resource.query('getjoyspeed'))
+
+    @joyspeed.setter
+    def joyspeed(self, value: float):
+        """Set maximum joystick speed in mm/s.
+
+        >>> instr.joyspeed = 20.0
+        """
+        self.resource.write(f'{value:.6f} setjoyspeed')
+
+    @property
+    def joybspeed(self) -> float:
+        """Returns special joystick button speed in mm/s.
+
+        >>> instr.joybspeed
+        0.01
+        """
+        return float(self.resource.query('getjoybspeed'))
+
+    @joybspeed.setter
+    def joybspeed(self, value: float):
+        """Set special joystick button speed in mm/s.
+
+        >>> instr.joybspeed = 0.01
+        """
+        self.resource.write(f'{value:.6f} setjoybspeed')
 
     # TODO wheel

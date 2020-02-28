@@ -1,10 +1,10 @@
 ---
 layout: default
 title: Processes
-nav_order: 4
+nav_order: 5
 ---
 
-## Processes
+# Processes
 
 Time consuming operations or measurements need to be decoupled into threads to
 keep the user interface responsive and usable. COMET provides class `Process`

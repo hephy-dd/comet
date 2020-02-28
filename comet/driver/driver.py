@@ -41,7 +41,7 @@ class Driver(ContextDecorator):
 
     def __setattr__(self, name, value):
         """Prevent overriding driver attributes."""
-        if hasattr(self, name) and isinstance(getattr(self, name), Driver):
+        if name in self.__dict__ and isinstance(self.__dict__.get(name), Driver):
             raise AttributeError("can't set attribute")
         super().__setattr__(name, value)
 

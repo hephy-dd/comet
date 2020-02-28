@@ -73,11 +73,11 @@ class Number(Input):
     prefix_format = "{} "
     suffix_format = " {}"
 
-    def __init__(self, value=0, minimum=0, maximum=100, step=1, decimals=0, prefix=None, suffix=None, readonly=False, changed=None, **kwargs):
+    def __init__(self, value=0, minimum=None, maximum=None, step=1, decimals=0, prefix=None, suffix=None, readonly=False, changed=None, **kwargs):
         super().__init__(**kwargs)
         self.value = value
-        self.minimum = minimum
-        self.maximum = maximum
+        self.minimum = -float('inf') if minimum is None else minimum
+        self.maximum = float('inf') if maximum is None else maximum
         self.step = step
         self.decimals = decimals
         self.prefix = prefix
@@ -181,12 +181,12 @@ class Select(Input):
 
     QtBaseClass = QtWidgets.QComboBox
 
-    def __init__(self, values=[], default=None, changed=None, **kwargs):
+    def __init__(self, values=[], current=None, changed=None, **kwargs):
         super().__init__(**kwargs)
         self.values = values
-        if values and default is None:
-            default = values[0]
-        self.default = default
+        if values and current is None:
+            current = values[0]
+        self.current = current
         self.changed = changed
         self.qt.currentIndexChanged.connect(self.__changed_handler)
 
@@ -207,20 +207,15 @@ class Select(Input):
         self.qt.addItem(format(value), value)
 
     def remove(self, value):
-        self.qt.removeItem(self.qt.findData(default))
+        self.qt.removeItem(self.qt.findData(value))
 
     @property
-    def selected(self):
+    def current(self):
         return self.qt.itemData(self.qt.currentIndex())
 
-    @property
-    def default(self):
-        return self.__default
-
-    @default.setter
-    def default(self, default):
-        self.__default = default
-        index = self.qt.findData(default)
+    @current.setter
+    def current(self, value):
+        index = self.qt.findData(value)
         self.qt.setCurrentIndex(index)
 
     @property
@@ -235,7 +230,7 @@ class Select(Input):
     def __changed_handler(self, index):
         if callable(self.changed):
             value = self.values[index]
-            self.changed(value, index)
+            self.changed(value)
 
 class List(Input):
 

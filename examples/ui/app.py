@@ -1,5 +1,6 @@
 """Simple UI demonstration example."""
 
+import random
 import sys
 
 import comet
@@ -61,10 +62,26 @@ def main():
         comet.Tree(id="tree", header=["Key", "Value"])
     ))
 
+    first = comet.Button(text="Click")
+    second = comet.Column(
+        comet.ScrollArea(id="scroll", layout=comet.Column(*[comet.CheckBox(text=f"Option {i+1}", checked=random.choice([True, False])) for i in range(64)]))
+    )
+    tab5 = comet.Tab(id="tab5", title="Tab 5", layout=first)
+    tab5.layout = second
+    del first
+
+    def on_changed(value):
+        app.message = value
+
+    def on_click():
+        app.message = app.layout.get("select").current
+        print("tree:", app.layout.get("tree").current)
+        print("table:", app.layout.get("table").current)
+
     app.layout = comet.Row(
         comet.Column(
             comet.FieldSet(title="FieldSet 1", layout=comet.Column(
-                comet.Button(text="Button 1"),
+                comet.Button(text="Button 1", clicked=on_click),
                 comet.Button(text="Button 2", enabled=False),
                 comet.Button(text="Button 3", checkable=True),
                 comet.Button(text="Button 4", checkable=True, enabled=False),
@@ -78,13 +95,13 @@ def main():
             )),
             comet.FieldSet(title="FieldSet 3", layout=comet.Column(
                 comet.Select(),
-                comet.Select(values=values),
-                comet.Select(values=values, default="Cleese"),
-                comet.Select(values=values, default="Cleese", enabled=False)
+                comet.Select(id="select", values=values),
+                comet.Select(values=values, current="Cleese", changed=on_changed),
+                comet.Select(values=values, current="Idle", enabled=False)
             )),
             comet.Stretch()
         ),
-        comet.Tabs(tab1, tab2, tab3, tab4, id="tabs"),
+        comet.Tabs(tab1, tab2, tab3, tab4, tab5, id="tabs"),
         stretch=(2, 7)
     )
 

@@ -19,11 +19,15 @@ def main():
         )
     )
 
-    def on_entered(item):
+    def on_activated(item):
         comet.show_info("Item", format(item.value))
 
+    def on_selected(item):
+        print("Item", format(item.value))
+
     table = app.get("table")
-    table.entered = on_entered
+    table.activated = on_activated
+    table.selected = on_selected
     for i in range(10):
         table.append([
             f"Unnamed{i}",
@@ -31,19 +35,25 @@ def main():
             "",
             "n/a",
             "n/a",
-            "1200 ohm"
+            f"{random.random()*1000:.0f} ohm"
         ])
-        table[i][0].checked = random.choice([True, False])
+        # First column user checkable
         table[i][0].checkable = True
-        #table[i][0].readonly = True
+        table[i][0].checked = random.choice([True, False])
+        # First column editabled
+        table[i][0].readonly = False
 
     table.fit()
 
-    def on_entered(index, item):
+    def on_activated(index, item):
         comet.show_info("Item", format(item[index].value))
 
+    def on_selected(item):
+        print("Item", format(item[0].value))
+
     tree = app.get("tree")
-    tree.entered = on_entered
+    tree.activated = on_activated
+    tree.selected = on_selected
     tree.append(["Flute 1", "OK"])
     tree.clear()
     tree.append(["Flute 2", "OK"])
@@ -69,7 +79,6 @@ def main():
         print(item[0].checked)
         for item in item.children:
             print(item[0].checked)
-
 
     class Process(comet.Process):
 

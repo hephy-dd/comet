@@ -1,10 +1,12 @@
 ---
 layout: default
 title: Application
-nav_order: 1
+nav_order: 2
 ---
 
-## Create application
+# Application
+
+## Create
 
 The application object permits to register devices, processes and the main window layout.
 

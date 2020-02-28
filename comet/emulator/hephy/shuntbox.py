@@ -51,3 +51,6 @@ class ShuntBoxHandler(RequestHandler):
     @message(r'GET:REL ALL')
     def query_get_rel_all(self, message):
         return ",".join(["0"] * self.channels + 4)
+
+if __name__ == "__main__":
+    run(ShuntBoxHandler)
