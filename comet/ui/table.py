@@ -144,6 +144,8 @@ class Table(Widget):
         or
         >>> table.insert(0, ["Spam", "Eggs"])
         """
+        if row < 0:
+            row += self.qt.rowCount()
         for column, item in enumerate(items):
             if not isinstance(item, TableItem):
                 item = TableItem(value=item)
@@ -160,6 +162,11 @@ class Table(Widget):
         if item is not None:
             return item.data(item.UserType)
 
+    @current.setter
+    def current(self, item):
+        """Set current table item."""
+        item = self.qt.setCurrentItem(item.qt)
+
     @property
     def stretch(self):
         return self.qt.horizontalHeader().stretchLastSection()
@@ -173,6 +180,8 @@ class Table(Widget):
         self.qt.resizeRowsToContents()
 
     def __getitem__(self, row):
+        if row < 0:
+            row += self.qt.rowCount()
         items = []
         for column in range(self.qt.columnCount()):
             item = self.qt.item(row, column)
@@ -180,6 +189,8 @@ class Table(Widget):
         return items
 
     def __setitem__(self, row, items):
+        if row < 0:
+            row += self.qt.rowCount()
         self.qt.removeRow(row)
         self.qt.insertRow(row)
         for column, item in enumerate(items):
@@ -220,6 +231,16 @@ class TableItem(Base):
     @value.setter
     def value(self, value):
         return self.qt.setData(self.qt.Type, value)
+
+    @property
+    def bold(self):
+        return self.qt.font().bold()
+
+    @bold.setter
+    def bold(self, enable):
+        font = self.qt.font()
+        font.setBold(enable)
+        self.qt.setFont(font)
 
     @property
     def color(self):

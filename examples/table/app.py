@@ -43,6 +43,7 @@ def main():
         # First column editabled
         table[i][0].readonly = False
 
+    table.current = table[-1][0]
     table.fit()
 
     def on_activated(index, item):
@@ -63,6 +64,14 @@ def main():
     tree[0][1].background = "blue"
     #tree[0][1].color = None
     tree[0][1].background = None
+
+    tree[2] = ["Flute 4", "OK"]
+    tree[3] = ["Flute 5", "OK"]
+    tree[4] = ["Flute 6"]
+
+    tree.current = tree[2]
+
+    del tree[3]
 
     for i, item in enumerate(tree):
         if i == 1:
@@ -97,6 +106,7 @@ def main():
         if table[i][0].checked:
             item.value = {True: "ON", False: "OFF"}[value]
             item.color = {True: "green", False: "red"}[value]
+            item.bold = not value
         else:
             item.value = None
 
@@ -111,13 +121,15 @@ def main():
             item.value = None
 
     def on_status(i, value):
-        color = {"OK":"green","FAIL":"red"}[value]
+        color = {"OK": "green", "FAIL": "red"}[value]
         tree[i][1].value = value
         tree[i][1].color = color
+        tree[i][1].bold = value == "FAIL"
         for item in tree[i].children:
             if item[0].checked:
                 item[1].value = value
                 item[1].color = color
+                item[1].bold = value == "FAIL"
             else:
                 item[1].value = None
 

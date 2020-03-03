@@ -56,7 +56,7 @@ def main():
         comet.Label("Voltage"),
         comet.Number(id="voltage", value=0, minimum=0, maximum=1000, decimals=1, suffix="V", changed=on_voltage),
         comet.Label("Current"),
-        comet.Number(id="current", readonly=True, value=0, decimals=3, suffix="mA"),
+        comet.Number(id="current", readonly=True, value=0, decimals=3, suffix="mA", stylesheet="color: red"),
         comet.Button(id="start", text="Start", clicked=on_start),
         comet.Button(id="stop", text="Stop", enabled=False, clicked=on_stop),
         comet.Stretch()
