@@ -80,19 +80,17 @@ def main():
         for item in item.children:
             print(item[0].checked)
 
-    class Process(comet.Process):
-
-        def run(self):
-            while self.running:
-                for i in range(10):
-                    value = random.choice([True, False])
-                    self.push("hv", i, value)
-                    value = random.uniform(22., 24.)
-                    self.push("temp", i, value)
-                for i in range(2):
-                    value = random.choice(["OK", "FAIL"])
-                    self.push("status", i, value)
-                time.sleep(1)
+    def measure(process):
+        while process.running:
+            for i in range(10):
+                value = random.choice([True, False])
+                process.events.hv(i, value)
+                value = random.uniform(22., 24.)
+                process.events.temp(i, value)
+            for i in range(2):
+                value = random.choice(["OK", "FAIL"])
+                process.events.status(i, value)
+            time.sleep(1)
 
     def on_hv(i, value):
         item = table[i][2]
@@ -123,12 +121,14 @@ def main():
             else:
                 item[1].value = None
 
-    process = app.processes.add("Process", Process(
-        hv=on_hv,
-        temp=on_temp,
-        status=on_status,
-    ))
-    process.start()
+    app.processes.add("process", comet.Process(
+        target=measure,
+        events=dict(
+            hv=on_hv,
+            temp=on_temp,
+            status=on_status
+        )
+    )).start()
 
     return app.run()
 

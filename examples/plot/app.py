@@ -25,14 +25,12 @@ class FakeDataProducer:
         self.time = time.time()
         return self.time, self.temperature, self.humidity
 
-class FakeDataProcess(comet.Process):
-    """Fake data generating process."""
-
-    def run(self):
-        source = FakeDataProducer()
-        while self.running:
-            self.push("reading", source.read())
-            time.sleep(random.uniform(.250, .500))
+def fake_data(process):
+    """Fake data generator."""
+    source = FakeDataProducer()
+    while process.running:
+        process.events.reading(source.read())
+        time.sleep(random.uniform(.250, .500))
 
 def main():
     app = comet.Application()
@@ -65,9 +63,12 @@ def main():
         else:
             plot.fit()
 
-    process = FakeDataProcess(
-        reading=on_reading,
-        failed=app.show_exception
+    process = comet.Process(
+        target=fake_data,
+        events=dict(
+            reading=on_reading,
+            failed=comet.show_exception
+        )
     )
     process.start()
     app.processes.add("process", process)

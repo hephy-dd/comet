@@ -13,11 +13,10 @@ for convenient thread handling.
 ```python
 import comet
 
-class MyProcess(comet.Process):
-    def run(self):
-        pass # perform some task
+def run(process):
+    pass # perform some task
 
-process = MyProcess()
+process = comet.Process(target=run)
 process.start()
 ```
 
@@ -30,22 +29,21 @@ running process gracefully.
 ```python
 import comet
 
-class MyProcess(comet.Process):
-    def run(self):
-        while self.running:
-          pass # perform some task
+def run(process):
+    while process.running:
+        pass # perform some task
 
-process = MyProcess()
+process = comet.Process(target=run)
 process.start()
 ...
 process.stop()
 process.join() # wait for process to stop
 ```
 
-## Callbacks
+## Event callbacks
 
 Class `Process` provides the following built in callbacks to provide
-inter-thread  communication:
+communication between worker thread and main thread:
 * `started` is called immediately after `start()`
 * `failed` is called if an exception was thrown, providing the exception and
  traceback object.
@@ -53,36 +51,37 @@ inter-thread  communication:
 exception occurred.
 
 ```python
-class MyProcess(comet.Process):
-    def run(self):
-        raise RuntimeError("Spam!")
-
 def on_finished():
     comet.show_info(title="My Process", text="Process finished!")
 def on_error(exc, tb):
     comet.show_exception(exc, tb)
 
-process = MyProcess(
-  finished=on_finished,
-  failed=on_error
+def run(process):
+    raise RuntimeError("Spam!")
+
+process = comet.Process(
+    target=run,
+    events=dict(
+        started=lambda: print("started..."),
+        failed=on_error,
+        finished=on_finished
+    )
 )
 process.start()
 ```
 
-**Note:** Do not reference the UI from within method `run()`, use custom
-callbacks to propagate information to the UI.
+**Note:** Do not reference the user interface from within a process method, use
+custom event callbacks to propagate information to the user interface (main thread).
 
 ```python
-class MyProcess(comet.Process):
-    def run(self):
-        while self.running:
-            self.push("voltage", 24.00)
-            self.push("current", 0.05)
+def run(process):
+    while process.running:
+        process.events.voltage(24.00)
+        process.events.current(0.05)
 
-process = MyProcess(
-  voltage=update_voltage,
-  current=update_current
-)
+process = comet.Process(target=run)
+process.events.voltage = update_voltage
+process.events.current = update_current
 ```
 
 ## Register
@@ -90,8 +89,8 @@ process = MyProcess(
 Register all processes so that they will be stopped properly on application exit.
 
 ```python
-process = MyProcess()
+process = comet.Process()
 process.start()
 app.processes.add("process", process)
-# `stop()` and `join()` is called on exit
+# `stop()` and `join()` is called on application exit
 ```
