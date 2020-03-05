@@ -14,16 +14,6 @@ class ProcessTest(unittest.TestCase):
         thread.stop()
         self.assertEqual(thread.is_running(), False)
 
-    def testProcess(self):
-        p = Process()
-        self.assertEqual(p.started, None)
-        self.assertEqual(p.finished, None)
-        self.assertEqual(p.failed, None)
-        p = Process(started=1, finished=2, failed=3)
-        self.assertEqual(p.started, 1)
-        self.assertEqual(p.finished, 2)
-        self.assertEqual(p.failed, 3)
-
     def testProcessManager(self):
         p = Process()
         m = ProcessManager()
