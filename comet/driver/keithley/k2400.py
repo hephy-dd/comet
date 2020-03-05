@@ -45,40 +45,132 @@ class System(Driver):
         result = self.resource.query(':SYST:ERR?').split(',')
         return int(result[0]), result[1].strip().strip('"')
 
-class Voltage(Driver):
-
-    @property
-    def level(self) -> float:
-        return float(self.resource.query(':SOUR:VOLT:LEV?'))
-
-    @level.setter
-    @opc_wait
-    def level(self, value: float):
-        self.resource.write(f':SOUR:VOLT:LEV {value:E}')
-
 class Source(Driver):
+
+    class Voltage(Driver):
+
+        @property
+        def level(self) -> float:
+            return float(self.resource.query(':SOUR:VOLT:LEV?'))
+
+        @level.setter
+        @opc_wait
+        def level(self, value: float):
+            self.resource.write(f':SOUR:VOLT:LEV {value:E}')
 
     def __init__(self, resource):
         super().__init__(resource)
-        self.voltage = Voltage(resource)
+        self.voltage = self.Voltage(resource)
+
+    @opc_wait
+    def clear(self):
+        """Turn output source off when in idle."""
+        self.resource.write(':SOUR:CLE')
+
+class Sense(Driver):
+
+    class Current(Driver):
+
+        class Protection(Driver):
+
+            @property
+            def level(self) -> float:
+                """Returns current compliance limit."""
+                return float(self.resource.query(':SENS:CURR:PROT:LEV?'))
+
+            @level.setter
+            @opc_wait
+            def level(self, value: float):
+                """Set current compliance limit for V-Source."""
+                self.resource.write(f':SENS:CURR:PROT:LEV {value:E}')
+
+            @property
+            def tripped(self) -> bool:
+                """Returns True if in current compliance."""
+                return bool(int(self.resource.query(':SENS:CURR:PROT:TRIP?')))
+
+            @property
+            def rsyncronize(self) -> bool:
+                """Returns True if range syncronization enabled."""
+                return bool(int(self.resource.query(':SENS:CURR:PROT:RSYN?')))
+
+            @rsyncronize.setter
+            @opc_wait
+            def rsyncronize(self, value: bool):
+                """Enable or disable measure and compliance range syncronization."""
+                self.resource.write(f':SENS:CURR:PROT:RSYN {value:d}')
+
+        def __init__(self, resource):
+            super().__init__(resource)
+            self.protection = self.Protection(resource)
+
+    class Voltage(Driver):
+
+        class Protection(Driver):
+
+            @property
+            def level(self) -> float:
+                """Returns voltage compliance limit."""
+                return float(self.resource.query(':SENS:VOLT:PROT:LEV?'))
+
+            @level.setter
+            @opc_wait
+            def level(self, value: float):
+                """Set voltage compliance limit for V-Source."""
+                self.resource.write(f':SENS:VOLT:PROT:LEV {value:E}')
+
+            @property
+            def tripped(self) -> bool:
+                """Returns True if in voltage compliance."""
+                return bool(int(self.resource.query(':SENS:VOLT:PROT:TRIP?')))
+
+            @property
+            def rsyncronize(self) -> bool:
+                """Returns True if range syncronization enabled."""
+                return bool(int(self.resource.query(':SENS:VOLT:PROT:RSYN?')))
+
+            @rsyncronize.setter
+            def rsyncronize(self, value: bool):
+                """Enable or disable measure and compliance range syncronization."""
+                self.resource.write(f':SENS:VOLT:PROT:RSYN {value:d}')
+
+        def __init__(self, resource):
+            super().__init__(resource)
+            self.protection = self.Protection(resource)
+
+    def __init__(self, resource):
+        super().__init__(resource)
+        self.current = self.Current(resource)
+        self.voltage = self.Current(resource)
 
 class PowerMixin:
 
     @property
-    def output(self) -> str:
-        """Returns output state (on/off)."""
-        return self.resource.query(':OUTP?').lower()
+    def output(self) -> bool:
+        """Returns True if output enabled.
+
+        >>> instr.output
+        True
+        """
+        return bool(int(self.resource.query(':OUTP:ENAB:STAT?')))
 
     @output.setter
     @opc_wait
-    def output(self, value: str):
-        self.resource.write(f':OUTP {value}')
+    def output(self, value: bool):
+        """Enable or disable output.
+
+        >>> instr.output = True
+        """
+        self.resource.write(f':OUTP:ENAB:STAT {value:d}')
 
 class MeasureMixin:
 
     @opc_poll
     def init(self):
-        """Initiate a measurement."""
+        """Initiate a measurement.
+
+        >>> instr.init()
+        """
         self.resource.write(':INIT')
 
     def fetch(self) -> List[Dict[str, float]]:
@@ -107,3 +199,4 @@ class K2400(IEC60488, MeasureMixin, PowerMixin):
         super().__init__(resource)
         self.system = System(resource)
         self.source = Source(resource)
+        self.sense = Sense(resource)

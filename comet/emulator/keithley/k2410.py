@@ -1,6 +1,7 @@
 import random
 import time
 
+from comet.emulator.emulator import message, run
 from .k2400 import K2400Handler
 
 __all__ = ['K2410Handler']
