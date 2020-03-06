@@ -152,7 +152,7 @@ class PowerMixin:
         >>> instr.output
         True
         """
-        return bool(int(self.resource.query(':OUTP:ENAB:STAT?')))
+        return bool(int(self.resource.query(':OUTP:STAT?')))
 
     @output.setter
     @opc_wait
@@ -161,7 +161,7 @@ class PowerMixin:
 
         >>> instr.output = True
         """
-        self.resource.write(f':OUTP:ENAB:STAT {value:d}')
+        self.resource.write(f':OUTP:STAT {value:d}')
 
 class MeasureMixin:
 
@@ -173,24 +173,24 @@ class MeasureMixin:
         """
         self.resource.write(':INIT')
 
-    def fetch(self) -> List[Dict[str, float]]:
-        """Returns the latest available readings as list of dictionaries..
+    def fetch(self) -> List[float]:
+        """Returns the latest available reading as list.
 
         >>> instr.fetch()
-        [{'VDC': -4.32962079e-05, 'SECS': 0.0, 'RDNG': 0.0}, ...]
+        [-4.32962079e-05, 0.0, 0.0, ...]
         """
         result = self.resource.query(':FETC?')
-        return parse_reading(result)
+        return list(map(float, result.split(',')))
 
     def read(self) -> List[Dict[str, float]]:
         """High level command to perform a singleshot measurement. It resets the
         trigger model, initiates it, and fetches a new reading.
 
         >>> instr.read()
-        [{'VDC': -4.32962079e-05, 'SECS': 0.0, 'RDNG': 0.0}, ...]
+        [-4.32962079e-05, 0.0, 0.0, ...]
         """
         result = self.resource.query(':READ?')
-        return parse_reading(result)
+        return list(map(float, result.split(',')))
 
 class K2400(IEC60488, MeasureMixin, PowerMixin):
     """Keithley Series 2400 SourceMeter."""
