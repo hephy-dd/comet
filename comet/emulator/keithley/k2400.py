@@ -23,12 +23,9 @@ class MeasureMixin:
     @message(r':?(READ)\?')
     @message(r':?(FETC[H]?)\?')
     def query_read(self, message):
-        values = []
-        for i in range(self.readings):
-            vdc = random.uniform(.00025,.001)
-            values.append("{:E}VDC,+0.000SECS,+0.0000RDNG#".format(vdc))
+        vdc = random.uniform(.00025,.001)
         time.sleep(random.uniform(.5, 1.0)) # rev B10 ;)
-        return ",".join(values)
+        return "{:E},+0.000,+0.000,+0.000,+0.000".format(vdc)
 
 class SourceMixin:
 
@@ -72,8 +69,7 @@ class K2400Handler(IEC60488Handler, SystemMixin, MeasureMixin, SourceMixin, Sens
         return '0,"no error"'
 
     @message(r':?(OUTP)\?')
-    @message(r':?(OUTP):(ENAB)\?')
-    @message(r':?(OUTP):(ENAB):(STAT)\?')
+    @message(r':?(OUTP):(STAT)\?')
     def query_outp(self, message):
         return "1"
 
