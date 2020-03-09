@@ -411,12 +411,12 @@ class Venus1(Driver):
     HOST_MODE = 0
     TERMINAL_MODE = 1
 
-    def __init__(self, resource):
-        super().__init__(resource)
-        self.x = Axis(resource, self.X_AXIS)
-        self.y = Axis(resource, self.Y_AXIS)
-        self.z = Axis(resource, self.Z_AXIS)
-        self.system = System(resource)
+    def __init__(self, resource, **kwargs):
+        super().__init__(resource, **kwargs)
+        self.x = Axis(self.resource, self.X_AXIS)
+        self.y = Axis(self.resource, self.Y_AXIS)
+        self.z = Axis(self.resource, self.Z_AXIS)
+        self.system = System(self.resource)
 
     @property
     @lock

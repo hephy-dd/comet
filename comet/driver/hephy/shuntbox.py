@@ -60,9 +60,9 @@ class ShuntBox(Driver):
     channels = 10
     """Number of instrument channels."""
 
-    def __init__(self, resource):
-        super().__init__(resource)
-        relays = Relays(resource)
+    def __init__(self, resource, **kwargs):
+        super().__init__(resource, **kwargs)
+        relays = Relays(self.resource)
 
     @property
     def identification(self) -> str:

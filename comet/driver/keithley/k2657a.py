@@ -64,7 +64,7 @@ class SMU(Driver):
 class K2657A(IEC60488):
     """Keihtley Model 2657A High Power System SourceMeter."""
 
-    def __init__(self, resource):
-        super().__init__(resource)
-        self.smua = SMU(resource, 'smua')
-        self.smub = SMU(resource, 'smub')
+    def __init__(self, resource, **kwargs):
+        super().__init__(resource, **kwargs)
+        self.smua = SMU(self.resource, 'smua')
+        self.smub = SMU(self.resource, 'smub')

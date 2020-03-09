@@ -2,31 +2,22 @@ import re
 import time
 from typing import Dict, List, Tuple
 
-from comet.driver import lock, Driver
+from comet.driver import lock, Driver, Action, Property
 from comet.driver import IEC60488
 from comet.driver.iec60488 import opc_wait, opc_poll
 
 __all__ = ['K2400']
 
-def parse_reading(s):
-    """Returns list of dictionaries containing reading values."""
-    readings = []
-    # split '-4.32962079e-05VDC,+0.000SECS,+0.0000RDNG#,...'
-    for values in re.findall(r'([^#]+)#\,?', s):
-        values = re.findall(r'([+-]?\d+(?:\.\d+)?(?:E[+-]\d+)?)([A-Z]+)\,?', values)
-        readings.append({suffix: float(value) for value, suffix in values})
-    return readings
-
 class Beeper(Driver):
 
-    @property
+    @Property(values={False: 0, True: 1})
     def status(self) -> bool:
         result = self.resource.query(':SYST:BEEP:STAT?')
-        return bool(int(result))
+        return int(result)
 
     @status.setter
     @opc_wait
-    def status(self, value: bool):
+    def status(self, value: int):
         self.resource.write(f':SYST:BEEP:STAT {value:d}')
 
 class System(Driver):
@@ -35,7 +26,7 @@ class System(Driver):
         super().__init__(resource)
         self.beeper = Beeper(resource)
 
-    @property
+    @Property()
     def error(self) -> Tuple[int, str]:
         """Returns current instrument error.
 
@@ -145,18 +136,18 @@ class Sense(Driver):
 
 class PowerMixin:
 
-    @property
+    @Property(values={False: 0, True: 1})
     def output(self) -> bool:
         """Returns True if output enabled.
 
         >>> instr.output
         True
         """
-        return bool(int(self.resource.query(':OUTP:STAT?')))
+        return int(self.resource.query(':OUTP:STAT?'))
 
     @output.setter
     @opc_wait
-    def output(self, value: bool):
+    def output(self, value: int):
         """Enable or disable output.
 
         >>> instr.output = True
@@ -165,6 +156,7 @@ class PowerMixin:
 
 class MeasureMixin:
 
+    @Action()
     @opc_poll
     def init(self):
         """Initiate a measurement.
@@ -173,6 +165,7 @@ class MeasureMixin:
         """
         self.resource.write(':INIT')
 
+    @Action()
     def fetch(self) -> List[float]:
         """Returns the latest available reading as list.
 
@@ -182,6 +175,7 @@ class MeasureMixin:
         result = self.resource.query(':FETC?')
         return list(map(float, result.split(',')))
 
+    @Action()
     def read(self) -> List[Dict[str, float]]:
         """High level command to perform a singleshot measurement. It resets the
         trigger model, initiates it, and fetches a new reading.
@@ -195,8 +189,8 @@ class MeasureMixin:
 class K2400(IEC60488, MeasureMixin, PowerMixin):
     """Keithley Series 2400 SourceMeter."""
 
-    def __init__(self, resource):
-        super().__init__(resource)
-        self.system = System(resource)
-        self.source = Source(resource)
-        self.sense = Sense(resource)
+    def __init__(self, resource, **kwargs):
+        super().__init__(resource, **kwargs)
+        self.system = System(self.resource)
+        self.source = Source(self.resource)
+        self.sense = Sense(self.resource)

@@ -112,9 +112,9 @@ class ITC(ITCDriver):
     Status = namedtuple('Status', ('running', 'warning', 'error', 'channels'))
     """Status type container."""
 
-    def __init__(self, resource):
-        super().__init__(resource)
-        analog_channel = AnalogChannel(resource)
+    def __init__(self, resource, **kwargs):
+        super().__init__(resource, **kwargs)
+        analog_channel = AnalogChannel(self.resource)
 
     @property
     def identification(self):
