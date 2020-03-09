@@ -153,7 +153,9 @@ class Table(Widget):
         return self[row]
 
     def clear(self):
-        self.qt.clearContents()
+        """Clear table contents."""
+        while self.qt.rowCount():
+            self.qt.removeRow(0)
 
     @property
     def current(self):
