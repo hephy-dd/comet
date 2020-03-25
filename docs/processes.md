@@ -5,6 +5,15 @@ nav_order: 5
 ---
 
 # Processes
+{: .no_toc }
+
+## Table of contents
+{: .no_toc .text-delta }
+
+* TOC
+{: toc}
+
+## Start
 
 Time consuming operations or measurements need to be decoupled into threads to
 keep the user interface responsive and usable. COMET provides class `Process`

@@ -1,1 +1,11 @@
 remote_theme: pmarsceill/just-the-docs
+
+theme: just-the-docs
+
+title: "COMET"
+
+aux_links:
+  "COMET on GitHub":
+    - "//github.com/hephy-dd/comet"
+
+footer_content: "Copyright &copy; 2019-2020 Bernhard Arnold. COMET is licensed under the <a href=\"https://github.com/hephy-dd/comet/tree/master/LICENSE\">GNU General Public License Version 3</a>."
