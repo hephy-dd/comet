@@ -1,3 +1,5 @@
+"""CTS ITC emulator."""
+
 import datetime
 import random
 import time

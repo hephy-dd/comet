@@ -1,3 +1,5 @@
+"""Keithley 2400 emulator."""
+
 import random
 import time
 
@@ -23,8 +25,8 @@ class MeasureMixin:
     @message(r':?(READ)\?')
     @message(r':?(FETC[H]?)\?')
     def query_read(self, message):
-        vdc = random.uniform(.00025,.001)
-        time.sleep(random.uniform(.5, 1.0)) # rev B10 ;)
+        vdc = random.uniform(.00025, .001)
+        time.sleep(random.uniform(.5, 1.0))  # rev B10 ;)
         return "{:E},+0.000,+0.000,+0.000,+0.000".format(vdc)
 
 class SourceMixin:
@@ -59,19 +61,24 @@ class SenseMixin:
     def query_voltage_protection_rsyncronized(self, message):
         return "0"
 
-class K2400Handler(IEC60488Handler, SystemMixin, MeasureMixin, SourceMixin, SenseMixin):
+class K2400Handler(IEC60488Handler, SystemMixin, MeasureMixin, SourceMixin,
+                   SenseMixin):
     """Generic Keithley 2400 series compliant request handler."""
 
     identification = "Spanish Inquisition Inc., Model 2400, 12345678, v1.0"
 
     @message(r':?(SYST):(ERR)\?')
-    def query_syst_err(self, message):
+    def query_system_error(self, message):
         return '0,"no error"'
 
     @message(r':?(OUTP)\?')
     @message(r':?(OUTP):(STAT)\?')
-    def query_outp(self, message):
+    def query_output(self, message):
         return "1"
+
+    @message(r':?(FORM):(ELEM)\?')
+    def query_format_elements(self, message):
+        return 'VOLT,CURR,FOO,STAT,TIME'
 
 if __name__ == "__main__":
     run(K2400Handler)

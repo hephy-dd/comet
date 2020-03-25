@@ -1,3 +1,5 @@
+"""Corvus TT Venus-1 emulator."""
+
 import random
 import time
 

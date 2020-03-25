@@ -1,3 +1,5 @@
+"""HEPHY Shuntbox emulator."""
+
 import random
 import time
 
