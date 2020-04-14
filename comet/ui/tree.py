@@ -146,6 +146,13 @@ class Tree(Widget):
         item.expanded = True
         return item
 
+    def remove(self, item):
+        """Remove item from tree."""
+        index = self.qt.indexOfTopLevelItem(item.qt)
+        if index < 0:
+            raise ValueError(f"not an item {item}")
+        self.qt.takeTopLevelItem(index)
+
     def clear(self):
         """Clear all tree items."""
         self.qt.clear()
