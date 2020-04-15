@@ -11,7 +11,7 @@ __all__ = ['K2400']
 class Beeper(Driver):
 
     @Property(values={False: 0, True: 1})
-    def status(self) -> bool:
+    def status(self) -> int:
         result = self.resource.query(':SYST:BEEP:STAT?')
         return int(result)
 
@@ -35,6 +35,15 @@ class System(Driver):
         """
         result = self.resource.query(':SYST:ERR?').split(',')
         return int(result[0]), result[1].strip().strip('"')
+
+    @Property(values={'OFF': 0, 'ON': 1})
+    def rsense(self) -> int:
+        return int(self.resource.query(':SYST:RSEN?'))
+
+    @rsense.setter
+    @opc_wait
+    def rsense(self, value: int):
+        self.resource.write(f':SYST:RSEN {value:d}')
 
 class Source(Driver):
 
