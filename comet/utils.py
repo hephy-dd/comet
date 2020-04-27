@@ -16,6 +16,7 @@ __all__ = [
     'unescape_string',
     'replace_ext',
     'safe_filename',
+    'auto_step',
     'switch_dir',
 ]
 
@@ -81,8 +82,22 @@ def replace_ext(filename, ext):
     return ''.join((os.path.splitext(filename)[0], ext))
 
 def safe_filename(filename):
-    """Return a safe filename, replaces special characters with `_`."""
+    """Return a safe filename, replaces special characters with `_`.
+
+    >>> safe_filename('1.5%+#$test@!.py')
+    '1.5_+_test_.py'
+    """
     return re.sub(r'[^\w\+\-\.\_]+', '_', filename)
+
+def auto_step(begin, end, step):
+    """Return positive/negative step according to begin and end range.
+
+    >>> auto_step(0, -10, 1)
+    -1
+    >>> auto_step(0, 10, -2)
+    2
+    """
+    return -abs(step) if begin > end else abs(step)
 
 @contextlib.contextmanager
 def switch_dir(path):

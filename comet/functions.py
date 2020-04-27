@@ -2,11 +2,9 @@
 
 import itertools
 
-__all__ = ['Range']
+from .utils import auto_step
 
-def auto_step(begin, end, step):
-    """Return positive/negative step according to begin and end value."""
-    return -abs(step) if begin > end else abs(step)
+__all__ = ['Range']
 
 class Range:
     """Linear range function generator class.
@@ -17,12 +15,14 @@ class Range:
     [0.0, 2.5, 5.0, 7.5, 10.0]
     >>> list(Range(10, 0, -2.5)) # negative ramp
     [10.0, 7.5, 5.0, 2.5, 0.0]
+    >>> list(Range(0, 4, -1)) # auto corrected step
+    [0.0, 1.0, 2.0, 3.0, 4.0]
     """
 
     def __init__(self, begin, end, step):
         self.__begin = float(begin)
         self.__end = float(end)
-        self.__step = auto_step(float(step))
+        self.__step = auto_step(self.__begin, self.__end, float(step))
 
     @property
     def begin(self):
@@ -36,7 +36,7 @@ class Range:
 
     @property
     def step(self):
-        """Return step value."""
+        """Return auto corrected step value."""
         return self.__step
 
     @property
@@ -51,13 +51,12 @@ class Range:
             or (self.begin > self.end and self.step < 0)
 
     def __iter__(self):
-        if not self.valid:
-            raise ValueError()
-        for value in itertools.count(self.begin, self.step):
-            if self.step > 0 and value >= self.end:
-                yield self.end
-                break
-            if self.step < 0 and value <= self.end:
-                yield self.end
-                break
-            yield value
+        if self.valid:
+            for value in itertools.count(self.begin, self.step):
+                if self.step > 0 and value >= self.end:
+                    yield self.end
+                    break
+                if self.step < 0 and value <= self.end:
+                    yield self.end
+                    break
+                yield value
