@@ -1,6 +1,7 @@
 """Functions module."""
 
 import itertools
+import math
 
 from .utils import auto_step
 
