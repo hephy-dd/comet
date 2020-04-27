@@ -4,6 +4,10 @@ import itertools
 
 __all__ = ['Range']
 
+def auto_step(begin, end, step):
+    """Return positive/negative step according to begin and end value."""
+    return -abs(step) if begin > end else abs(step)
+
 class Range:
     """Linear range function generator class.
 
@@ -18,22 +22,27 @@ class Range:
     def __init__(self, begin, end, step):
         self.__begin = float(begin)
         self.__end = float(end)
-        self.__step = float(step)
+        self.__step = auto_step(float(step))
 
     @property
     def begin(self):
-        """Returns begin value."""
+        """Return begin value."""
         return self.__begin
 
     @property
     def end(self):
-        """Returns end value."""
+        """Return end value."""
         return self.__end
 
     @property
     def step(self):
-        """Returns step value."""
+        """Return step value."""
         return self.__step
+
+    @property
+    def count(self):
+        """Return number of steps."""
+        return int(math.ceil(abs(self.begin - self.end) / abs(self.step)))
 
     @property
     def valid(self):
@@ -42,12 +51,13 @@ class Range:
             or (self.begin > self.end and self.step < 0)
 
     def __iter__(self):
-        if self.valid:
-            for value in itertools.count(self.begin, self.step):
-                if self.step > 0 and value >= self.end:
-                    yield self.end
-                    break
-                if self.step < 0 and value <= self.end:
-                    yield self.end
-                    break
-                yield value
+        if not self.valid:
+            raise ValueError()
+        for value in itertools.count(self.begin, self.step):
+            if self.step > 0 and value >= self.end:
+                yield self.end
+                break
+            if self.step < 0 and value <= self.end:
+                yield self.end
+                break
+            yield value
