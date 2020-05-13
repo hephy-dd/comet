@@ -1,3 +1,5 @@
+"""Keithley 2700 emulator."""
+
 import random
 import time
 

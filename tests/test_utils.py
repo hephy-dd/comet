@@ -22,6 +22,10 @@ class UtiltiesTest(unittest.TestCase):
         ref = 'nobody_expects_the_spanish_inquisition'
         self.assertEqual(comet.make_id('Nobody expects the spanish inquisition!'), ref)
 
+    def testMakeIso(self):
+        ref = '2015-02-09T05-39-49'
+        self.assertEqual(comet.make_iso(1423456789.8), ref)
+
     def testEscapeString(self):
         self.assertEqual(comet.escape_string('\r\n\t\\r\\n\\t'), '\\r\\n\\t\\\\r\\\\n\\\\t')
 
@@ -38,12 +42,25 @@ class UtiltiesTest(unittest.TestCase):
         for filename, ext, ref in values:
             self.assertEqual(comet.replace_ext(filename, ext), ref)
 
+    def testSafeFilename(self):
+        self.assertEqual(comet.safe_filename('1.5%+#$test@!.py'), '1.5_+_test_.py')
+
+    def testAutoStep(self):
+        self.assertEqual(comet.auto_step(0, 10, 1), 1)
+        self.assertEqual(comet.auto_step(0, 10, -1), 1)
+        self.assertEqual(comet.auto_step(10, 0, 1), -1)
+        self.assertEqual(comet.auto_step(10, 0, -1), -1)
+        self.assertEqual(comet.auto_step(-10, 10, -1), 1)
+        self.assertEqual(comet.auto_step(-10, 10, 1), 1)
+        self.assertEqual(comet.auto_step(10, -10, 1), -1)
+        self.assertEqual(comet.auto_step(10, -10, -1), -1)
+
     def testSwitchDir(self):
-        ref = os.getcwd()
-        tmp = tempfile.gettempdir()
+        ref = os.path.realpath(os.getcwd())
+        tmp = os.path.realpath(tempfile.gettempdir())
         with comet.switch_dir(tmp):
-            self.assertEqual(os.getcwd(), tmp)
-        self.assertEqual(os.getcwd(), ref)
+            self.assertEqual(os.path.realpath(os.getcwd()), tmp)
+        self.assertEqual(os.path.realpath(os.getcwd()), ref)
 
 if __name__ == '__main__':
     unittest.main()

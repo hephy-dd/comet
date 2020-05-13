@@ -5,14 +5,14 @@ nav_order: 1
 permalink: /
 ---
 
-# COMET - Control and Measurement Toolkit
+# COMET
 
-A PyQt5 powered rapid development tool for creating graphical measurement desktop applications
-for scientific laboratory use. Inspired by [QCoDeS](https://github.com/QCoDeS/Qcodes),
+Control and Measurement Toolkit
+{: .fs-6 .fw-300 }
+
+A PyQt5 powered rapid development tool for creating graphical measurement desktop applications for scientific laboratory use. Inspired by [QCoDeS](https://github.com/QCoDeS/Qcodes),
 [Lantz](https://github.com/LabPy/lantz), [Slave](https://github.com/p3trus/slave),
-[FluidLab](https://github.com/fluiddyn/fluidlab) and [Dash](https://github.com/plotly/dash){: .fs-6 .fw-300 }
-
-[Get started now](#getting-started){: .btn .btn-blue .fs-5 .mb-4 .mb-md-0 .mr-2 } [View it on GitHub](https://github.com/hephy-dd/comet){: .btn .fs-5 .mb-4 .mb-md-0 }
+[FluidLab](https://github.com/fluiddyn/fluidlab) and [Dash](https://github.com/plotly/dash).
 
 ## Getting started
 
@@ -20,14 +20,14 @@ for scientific laboratory use. Inspired by [QCoDeS](https://github.com/QCoDeS/Qc
 
 COMET depends on [PyVISA](https://pyvisa.readthedocs.io/en/latest/) for instrument
 communication and [PyQt5](https://www.riverbankcomputing.com/software/pyqt/intro) for the
-graphical user interface. COMET works on Linux and Windows operating systems.
+graphical user interface. It runs on Linux and Windows operating systems.
 
 ### Install
 
 Install from GitHub using pip
 
 ```bash
-pip install git+https://github.com/hephy-dd/comet.git@0.8.1
+pip install git+https://github.com/hephy-dd/comet.git@0.9.0
 ```
 
 ### Quick start
@@ -35,8 +35,9 @@ pip install git+https://github.com/hephy-dd/comet.git@0.8.1
 COMET provides a basic application window and a set of modules for instrument
 communication and threaded processes.
 
-The following minimal example registers a VISA compatible device, a callback
-action and invokes the application's main window containing a text field and a button.
+The following minimal example registers a VISA compatible instrument, a callback
+action and invokes the application's main window providing a layout with a text
+field and a button.
 
 ```python
 import comet
@@ -67,7 +68,7 @@ app.layout = comet.Column(
     comet.Stretch()
 )
 
-# Run application
+# Run event loop
 app.run()
 ```
 

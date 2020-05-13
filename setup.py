@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='comet',
-    version='0.8.1',
+    version='0.9.0',
     author="Bernhard Arnold",
     author_email="bernhard.arnold@oeaw.ac.at",
     description="Control and Measurement Toolkit",
@@ -18,6 +18,7 @@ setup(
     ],
     package_data={
         'comet': [
+            'assets/icons/*.ico',
             'assets/icons/*.svg',
             'assets/icons/*.ico',
             'widgets/*.ui',

@@ -44,11 +44,24 @@ def main():
         stretch=(0, 1)
     ))
 
+    def on_append():
+        list = app.layout.get("list1")
+        list.append(f"Spam {len(list)}")
+        list.current = list[-1]
+
+    def on_remove():
+        list = app.layout.get("list1")
+        list.remove(list.current)
+
     tab2 = comet.Tab(title="Tab 2", layout=comet.Column(
         comet.Row(
-            comet.FieldSet(title="List 1", layout=comet.List()),
-            comet.FieldSet(title="List 2", layout=comet.List(values=values)),
-            comet.FieldSet(title="List 3", layout=comet.List(values=values, enabled=False))
+            comet.FieldSet(title="List 1", layout=comet.Column(
+                comet.List(id="list1"),
+                comet.Button(text="&Add", clicked=on_append),
+                comet.Button(text="&Remove", clicked=on_remove)
+            )),
+            comet.FieldSet(title="List 2", layout=comet.List(values=values, current="Jones")),
+            comet.FieldSet(title="List 3", layout=comet.List(values=values, current="Idle", enabled=False))
         ),
         comet.Stretch(),
         stretch=(0, 1)

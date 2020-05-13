@@ -1,6 +1,9 @@
 """Functions module."""
 
 import itertools
+import math
+
+from .utils import auto_step
 
 __all__ = ['Range']
 
@@ -13,27 +16,34 @@ class Range:
     [0.0, 2.5, 5.0, 7.5, 10.0]
     >>> list(Range(10, 0, -2.5)) # negative ramp
     [10.0, 7.5, 5.0, 2.5, 0.0]
+    >>> list(Range(0, 4, -1)) # auto corrected step
+    [0.0, 1.0, 2.0, 3.0, 4.0]
     """
 
     def __init__(self, begin, end, step):
         self.__begin = float(begin)
         self.__end = float(end)
-        self.__step = float(step)
+        self.__step = auto_step(self.__begin, self.__end, float(step))
 
     @property
     def begin(self):
-        """Returns begin value."""
+        """Return begin value."""
         return self.__begin
 
     @property
     def end(self):
-        """Returns end value."""
+        """Return end value."""
         return self.__end
 
     @property
     def step(self):
-        """Returns step value."""
+        """Return auto corrected step value."""
         return self.__step
+
+    @property
+    def count(self):
+        """Return number of steps."""
+        return int(math.ceil(abs(self.begin - self.end) / abs(self.step)))
 
     @property
     def valid(self):

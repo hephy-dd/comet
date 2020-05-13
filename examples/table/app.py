@@ -43,6 +43,7 @@ def main():
         # First column editabled
         table[i][0].readonly = False
 
+    table.current = table[-1][0]
     table.fit()
 
     def on_activated(index, item):
@@ -64,6 +65,14 @@ def main():
     #tree[0][1].color = None
     tree[0][1].background = None
 
+    tree[2] = ["Flute 4", "OK"]
+    tree[3] = ["Flute 5", "OK"]
+    tree[4] = ["Flute 6"]
+
+    tree.current = tree[2]
+
+    del tree[3]
+
     for i, item in enumerate(tree):
         if i == 1:
             item.expanded = True
@@ -80,25 +89,24 @@ def main():
         for item in item.children:
             print(item[0].checked)
 
-    class Process(comet.Process):
-
-        def run(self):
-            while self.running:
-                for i in range(10):
-                    value = random.choice([True, False])
-                    self.push("hv", i, value)
-                    value = random.uniform(22., 24.)
-                    self.push("temp", i, value)
-                for i in range(2):
-                    value = random.choice(["OK", "FAIL"])
-                    self.push("status", i, value)
-                time.sleep(1)
+    def measure(process):
+        while process.running:
+            for i in range(10):
+                value = random.choice([True, False])
+                process.events.hv(i, value)
+                value = random.uniform(22., 24.)
+                process.events.temp(i, value)
+            for i in range(2):
+                value = random.choice(["OK", "FAIL"])
+                process.events.status(i, value)
+            time.sleep(1)
 
     def on_hv(i, value):
         item = table[i][2]
         if table[i][0].checked:
             item.value = {True: "ON", False: "OFF"}[value]
             item.color = {True: "green", False: "red"}[value]
+            item.bold = not value
         else:
             item.value = None
 
@@ -113,22 +121,26 @@ def main():
             item.value = None
 
     def on_status(i, value):
-        color = {"OK":"green","FAIL":"red"}[value]
+        color = {"OK": "green", "FAIL": "red"}[value]
         tree[i][1].value = value
         tree[i][1].color = color
+        tree[i][1].bold = value == "FAIL"
         for item in tree[i].children:
             if item[0].checked:
                 item[1].value = value
                 item[1].color = color
+                item[1].bold = value == "FAIL"
             else:
                 item[1].value = None
 
-    process = app.processes.add("Process", Process(
-        hv=on_hv,
-        temp=on_temp,
-        status=on_status,
-    ))
-    process.start()
+    app.processes.add("process", comet.Process(
+        target=measure,
+        events=dict(
+            hv=on_hv,
+            temp=on_temp,
+            status=on_status
+        )
+    )).start()
 
     return app.run()
 

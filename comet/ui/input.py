@@ -236,10 +236,12 @@ class List(Input):
 
     QtBaseClass = QtWidgets.QListWidget
 
-    def __init__(self, values=[], default=None, changed=None, **kwargs):
+    def __init__(self, values=[], current=None, changed=None, **kwargs):
         super().__init__(**kwargs)
         self.values = values
-        self.default = default
+        if values and current is None:
+            current = values[0]
+        self.current = current
         self.changed = changed
         self.qt.currentRowChanged[int].connect(self.__changed_handler)
 
@@ -262,7 +264,24 @@ class List(Input):
         self.qt.addItem(item)
 
     def remove(self, value):
-        self.qt.removeItem(self.qt.findData(default))
+        for index, item in enumerate(self):
+            if item == value:
+                self.qt.takeItem(index)
+                break
+
+    @property
+    def current(self):
+        item = self.qt.item(self.qt.currentRow())
+        if item:
+            return item.data(QtCore.Qt.UserRole)
+
+    @current.setter
+    def current(self, value):
+        self.qt.setCurrentRow(0)
+        for index, item in enumerate(self):
+            if value == item:
+                self.qt.setCurrentRow(index)
+                return
 
     @property
     def changed(self):
@@ -277,6 +296,22 @@ class List(Input):
         if callable(self.changed):
             value = self.values[index]
             self.changed(value, index)
+
+    def __getitem__(self, index):
+        if index < 0:
+            index += self.qt.count()
+        item = self.qt.item(index)
+        if item:
+            return item.data(QtCore.Qt.UserRole)
+
+    def __len__(self):
+        return self.qt.count()
+
+    def __iter__(self):
+        items = []
+        for index in range(len(self)):
+            items.append(self.qt.item(index).data(QtCore.Qt.UserRole))
+        return iter(items)
 
 class CheckBox(Input):
 

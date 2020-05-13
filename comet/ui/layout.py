@@ -43,9 +43,18 @@ class BoxLayout(Layout):
         self.stretch = self.stretch
 
     def remove(self, child):
-        """Remove a child widget."""
-        self.qt.removeWidget(child)
+        """Remove a child."""
+        if child not in self.__children:
+            raise ValueError(f"not a child {child}")
         self.__children.remove(child)
+        index = self.qt.layout().indexOf(child.qt)
+        self.qt.layout().takeAt(index)
+        child.qt.setParent(None)
+
+    def clear(self):
+        """Remove all children."""
+        while self.__children:
+            self.remove(self.__children[0])
 
     @property
     def stretch(self):

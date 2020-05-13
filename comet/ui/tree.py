@@ -146,7 +146,15 @@ class Tree(Widget):
         item.expanded = True
         return item
 
+    def remove(self, item):
+        """Remove item from tree."""
+        index = self.qt.indexOfTopLevelItem(item.qt)
+        if index < 0:
+            raise ValueError(f"not an item {item}")
+        self.qt.takeTopLevelItem(index)
+
     def clear(self):
+        """Clear all tree items."""
         self.qt.clear()
 
     @property
@@ -155,6 +163,11 @@ class Tree(Widget):
         item = self.qt.currentItem()
         if item is not None:
             return item.data(0, item.UserType)
+
+    @current.setter
+    def current(self, item):
+        """Set current tree item."""
+        item = self.qt.setCurrentItem(item.qt)
 
     @property
     def stretch(self):
@@ -169,16 +182,22 @@ class Tree(Widget):
             self.qt.resizeColumnToContents(column)
 
     def __getitem__(self, index):
+        if index < 0:
+            index += self.qt.topLevelItemCount()
         item = self.qt.topLevelItem(index)
         return item.data(0, item.UserType)
 
     def __setitem__(self, index, items):
-        self.qt.removeRow(row)
-        self.qt.insertRow(row)
-        for column, item in enumerate(items):
-            if not isinstance(item, TableItem):
-                item = TableItem(value=item)
-            self.qt.setItem(row, column, item.qt)
+        if index < 0:
+            index += self.qt.topLevelItemCount()
+        self.qt.takeTopLevelItem(index)
+        item = TreeItem(values=items)
+        self.qt.insertTopLevelItem(index, item.qt)
+
+    def __delitem__(self, index):
+        if index < 0:
+            index += self.qt.topLevelItemCount()
+        self.qt.takeTopLevelItem(index)
 
     def __len__(self):
         return self.qt.topLevelItemCount()
@@ -230,7 +249,18 @@ class TreeItem(Base):
         self.qt.setExpanded(expand)
 
     def __getitem__(self, index):
+        if index < 0:
+            index += self.qt.columnCount()
         return TreeItemColumn(index, self.qt)
+
+    def __len__(self):
+        return self.qt.columnCount()
+
+    def __iter__(self):
+        columns = []
+        for index in self.qt.columnCount():
+            columns.append(TreeItemColumn(index, self.qt))
+        return iter(columns)
 
 class TreeItemColumn:
 
@@ -245,6 +275,16 @@ class TreeItemColumn:
     @value.setter
     def value(self, value):
         return self.qt.setData(self.column, self.qt.Type, value)
+
+    @property
+    def bold(self):
+        return self.qt.font(self.column).bold()
+
+    @bold.setter
+    def bold(self, enable):
+        font = self.qt.font(self.column)
+        font.setBold(enable)
+        self.qt.setFont(self.column, font)
 
     @property
     def color(self):

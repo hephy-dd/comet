@@ -1,6 +1,6 @@
-import random
-import time
+"""Keithley 2410 emulator."""
 
+from comet.emulator.emulator import message, run
 from .k2400 import K2400Handler
 
 __all__ = ['K2410Handler']

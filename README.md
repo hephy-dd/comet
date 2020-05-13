@@ -14,13 +14,13 @@ See the documentation on https://hephy-dd.github.io/comet/
 Install from GitHub using pip
 
 ```bash
-pip install git+https://github.com/hephy-dd/comet.git@0.8.1
+pip install git+https://github.com/hephy-dd/comet.git@0.9.0
 ```
 
 ## Quick start
 
 The following minimal example registers a VISA compatible instrument, a callback
-action and invokes the application's main window providing a lyout with a text
+action and invokes the application's main window providing a layout with a text
 field and a button.
 
 ```python
@@ -54,7 +54,7 @@ app.layout = comet.Column(
     comet.Stretch()
 )
 
-# Run application
+# Run event loop
 app.run()
 ```
 
