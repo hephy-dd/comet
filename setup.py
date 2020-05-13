@@ -20,6 +20,7 @@ setup(
         'comet': [
             'assets/icons/*.ico',
             'assets/icons/*.svg',
+            'assets/icons/*.ico',
             'widgets/*.ui',
         ],
     },
