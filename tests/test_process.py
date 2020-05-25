@@ -2,17 +2,9 @@ import tempfile
 import unittest
 import os
 
-from comet.process import Thread, Process, ProcessManager, ProcessMixin
+from comet.process import Process, ProcessManager, ProcessMixin
 
 class ProcessTest(unittest.TestCase):
-
-    def testThread(self):
-        thread = Thread()
-        self.assertEqual(thread.is_running(), True)
-        thread.start()
-        self.assertEqual(thread.is_running(), True)
-        thread.stop()
-        self.assertEqual(thread.is_running(), False)
 
     def testProcessManager(self):
         p = Process()

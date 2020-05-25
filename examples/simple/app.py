@@ -9,7 +9,7 @@ import comet
 def measure(process):
     while process.running:
         voltage = process.get('voltage', 0)
-        process.events.reading(random.uniform(.25, 2.5) * voltage)
+        process.emit('reading', random.uniform(.25, 2.5) * voltage)
         process.set('voltage', voltage)
         time.sleep(random.random())
 
@@ -18,23 +18,23 @@ def main():
     app.title = "Measurement"
 
     def on_finish():
-        app.layout.get("start").enabled = True
-        app.layout.get("stop").enabled = False
-        app.layout.get("current").value = 0
+        start_button.enabled = True
+        stop_button.enabled = False
+        current_number.value = 0
 
     def on_reading(value):
         print(value)
-        app.layout.get("current").value = value
+        current_number.value = value
 
     def on_start():
-        app.layout.get("start").enabled = False
-        app.layout.get("stop").enabled = True
+        start_button.enabled = False
+        stop_button.enabled = True
         process = app.processes.get("measure")
         process.start()
 
     def on_stop():
-        app.layout.get("start").enabled = False
-        app.layout.get("stop").enabled = False
+        start_button.enabled = False
+        stop_button.enabled = False
         process = app.processes.get("measure")
         process.stop()
 
@@ -42,25 +42,27 @@ def main():
         process = app.processes.get("measure")
         process.set('voltage', value)
 
-    process = comet.Process(
-        target=measure,
-        events=dict(
-            finished=on_finish,
-            failed=comet.show_exception,
-            reading=on_reading
-        )
-    )
+    process = comet.Process(target=measure)
+    process.finished = on_finish
+    process.failed = comet.show_exception
+    process.reading = on_reading
     app.processes.add("measure", process)
 
-    app.layout = comet.Column(
+    voltage_number = comet.Number(value=0, minimum=0, maximum=1000, decimals=1, suffix="V", changed=on_voltage)
+    current_number = comet.Number(readonly=True, value=0, decimals=3, suffix="mA", stylesheet="color: red")
+    start_button = comet.Button(text="Start", clicked=on_start)
+    stop_button = comet.Button(text="Stop", enabled=False, clicked=on_stop)
+
+    l = comet.Column(
         comet.Label("Voltage"),
-        comet.Number(id="voltage", value=0, minimum=0, maximum=1000, decimals=1, suffix="V", changed=on_voltage),
+        voltage_number,
         comet.Label("Current"),
-        comet.Number(id="current", readonly=True, value=0, decimals=3, suffix="mA", stylesheet="color: red"),
-        comet.Button(id="start", text="Start", clicked=on_start),
-        comet.Button(id="stop", text="Stop", enabled=False, clicked=on_stop),
-        comet.Stretch()
+        current_number,
+        start_button,
+        stop_button,
+        comet.Spacer()
     )
+    app.layout = l
 
     return app.run()
 

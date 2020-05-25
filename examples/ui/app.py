@@ -14,7 +14,7 @@ def main():
     tab1 = comet.Tab(title="Tab 1", layout=comet.Column(
         comet.Row(
             comet.Column(
-                comet.FieldSet(title="Numbers", layout=comet.Column(
+                comet.GroupBox(title="Numbers", layout=comet.Column(
                     comet.Label(text="Number 1"),
                     comet.Number(value=1, minimum=0, maximum=10, step=1, prefix="#"),
                     comet.Label(text="Number 2"),
@@ -26,7 +26,7 @@ def main():
                 ))
             ),
             comet.Column(
-                comet.FieldSet(title="Text", layout=comet.Column(
+                comet.GroupBox(title="Text", layout=comet.Column(
                     comet.Label(text="Text 1"),
                     comet.Text(value="Chapman"),
                     comet.Label(text="Text 2"),
@@ -37,49 +37,52 @@ def main():
                     comet.Text(value="Palin", enabled=False)
                 ))
             ),
-            comet.Stretch(),
+            comet.Spacer(),
             stretch=(2, 2, 3)
         ),
-        comet.Stretch(),
+        comet.Spacer(),
         stretch=(0, 1)
     ))
 
     def on_append():
-        list = app.layout.get("list1")
-        list.append(f"Spam {len(list)}")
-        list.current = list[-1]
+        list1.append(f"Spam {len(list1)}")
+        list1.current = list1[0]
 
     def on_remove():
-        list = app.layout.get("list1")
-        list.remove(list.current)
+        if list1.current is not None:
+            list1.remove(list1.current)
 
+    list1 = comet.List()
     tab2 = comet.Tab(title="Tab 2", layout=comet.Column(
         comet.Row(
-            comet.FieldSet(title="List 1", layout=comet.Column(
-                comet.List(id="list1"),
+            comet.GroupBox(title="List 1", layout=comet.Column(
+                list1,
                 comet.Button(text="&Add", clicked=on_append),
                 comet.Button(text="&Remove", clicked=on_remove)
             )),
-            comet.FieldSet(title="List 2", layout=comet.List(values=values, current="Jones")),
-            comet.FieldSet(title="List 3", layout=comet.List(values=values, current="Idle", enabled=False))
+            comet.GroupBox(title="List 2", layout=comet.List(items=values)),
+            comet.GroupBox(title="List 3", layout=comet.List(items=values, enabled=False))
         ),
-        comet.Stretch(),
+        comet.Spacer(),
         stretch=(0, 1)
     ))
 
+    table1 = comet.Table(header=["Key", "Value"])
     tab3 = comet.Tab(title="Tab 3", layout=comet.Column(
-        comet.Table(id="table", header=["Key", "Value"])
+        table1
     ))
 
+    tree1 = comet.Tree(header=["Key", "Value"])
     tab4 = comet.Tab(title="Tab 4", layout=comet.Column(
-        comet.Tree(id="tree", header=["Key", "Value"])
+        tree1
     ))
 
     first = comet.Button(text="Click")
+    scroll = comet.ScrollArea(layout=comet.Column(*[comet.CheckBox(text=f"Option {i+1}", checked=random.choice([True, False])) for i in range(64)]))
     second = comet.Column(
-        comet.ScrollArea(id="scroll", layout=comet.Column(*[comet.CheckBox(text=f"Option {i+1}", checked=random.choice([True, False])) for i in range(64)]))
+        scroll
     )
-    tab5 = comet.Tab(id="tab5", title="Tab 5", layout=first)
+    tab5 = comet.Tab(title="Tab 5", layout=first)
     tab5.layout = second
     del first
 
@@ -87,55 +90,53 @@ def main():
         app.message = value
 
     def on_click():
-        app.message = app.layout.get("select").current
-        print("tree:", app.layout.get("tree").current)
-        print("table:", app.layout.get("table").current)
+        app.message = combobox1.current
+
+    tabs = comet.Tabs(tab1, tab2, tab3, tab4, tab5)
+    combobox1 = comet.ComboBox(items=values)
 
     app.layout = comet.Row(
         comet.Column(
-            comet.FieldSet(title="FieldSet 1", layout=comet.Column(
+            comet.GroupBox(title="GroupBox 1", layout=comet.Column(
                 comet.Button(text="Button 1", clicked=on_click),
                 comet.Button(text="Button 2", enabled=False),
                 comet.Button(text="Button 3", checkable=True),
                 comet.Button(text="Button 4", checkable=True, enabled=False),
                 comet.Button(text="Button 5", checkable=True, checked=True)
             )),
-            comet.FieldSet(title="FieldSet 2", layout=comet.Column(
+            comet.GroupBox(title="GroupBox 2", layout=comet.Column(
                 comet.CheckBox(text="CheckBox 1"),
                 comet.CheckBox(text="CheckBox 2", enabled=False),
                 comet.CheckBox(text="CheckBox 3", checked=True, enabled=False),
                 comet.CheckBox(text="CheckBox 4", checked=True)
             )),
-            comet.FieldSet(title="FieldSet 3", layout=comet.Column(
-                comet.Select(),
-                comet.Select(id="select", values=values),
-                comet.Select(values=values, current="Cleese", changed=on_changed),
-                comet.Select(values=values, current="Idle", enabled=False)
+            comet.GroupBox(title="GroupBox 3", layout=comet.Column(
+                comet.ComboBox(),
+                combobox1,
+                comet.ComboBox(items=values, current="Cleese", changed=on_changed),
+                comet.ComboBox(items=values, current="Idle", enabled=False)
             )),
-            comet.Stretch()
+            comet.Spacer()
         ),
-        comet.Tabs(tab1, tab2, tab3, tab4, tab5, id="tabs"),
+        tabs,
         stretch=(2, 7)
     )
 
     # Populate table
-    table = app.layout.get("table")
-    spam = table.append(["Spam", 42])
+    spam = table1.append(["Spam", 42])
     spam[0].checked = True
     #spam[0].enabled = False
-    ham = table.append(["Ham", 41])
+    ham = table1.append(["Ham", 41])
     ham[0].checked = True
     #ham[0].enabled = False
 
     # Populate tree
-    tree = app.layout.get("tree")
-    spam = tree.append(["Spam", 42])
+    spam = tree1.append(["Spam", 42])
     spam[0].checked = True
     spam.append(["Ham", 41])
     spam.append(["Eggs", 40])
 
     # Add an remove tab
-    tabs = app.layout.get("tabs")
     tab = comet.Tab()
     tabs.insert(0, tab)
     tab.title = "Spam"

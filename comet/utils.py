@@ -25,6 +25,7 @@ PACKAGE_PATH = os.path.abspath(os.path.dirname(__file__))
 
 def make_path(*args):
     """Construct an absolute path relative to comet package path.
+
     >>> make_path('assets', 'sample.txt')
     '/usr/local/lib/python/comet/assets/sample.txt'
     """
@@ -32,6 +33,7 @@ def make_path(*args):
 
 def make_label(name):
     """Construct a pretty label from a name or ID.
+
     >>> make_label('v_max')
     'V max'
     """
@@ -39,6 +41,7 @@ def make_label(name):
 
 def make_id(name):
     """Construct a lower case ID string without special characters from any name.
+
     >>> make_id('Nobody expects the spanish inquisition!')
     'nobody_expects_the_spanish_inquisition'
     """
@@ -76,6 +79,7 @@ def unescape_string(s):
 
 def replace_ext(filename, ext):
     """Replaces a filename extension.
+
     >>> replace_ext('/tmp/module.py', '.ui')
     '/tmp/module.ui'
     """
@@ -103,6 +107,7 @@ def auto_step(begin, end, step):
 def switch_dir(path):
     """Change the current working directory to the specified path and restore
     the previous location afterwards.
+
     >>> with switch_dir('/tmp'):
     ...     print(os.getcwd())
     '/tmp'

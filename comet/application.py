@@ -2,147 +2,64 @@ import logging
 import signal
 import sys
 
-from PyQt5 import QtCore, QtWidgets
+import qutie as ui
+from qutie.qt import QtCore
+from qutie.qt import QtGui
 
 from .version import __version__
 from .widgets import MainWindow
 from .settings import SettingsMixin
 from .device import DeviceMixin
 from .process import ProcessMixin
-from .ui.core import Base
-from .ui.widget import Widget
-from .ui.layout import Layout
+from .utils import make_path
 
-__all__ = ['CoreApplication', 'Application']
+__all__ = ['Application']
 
-class CoreApplication(Base, SettingsMixin, ProcessMixin, DeviceMixin):
-    """Base class for COMET application classes."""
+COMET_ORGANIZATION = "HEPHY"
+COMET_DOMAIN = "hephy.at"
+COMET_DISPLAY_NAME = "COMET"
 
-    QtBaseClass = QtCore.QCoreApplication
-
-    __instance = None
-
-    def __init__(self, name=None, version=None):
-        super().__init__(sys.argv)
-
-        # Setup logger
-        logging.getLogger().setLevel(logging.INFO)
-
-        # Store reference to application
-        CoreApplication.__instance = self
-
-        # Application settings
-        self.name = name
-        self.version = version
-        self.organization_name = "HEPHY"
-        self.organization_domain = "hephy.at"
-
-    @classmethod
-    def app(cls):
-        return cls.__instance
-
-    @property
-    def name(self):
-        return self.qt.applicationName()
-
-    @name.setter
-    def name(self, name):
-        self.qt.setApplicationName("" if name is None else format(name))
-
-    @property
-    def version(self):
-        return self.qt.applicationVersion()
-
-    @version.setter
-    def version(self, version):
-        self.qt.setApplicationVersion("" if version is None else format(version))
-
-    @property
-    def organization_name(self):
-        return self.qt.organizationName()
-
-    @organization_name.setter
-    def organization_name(self, name):
-        self.qt.setOrganizationName("" if name is None else format(name))
-
-    @property
-    def organization_domain(self):
-        return self.qt.organizationDomain()
-
-    @organization_domain.setter
-    def organization_domain(self, domain):
-        self.qt.setOrganizationDomain("" if domain is None else format(domain))
-
-    def __signal_handler(self, signum, frame):
-        """Interupt signal handler, trying to close application windows."""
-        if signum == signal.SIGINT:
-            self.quit()
-
-    def quit(self):
-        """Request quit application."""
-        self.qt.quit()
-
-    def run(self):
-        """Run application event loop."""
-
-        # Register interupt signal handler
-        signal.signal(signal.SIGINT, self.__signal_handler)
-
-        # Run timer to process interrupt signals
-        timer = QtCore.QTimer()
-        timer.timeout.connect(lambda: None)
-        timer.start(250)
-
-        # Run event loop
-        result = self.qt.exec_()
-
-        # Stop processes
-        self.processes.stop()
-        self.processes.join()
-
-        return result
-
-class Application(CoreApplication):
+class Application(ui.Application, SettingsMixin, ProcessMixin, DeviceMixin):
     """Base class for COMET applications providing a default main window."""
 
-    QtBaseClass = QtWidgets.QApplication
+    def __init__(self, name=None, *, title=None, width=None,
+                 height=None, about=None, **kwargs):
+        super().__init__(name=name, **kwargs)
 
-    def __init__(self, name=None, version=None, title=None, about=None, width=None, height=None):
-        super().__init__(name, version)
+        if title is not None:
+            self.title = title
+        if about is not None:
+            self.about = about
+        if width is not None:
+            self.width = width
+        if height is not None:
+            self.height = height
+
+        if 'organization' not in kwargs:
+            self.organization = COMET_ORGANIZATION
+        if 'domain' not in kwargs:
+            self.domain = COMET_DOMAIN
+        if 'display_name' not in kwargs:
+            self.display_name = COMET_DISPLAY_NAME
+        if 'icon' not in kwargs:
+            self.icon = make_path('assets', 'icons', 'comet.svg')
 
         # Connections
         self.qt.lastWindowClosed.connect(self.qt.quit)
 
         # Initialize main window
         self.qt.window = MainWindow()
-        self.__widget = Widget(id="root")
+        self.__widget = ui.Widget()
 
         self.qt.window.setCentralWidget(self.__widget.qt)
-
-        # Application properties
-        self.display_name = "COMET"
-        self.title = title
-        self.about = about
-        if width is not None:
-            self.width = width
-        if height is not None:
-            self.height = height
-
-    @property
-    def display_name(self):
-        return self.qt.applicationDisplayName()
-
-    @display_name.setter
-    def display_name(self, name):
-        self.qt.setApplicationDisplayName("" if name is None else format(name))
 
     @property
     def title(self):
         return self.qt.window.windowTitle()
 
     @title.setter
-    def title(self, title):
-        self.qt.window.setWindowTitle("" if title is None else format(title))
+    def title(self, value):
+        self.qt.window.setWindowTitle(value)
 
     @property
     def width(self):
@@ -165,8 +82,8 @@ class Application(CoreApplication):
         return self.qt.window.aboutText()
 
     @about.setter
-    def about(self, about):
-        self.qt.window.setAboutText(about or "")
+    def about(self, value):
+        self.qt.window.setAboutText(value)
 
     @property
     def message(self):
@@ -202,17 +119,17 @@ class Application(CoreApplication):
             layout = layout()
         self.__widget.layout = layout
 
-    def show_exception(self, e):
-        self.qt.window.showException(e)
-
-    def quit(self):
-        """Request quit application."""
-        self.qt.closeAllWindows()
-
     def run(self):
         """Run application event loop."""
-
         # Show main window
         self.qt.window.show()
+        self.qt.window.raise_()
 
-        return super().run()
+        # Run event loop
+        result = super().run()
+
+        # Stop processes
+        self.processes.stop()
+        self.processes.join()
+
+        return result

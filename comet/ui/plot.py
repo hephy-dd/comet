@@ -1,9 +1,9 @@
-from PyQt5 import QtCore
-from PyQt5 import QtGui
-
 import QCharted
 
-from .widget import Widget
+from qutie.qt import QtCore
+from qutie.qt import QtGui
+from qutie.qt import bind
+from qutie.widget import Widget
 
 __all__ = ['Plot']
 
@@ -38,16 +38,16 @@ class Axis:
         return self.qt.titleText()
 
     @text.setter
-    def text(self, text):
-        self.qt.setTitleText(text or "")
+    def text(self, value):
+        self.qt.setTitleText(value or "")
 
     @property
     def color(self):
         return self.qt.linePen().color().name()
 
     @color.setter
-    def color(self, color):
-        self.qt.setLinePen(QtGui.QColor(color))
+    def color(self, value):
+        self.qt.setLinePen(QtGui.QColor(value))
 
 class Series:
     """Series wrapper class provided for convenience."""
@@ -60,16 +60,16 @@ class Series:
         return self.qt.name()
 
     @text.setter
-    def text(self, text):
-        self.qt.setName(text or "")
+    def text(self, value):
+        self.qt.setName(value or "")
 
     @property
     def color(self):
         return self.qt.pen().color().name()
 
     @color.setter
-    def color(self, color):
-        self.qt.setPen(QtGui.QColor(color))
+    def color(self, value):
+        self.qt.setPen(QtGui.QColor(value))
 
     def append(self, x, y):
         self.qt.data().append(x, y)
@@ -80,9 +80,8 @@ class Series:
     def clear(self):
         self.qt.data().clear()
 
+@bind(QCharted.ChartView)
 class Plot(Widget):
-
-    QtBaseClass = QCharted.ChartView
 
     def __init__(self, axes={}, series={}, legend=None, **kwargs):
         super().__init__(**kwargs)
