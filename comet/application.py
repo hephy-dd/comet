@@ -26,15 +26,6 @@ class Application(ui.Application, SettingsMixin, ProcessMixin, ResourceMixin):
                  height=None, about=None, **kwargs):
         super().__init__(name=name, **kwargs)
 
-        if title is not None:
-            self.title = title
-        if about is not None:
-            self.about = about
-        if width is not None:
-            self.width = width
-        if height is not None:
-            self.height = height
-
         if 'organization' not in kwargs:
             self.organization = COMET_ORGANIZATION
         if 'domain' not in kwargs:
@@ -50,6 +41,16 @@ class Application(ui.Application, SettingsMixin, ProcessMixin, ResourceMixin):
         # Initialize main window
         self.qt.window = MainWindow()
         self.__widget = ui.Widget()
+
+        # Main window properties
+        if title is not None:
+            self.title = title
+        if about is not None:
+            self.about = about
+        if width is not None:
+            self.width = width
+        if height is not None:
+            self.height = height
 
         self.qt.window.setCentralWidget(self.__widget.qt)
 
