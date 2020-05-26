@@ -9,7 +9,7 @@ from qutie.qt import QtGui
 from .version import __version__
 from .widgets import MainWindow
 from .settings import SettingsMixin
-from .device import DeviceMixin
+from .resource import ResourceMixin
 from .process import ProcessMixin
 from .utils import make_path
 
@@ -19,7 +19,7 @@ COMET_ORGANIZATION = "HEPHY"
 COMET_DOMAIN = "hephy.at"
 COMET_DISPLAY_NAME = "COMET"
 
-class Application(ui.Application, SettingsMixin, ProcessMixin, DeviceMixin):
+class Application(ui.Application, SettingsMixin, ProcessMixin, ResourceMixin):
     """Base class for COMET applications providing a default main window."""
 
     def __init__(self, name=None, *, title=None, width=None,

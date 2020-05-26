@@ -4,7 +4,7 @@ import random
 import time
 from contextlib import ContextDecorator
 
-from .resource import Resource
+from ..resource import Resource
 
 __all__ = ['lock', 'Driver', 'Action', 'Property']
 

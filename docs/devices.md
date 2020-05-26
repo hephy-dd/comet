@@ -71,43 +71,43 @@ This is equivalent of the following statement.
 
 ## Registering
 
-Registering devices brings following advantages:
-* Devices can be accesses using the `devices` proeprty by any class inheriting
-from class `DeviceMixin`.
-* Persistent device settings can be edited using the main window's preferences
+Registering resources brings following advantages:
+* Rssources can be accesses using the `resources` property by any class
+inheriting from class `ResourceMixin`.
+* Persistent resource settings can be edited using the main window's preferences
 dialog.
 * Stored settings can be applied to registered devices using `load_settings()`.
 
 ```python
 # Register a device instance
->>> app.devices.add("name", device)
+>>> app.resources.add("name", device)
 # Access a registerd device
->>> app.devices.get("name")
+>>> app.resources.get("name")
 <Driver object at ...>
 ```
 
 ## Load settings
 
 ```python
-app.devices.add("smu", K2410("GBIP::1::INSTR"))
-app.devices.add("multi", K2700("GBIP::2::INSTR"))
-app.devices.load_settings() # overwrite above resources with persistent settings
+app.resources.add("smu", comet.Resource("GBIP::1::INSTR"))
+app.resources.add("multi", comet.Resource("GBIP::2::INSTR"))
+app.resources.load_settings() # overwrite above resources with persistent settings
 ```
 
 ## Mixins
 
-Inherit from class `DeviceMixin` to provide access to persistent application
+Inherit from class `ResourceMixin` to provide access to persistent application
 settings from within custom classes.
 
 ```python
-from comet.device import DeviceMixin
+from comet.resource import ResourceMixin
 
-class Custard(DeviceMixin):
+class Custard(ResourceMixin):
     @property
     def spam(self):
-        return self.devices.get("spam")
+        return self.resources.get("spam")
 ```
 
-List of classes that inherit `DeviceMixin`:
+List of classes that inherit `ResourceMixin`:
 * [`Application`](application.md)
 * [`Process`](processes.md)

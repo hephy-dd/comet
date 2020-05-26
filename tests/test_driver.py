@@ -2,7 +2,8 @@ import tempfile
 import unittest
 import os
 
-from comet.driver import Resource, Driver
+from comet.resource import Resource
+from comet.driver import Driver
 
 # Check default imports
 from comet.driver.corvus import *

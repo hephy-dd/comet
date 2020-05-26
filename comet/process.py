@@ -1,15 +1,31 @@
 from qutie.worker import Worker
 from qutie.worker import StopRequest
 
-from .device import DeviceMixin
+from .resource import ResourceMixin
+from .settings import SettingsMixin
 from .collection import Collection
 
 __all__ = ['Process', 'StopRequest', 'ProcessManager', 'ProcessMixin']
 
-class Process(Worker):
+class Process(Worker, ResourceMixin, SettingsMixin):
+    """Process inheriting from qutie.Worker with additional event `started`."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, started=None, **kwargs):
         super().__init__(*args, **kwargs)
+        self.started = started
+
+    @property
+    def started(self):
+        return self.__started
+
+    @started.setter
+    def started(self, value):
+        self.__started = value
+
+    def start(self):
+        """Start process, emits event `started`."""
+        self.emit('started')
+        super().start()
 
 class ProcessManager(Collection):
     """Process manager."""

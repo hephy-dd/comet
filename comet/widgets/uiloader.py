@@ -1,7 +1,8 @@
 import inspect
 import os
 
-from PyQt5 import QtCore, uic
+from PyQt5 import QtCore
+from PyQt5 import uic
 
 __all__ = ['UiLoaderMixin']
 

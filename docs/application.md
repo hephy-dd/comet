@@ -20,7 +20,7 @@ The application object permits to register devices, processes and the main windo
 ```python
 import comet
 
-app = comet.Application()
+app = comet.Application("example")
 app.version = "1.0"
 app.title = "Example"
 app.description = "An example application."
