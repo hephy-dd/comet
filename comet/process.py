@@ -10,22 +10,8 @@ __all__ = ['Process', 'StopRequest', 'ProcessManager', 'ProcessMixin']
 class Process(Worker, ResourceMixin, SettingsMixin):
     """Process inheriting from qutie.Worker with additional event `started`."""
 
-    def __init__(self, *args, started=None, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.started = started
-
-    @property
-    def started(self):
-        return self.__started
-
-    @started.setter
-    def started(self, value):
-        self.__started = value
-
-    def start(self):
-        """Start process, emits event `started`."""
-        self.emit('started')
-        super().start()
 
 class ProcessManager(Collection):
     """Process manager."""
