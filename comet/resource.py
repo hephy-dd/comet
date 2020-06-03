@@ -1,3 +1,4 @@
+import logging
 import threading
 from contextlib import ContextDecorator
 
@@ -6,12 +7,12 @@ import visa
 from .collection import Collection
 from .settings import SettingsManager
 
-__all__ = ['Resource', 'ResourceManager', 'ResourceMixin']
+__all__ = ['Resource', 'ResourceError', 'ResourceManager', 'ResourceMixin']
 
 class ResourceError(Exception):
 
     def __init__(self, resource, exc):
-        super(resource.resource_name, resource.visa_library, resource.options, exc)
+        super().__init__(resource.resource_name, resource.visa_library, resource.options, exc)
 
     @property
     def resource_name(self):
@@ -36,6 +37,7 @@ def lock_resource(f):
     def lock_resource(self, *args, **kwargs):
         with self.lock:
             return f(self, *args, **kwargs)
+    return lock_resource
 
 def resource_errors(f):
     def resource_errors(self, *args, **kwargs):
@@ -48,6 +50,7 @@ def resource_errors(f):
 class Resource(ContextDecorator):
 
     def __init__(self, resource_name, visa_library=None, **options):
+        super().__init__()
         self.resource_name = resource_name
         self.visa_library = visa_library or '@py'
         self.options = options
