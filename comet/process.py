@@ -8,7 +8,7 @@ from .collection import Collection
 __all__ = ['Process', 'StopRequest', 'ProcessManager', 'ProcessMixin']
 
 class Process(Worker, ResourceMixin, SettingsMixin):
-    """Process inheriting from qutie.Worker with additional event `started`."""
+    """Process inheriting from qutie.Worker."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
