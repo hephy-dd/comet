@@ -1,3 +1,4 @@
+import datetime
 import tempfile
 import unittest
 import os
@@ -23,8 +24,9 @@ class UtiltiesTest(unittest.TestCase):
         self.assertEqual(comet.make_id('Nobody expects the spanish inquisition!'), ref)
 
     def testMakeIso(self):
-        ref = '2015-02-09T05-39-49'
-        self.assertEqual(comet.make_iso(1423456789.8), ref)
+        ts = 1423456789.8
+        ref = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%dT%H-%M-%S')
+        self.assertEqual(comet.make_iso(ts), ref)
 
     def testEscapeString(self):
         self.assertEqual(comet.escape_string('\r\n\t\\r\\n\\t'), '\\r\\n\\t\\\\r\\\\n\\\\t')
