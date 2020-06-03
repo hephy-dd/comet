@@ -7,9 +7,8 @@ from comet.utils import escape_string, unescape_string
 class ResourcesTab(QtWidgets.QWidget):
 
     DefaultReadTermination = '\n'
-
     DefaultWriteTermination = '\n'
-
+    DefaultTimeout = 2000
     DefaultVisaLibrary = '@py'
 
     def __init__(self, parent=None):
@@ -42,8 +41,15 @@ class ResourcesTab(QtWidgets.QWidget):
                 child = item.child(j)
                 key = child.text(0)
                 value = child.text(1)
+                # Escape special characters
                 if key in ['read_termination', 'write_termination']:
                     value = unescape_string(value)
+                # Convert integers
+                if key in ['timeout']:
+                    try:
+                        value = int(value)
+                    except ValueError:
+                        value = self.DefaultTimeout
                 options[key] = value
             resources[name] = options
         return resources
@@ -65,6 +71,10 @@ class ResourcesTab(QtWidgets.QWidget):
             item.addChild(QtWidgets.QTreeWidgetItem([
                 'write_termination',
                 escape_string(options.get('write_termination', self.DefaultWriteTermination))
+            ]))
+            item.addChild(QtWidgets.QTreeWidgetItem([
+                'timeout',
+                format(options.get('timeout', self.DefaultTimeout))
             ]))
             item.addChild(QtWidgets.QTreeWidgetItem([
                 'visa_library',
@@ -213,8 +223,9 @@ class PreferencesDialog(QtWidgets.QDialog, ResourceMixin, SettingsMixin):
         for name, resource in self.resources.items():
             options = {}
             options['resource_name'] = resource.resource_name
-            options['read_termination'] = resource.options.get('read_termination', '\n')
-            options['write_termination'] = resource.options.get('write_termination', '\n')
+            options['read_termination'] = resource.options.get('read_termination', ResourcesTab.DefaultReadTermination)
+            options['write_termination'] = resource.options.get('write_termination', ResourcesTab.DefaultWriteTermination)
+            options['timeout'] = resource.options.get('timeout', ResourcesTab.DefaultTimeout)
             options['visa_library'] = resource.visa_library
             resources[name] = options
         # Update default resources with stored settings
