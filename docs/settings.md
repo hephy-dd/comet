@@ -50,5 +50,8 @@ class Custard(SettingsMixin):
         return self.settings["spam"] = value
 ```
 
+Underlying class `SettingsManager` is thread safe.
+
 List of classes that inherit `SettingsMixin`:
 * [`Application`](application.md)
+* [`Process`](processes.md)

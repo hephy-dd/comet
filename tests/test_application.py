@@ -7,16 +7,16 @@ from comet.application import Application
 class ApplicationTest(unittest.TestCase):
 
     def testApplication(self):
-        a = Application(name="comet")
-        self.assertEqual(a.name, "comet")
-        self.assertEqual(a.title, "")
-        self.assertEqual(a.version, "")
-        a.title = "Sample"
-        self.assertEqual(a.title, "Sample")
-        a.version = "1.2.3"
-        self.assertEqual(a.version, "1.2.3")
-        a.name = "test"
-        self.assertEqual(a.qt.applicationName(), "test")
+        app = Application(name="comet")
+        self.assertEqual(app.name, "comet")
+        self.assertEqual(app.title, "")
+        self.assertEqual(app.version, "")
+        app.title = "Sample"
+        self.assertEqual(app.title, "Sample")
+        app.version = "1.2.3"
+        self.assertEqual(app.version, "1.2.3")
+        app.name = "test"
+        self.assertEqual(app.qt.applicationName(), "test")
 
 if __name__ == '__main__':
     unittest.main()

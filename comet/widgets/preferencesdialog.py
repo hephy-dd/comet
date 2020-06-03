@@ -1,15 +1,14 @@
 from PyQt5 import QtCore, QtWidgets
 
 from comet.settings import SettingsMixin
-from comet.device import DeviceMixin
+from comet.resource import ResourceMixin
 from comet.utils import escape_string, unescape_string
 
 class ResourcesTab(QtWidgets.QWidget):
 
     DefaultReadTermination = '\n'
-
     DefaultWriteTermination = '\n'
-
+    DefaultTimeout = 2000
     DefaultVisaLibrary = '@py'
 
     def __init__(self, parent=None):
@@ -42,8 +41,15 @@ class ResourcesTab(QtWidgets.QWidget):
                 child = item.child(j)
                 key = child.text(0)
                 value = child.text(1)
+                # Escape special characters
                 if key in ['read_termination', 'write_termination']:
                     value = unescape_string(value)
+                # Convert integers
+                if key in ['timeout']:
+                    try:
+                        value = int(value)
+                    except ValueError:
+                        value = self.DefaultTimeout
                 options[key] = value
             resources[name] = options
         return resources
@@ -65,6 +71,10 @@ class ResourcesTab(QtWidgets.QWidget):
             item.addChild(QtWidgets.QTreeWidgetItem([
                 'write_termination',
                 escape_string(options.get('write_termination', self.DefaultWriteTermination))
+            ]))
+            item.addChild(QtWidgets.QTreeWidgetItem([
+                'timeout',
+                format(options.get('timeout', self.DefaultTimeout))
             ]))
             item.addChild(QtWidgets.QTreeWidgetItem([
                 'visa_library',
@@ -165,7 +175,7 @@ class OperatorsTab(QtWidgets.QWidget):
         self.editButton.setEnabled(item is not None)
         self.removeButton.setEnabled(item is not None)
 
-class PreferencesDialog(QtWidgets.QDialog, DeviceMixin, SettingsMixin):
+class PreferencesDialog(QtWidgets.QDialog, ResourceMixin, SettingsMixin):
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -210,15 +220,16 @@ class PreferencesDialog(QtWidgets.QDialog, DeviceMixin, SettingsMixin):
 
     def loadSettings(self):
         resources = {}
-        for name, device in self.devices.items():
+        for name, resource in self.resources.items():
             options = {}
-            options['resource_name'] = device.resource.resource_name
-            options['read_termination'] = device.resource.options.get('read_termination', '\n')
-            options['write_termination'] = device.resource.options.get('write_termination', '\n')
-            options['visa_library'] = device.resource.visa_library
+            options['resource_name'] = resource.resource_name
+            options['read_termination'] = resource.options.get('read_termination', ResourcesTab.DefaultReadTermination)
+            options['write_termination'] = resource.options.get('write_termination', ResourcesTab.DefaultWriteTermination)
+            options['timeout'] = resource.options.get('timeout', ResourcesTab.DefaultTimeout)
+            options['visa_library'] = resource.visa_library
             resources[name] = options
         # Update default resources with stored settings
-        for name, options in (self.settings.get('resources', {}) or {}).items():
+        for name, options in (self.settings.get('resources') or {}).items():
             # Migrate old style settings
             if isinstance(options, str):
                 options = {'resource_name': options}

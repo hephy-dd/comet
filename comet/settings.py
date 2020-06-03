@@ -1,31 +1,34 @@
 """Collection base class."""
 
-from PyQt5 import QtCore
+import threading
+from qutie.settings import Settings
 
-__all__ = ['SettingsManager', 'SettingsMixin']
+__all__ = ['Settings', 'SettingsManager', 'SettingsMixin']
 
 class SettingsManager:
-    """Settings manager wrapping QSettings. To syncronize with changes to the
-    organization/application name it creates a new instance on every access.
-    """
+    """Settings manager wrapping qutie.Settings."""
+
+    lock = threading.RLock()
 
     def get(self, key, default=None):
-        settings = QtCore.QSettings(
-            QtCore.QCoreApplication.organizationName(),
-            QtCore.QCoreApplication.applicationName()
-        )
-        return settings.value(key, default)
+        with self.lock:
+            with Settings() as settings:
+                return settings.get(key, default)
 
     def __getitem__(self, key):
-        return self.get(key)
+        with self.lock:
+            with Settings() as settings:
+                return settings[key]
 
     def __setitem__(self, key, value):
-        settings = QtCore.QSettings(
-            QtCore.QCoreApplication.organizationName(),
-            QtCore.QCoreApplication.applicationName()
-        )
-        settings.setValue(key, value)
-        settings.sync()
+        with self.lock:
+            with Settings() as settings:
+                settings[key] = value
+
+    @property
+    def filename(self):
+        with self.lock:
+            return Settings().filename
 
 class SettingsMixin:
     """Mixin class to access global settings manager."""

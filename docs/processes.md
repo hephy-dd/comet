@@ -32,8 +32,8 @@ process.start()
 ## Request stop
 
 COMET processes can be stopped by calling method `stop()`. This will put the
-process in _stop-requested_ mode. Use property `running` to terminate the
-running process gracefully.
+process in _stop-requested_ mode. Use properties `running` or `stopping` to
+terminate the running process gracefully.
 
 ```python
 import comet
@@ -70,32 +70,32 @@ def run(process):
 
 process = comet.Process(
     target=run,
-    events=dict(
-        started=lambda: print("started..."),
-        failed=on_error,
-        finished=on_finished
-    )
+    started=lambda: print("started..."),
+    failed=on_error,
+    finished=on_finished
 )
 process.start()
 ```
 
 **Note:** Do not reference the user interface from within a process method, use
-custom event callbacks to propagate information to the user interface (main thread).
+custom event callbacks to propagate information to the user interface (main
+thread).
 
 ```python
 def run(process):
     while process.running:
-        process.events.voltage(24.00)
-        process.events.current(0.05)
+        process.emit('voltage', 24.00)
+        process.emit('current', 0.05)
 
 process = comet.Process(target=run)
-process.events.voltage = update_voltage
-process.events.current = update_current
+process.voltage = update_voltage
+process.current = update_current
 ```
 
 ## Register
 
-Register all processes so that they will be stopped properly on application exit.
+Register all processes so that they will be stopped properly on application
+exit.
 
 ```python
 process = comet.Process()

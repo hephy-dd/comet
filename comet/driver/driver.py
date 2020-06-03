@@ -4,7 +4,7 @@ import random
 import time
 from contextlib import ContextDecorator
 
-from .resource import Resource
+from ..resource import Resource
 
 __all__ = ['lock', 'Driver', 'Action', 'Property']
 
@@ -15,11 +15,11 @@ def lock(function):
             return function(obj, *args, **kwargs)
     return lock
 
-class Driver(ContextDecorator):
+class Driver:
     """Base class for custom VISA instrument drivers.
 
     >>> class MyInstrument(comet.Driver):
-    ...     @property
+    ...     @Property()
     ...     def voltage(self):
     ...         return float(self.resource.query(":VOLT?"))
     ...     @voltage.setter
@@ -27,7 +27,8 @@ class Driver(ContextDecorator):
     ...         self.resource.write(f":VOLT {value:.3f}; *OPC?")
     ...         self.resource.read()
     ...
-    >>> with MyInstrument(Resource("GPIB0::15")) as instr:
+    >>> with comet.Resource("GPIB0::15") as res:
+    ...     instr = MyInstrument(res)
     ...     instr.voltage = 42
     ...     print(instr.voltage)
     ...
@@ -35,12 +36,9 @@ class Driver(ContextDecorator):
     """
 
     def __init__(self, resource, **kwargs):
-        if isinstance(resource, str):
-            self.__resource = Resource(resource_name=resource, **kwargs)
-        elif isinstance(resource, Resource):
-            self.__resource = resource
-        else:
+        if not isinstance(resource, Resource):
             raise ValueError(f"invalid resource {resource!r}")
+        self.__resource = resource
 
     @property
     def resource(self):
@@ -52,23 +50,20 @@ class Driver(ContextDecorator):
             raise AttributeError("can't set attribute")
         super().__setattr__(name, value)
 
-    def __enter__(self):
-        self.resource.__enter__()
-        return self
-
-    def __exit__(self, *exc):
-        self.resource.__exit__(*exc)
-        return False
-
 class Action:
+    """Driver action decorator."""
+
     def __init__(self):
         pass
+
     def __call__(self, method):
-        def action(*args, **kwargs):
-            return method(*args, **kwargs)
+        def action(self, *args, **kwargs):
+            return method(self, *args, **kwargs)
         return action
 
 def Property(*, values=None, minimum=None, maximum=None, keys=None):
+    """Driver property decorator."""
+
     _values = values
     _min = minimum
     _max = maximum

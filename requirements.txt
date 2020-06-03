@@ -3,5 +3,5 @@ PyVISA-py
 PyVISA-sim
 pint>=0.10
 numpy>=1.17
-PyQt5>=5.13
+qutie>=1.3
 QCharted>=1.1

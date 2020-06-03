@@ -29,7 +29,7 @@ def fake_data(process):
     """Fake data generator."""
     source = FakeDataProducer()
     while process.running:
-        process.events.reading(source.read())
+        process.emit('reading', source.read())
         time.sleep(random.uniform(.250, .500))
 
 def main():
@@ -37,22 +37,10 @@ def main():
     app.title = "Plot"
     app.about = "An example plot application."
 
-    plot = comet.Plot(id="plot", legend="bottom")
-    plot.add_axis("x", align="bottom", type="datetime")
-    plot.add_axis("y1", align="left", text="Temperature [°C]", color="red")
-    plot.add_axis("y2", align="right", text="Humidity [%rH]", color="blue")
-    plot.add_series("temp", "x", "y1", text="Temperature", color="red")
-    plot.add_series("humid", "x", "y2", text="Humidity", color="blue")
-
     def on_reset():
         for series in plot.series.values():
             series.clear()
         plot.fit()
-
-    app.layout = comet.Column(
-        plot,
-        comet.Button(text="Reset", clicked=on_reset)
-    )
 
     def on_reading(value):
         time, temp, humid = value
@@ -63,13 +51,23 @@ def main():
         else:
             plot.fit()
 
-    process = comet.Process(
-        target=fake_data,
-        events=dict(
-            reading=on_reading,
-            failed=comet.show_exception
-        )
+    plot = comet.Plot(legend="bottom")
+    plot.add_axis("x", align="bottom", type="datetime")
+    plot.add_axis("y1", align="left", text="Temperature [°C]", color="red")
+    plot.add_axis("y2", align="right", text="Humidity [%rH]", color="blue")
+    plot.add_series("temp", "x", "y1", text="Temperature", color="red")
+    plot.add_series("humid", "x", "y2", text="Humidity", color="blue")
+
+    reset_button = comet.Button(text="Reset", clicked=on_reset)
+
+    app.layout = comet.Column(
+        plot,
+        reset_button
     )
+
+    process = comet.Process(target=fake_data)
+    process.reading = on_reading
+    process.failed = comet.show_exception
     process.start()
     app.processes.add("process", process)
 

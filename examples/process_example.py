@@ -7,25 +7,15 @@ import comet
 def main():
     app = comet.Application()
 
-    app.layout = comet.Column(
-        comet.Table(
-            id="table",
-            stretch=True,
-            header=["Name", "Status", "HV", "Current", "Temp.", "Calib."]
-        ),
-        comet.Tree(
-            id="tree",
-            header=["Measurement", "Status"]
-        )
-    )
-
     def on_activated(item):
-        comet.show_info("Item", format(item.value))
+        comet.show_info(text=format(item.value))
 
     def on_selected(item):
         print("Item", format(item.value))
 
-    table = app.get("table")
+    table = comet.Table()
+    table.header = "Name", "Status", "HV", "Current", "Temp.", "Calib."
+    table.stretch = True
     table.activated = on_activated
     table.selected = on_selected
     for i in range(10):
@@ -43,16 +33,17 @@ def main():
         # First column editabled
         table[i][0].readonly = False
 
-    table.current = table[-1][0]
+    table.qt.setCurrentItem(table[0][0].qt)
     table.fit()
 
     def on_activated(index, item):
-        comet.show_info("Item", format(item[index].value))
+        comet.show_info(text=format(item[index].value))
 
     def on_selected(item):
         print("Item", format(item[0].value))
 
-    tree = app.get("tree")
+    tree = comet.Tree()
+    tree.header = "Measurement", "Status"
     tree.activated = on_activated
     tree.selected = on_selected
     tree.append(["Flute 1", "OK"])
@@ -65,13 +56,13 @@ def main():
     #tree[0][1].color = None
     tree[0][1].background = None
 
-    tree[2] = ["Flute 4", "OK"]
-    tree[3] = ["Flute 5", "OK"]
-    tree[4] = ["Flute 6"]
+    tree.append(["Flute 4", "OK"])
+    tree.append(["Flute 5", "OK"])
+    tree.append(["Flute 6"])
 
-    tree.current = tree[2]
+    tree.qt.setCurrentItem(tree[2].qt)
 
-    del tree[3]
+    tree.remove(tree[3])
 
     for i, item in enumerate(tree):
         if i == 1:
@@ -93,12 +84,12 @@ def main():
         while process.running:
             for i in range(10):
                 value = random.choice([True, False])
-                process.events.hv(i, value)
+                process.emit('hv', i, value)
                 value = random.uniform(22., 24.)
-                process.events.temp(i, value)
+                process.emit('temp', i, value)
             for i in range(2):
                 value = random.choice(["OK", "FAIL"])
-                process.events.status(i, value)
+                process.emit('status', i, value)
             time.sleep(1)
 
     def on_hv(i, value):
@@ -133,14 +124,17 @@ def main():
             else:
                 item[1].value = None
 
-    app.processes.add("process", comet.Process(
-        target=measure,
-        events=dict(
-            hv=on_hv,
-            temp=on_temp,
-            status=on_status
-        )
-    )).start()
+    app.layout = comet.Column(
+        table,
+        tree
+    )
+
+    process = comet.Process(target=measure)
+    process.hv = on_hv
+    process.temp = on_temp
+    process.status = on_status
+    app.processes.add("process", process)
+    process.start()
 
     return app.run()
 
