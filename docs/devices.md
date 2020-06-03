@@ -48,25 +48,12 @@ COMET comes with a set of various instrument drivers in module `comet.driver`.
 ```python
 # Create a device using a resource
 >>> from comet.driver.keithley import K2410
->>> with K2410("GBIP::1::INSTR") as device:
-...     device.source.voltage = 5.00
-...     print(device.source.voltage)
+>>> with comet.Resource("GBIP::1::INSTR") as res:
+...     instr = K2410(res)
+...     instr.source.voltage = 5.00
+...     print(instr.source.voltage)
 ...
 5.0
-```
-
-Drivers can be constructed either by `Resource` instances or by arguments, that
-will generate a `Resource` instance on the fly.
-
-```python
->>> comet.Driver("GBIP::1::INSTR", read_termination="\n")
-```
-
-This is equivalent of the following statement.
-
-```python
->>> resource = comet.Resource("GBIP::1::INSTR", read_termination="\n")
->>> comet.Driver(resource)
 ```
 
 ## Registering

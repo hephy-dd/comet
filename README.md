@@ -36,18 +36,17 @@ app.title = "Example"
 app.width = 460
 app.height = 240
 
-# Register IEC compliant device
-app.devices.add("iec", comet.IEC60488(
-    comet.Resource("ASRL2::INSTR", visa_library="@sim")
-))
+# Register resources
+app.resources.add("res", comet.Resource("ASRL2::INSTR", visa_library="@sim"))
 
 # Load persistent settings
 app.devices.load_settings()
 
 # Define a callback
 def on_update():
-    with app.devices.get("iec") as iec:
-        text.value = iec.identification
+    with app.resources.get("res") as res:
+        instr = comet.IEC60488(res)
+        text.value = instr.identification
 
 # Create UI layout
 text = comet.Text(readonly=True)
