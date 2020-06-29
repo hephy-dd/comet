@@ -114,7 +114,7 @@ class ITC(ITCDriver):
 
     def __init__(self, resource, **kwargs):
         super().__init__(resource, **kwargs)
-        analog_channel = AnalogChannel(self.resource)
+        self.analog_channel = AnalogChannel(self.resource)
 
     @property
     def identification(self):
