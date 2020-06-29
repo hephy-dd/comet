@@ -62,7 +62,7 @@ class ShuntBox(Driver):
 
     def __init__(self, resource, **kwargs):
         super().__init__(resource, **kwargs)
-        relays = Relays(self.resource)
+        self.relays = Relays(self.resource)
 
     @property
     def identification(self) -> str:
