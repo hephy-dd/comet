@@ -1,3 +1,5 @@
+import time
+
 from comet.driver import lock, Driver, Property, Action
 
 __all__ = ['IEC60488']
@@ -89,5 +91,5 @@ class IEC60488(Driver):
 
     @Action()
     def wait_to_continue(self):
-        """Prevents comamnd execution until no operation flag is set."""
+        """Prevents command execution until no operation flag is set."""
         self.resource.write('*WAI')

@@ -25,6 +25,7 @@ from qutie.table import Table, TableItem
 from qutie.tabs import Tabs, Tab
 from qutie.text import Text
 from qutie.textarea import TextArea
+from qutie.timer import Timer
 from qutie.tree import Tree, TreeItem
 from qutie.widget import Widget
 

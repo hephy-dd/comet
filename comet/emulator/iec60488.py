@@ -1,3 +1,5 @@
+import random
+
 from comet.emulator.emulator import message, run
 from comet.emulator.emulator import RequestHandler
 

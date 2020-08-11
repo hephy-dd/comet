@@ -34,63 +34,63 @@ class ITCHandler(RequestHandler):
         return t.strftime('T%d%m%y%H%M%S')
 
     @message(r'A0')
-    def query_get_a(self, message):
+    def query_get_a0(self, message):
         self.current_temp += random.uniform(-.25, +.25)
         self.current_temp = min(60., max(20., self.current_temp))
         return f'{message} {self.current_temp:05.1f} {self.target_temp:05.1f}'
 
     @message(r'A[34]')
-    def query_get_a(self, message):
+    def query_get_a3(self, message):
         return fake_analog_channel(message, -45., +185.)
 
     @message(r'A1')
-    def query_get_a(self, message):
+    def query_get_a1(self, message):
         self.current_humid += random.uniform(-.25, +.25)
         self.current_humid = min(95., max(15., self.current_humid))
         return f'{message} {self.current_humid:05.1f} {self.target_humid:05.1f}'
 
     @message(r'A2')
-    def query_get_a(self, message):
+    def query_get_a2(self, message):
         return fake_analog_channel(message, +0., +15.)
 
     @message(r'A[56]')
-    def query_get_a(self, message):
+    def query_get_a5(self, message):
         return fake_analog_channel(message, +5., +98.)
 
     @message(r'A7')
-    def query_get_a(self, message):
+    def query_get_a7(self, message):
         return fake_analog_channel(message, -50., +150.)
 
     @message(r'A8')
-    def query_get_a(self, message):
+    def query_get_a8(self, message):
         return fake_analog_channel(message, -80., +190.)
 
     @message(r'A9')
-    def query_get_a(self, message):
+    def query_get_a9(self, message):
         return fake_analog_channel(message, -0., +25.)
 
     @message(r'A\:')
-    def query_get_a(self, message):
+    def query_get_a10(self, message):
         return fake_analog_channel(message, -50., +100.)
 
     @message(r'A\;')
-    def query_get_a(self, message):
+    def query_get_a11(self, message):
         return fake_analog_channel(message, -0., +25.)
 
     @message(r'A\<')
-    def query_get_a(self, message):
+    def query_get_a12(self, message):
         return fake_analog_channel(message, +2., +5.)
 
     @message(r'A[\=\>]')
-    def query_get_a(self, message):
+    def query_get_a13(self, message):
         return fake_analog_channel(message, -100., +200.)
 
     @message(r'A\?')
-    def query_get_a(self, message):
+    def query_get_a14(self, message):
         return fake_analog_channel(message, -80., +200.)
 
     @message(r'a[1-7]\s(-?\d+.\d)')
-    def query_set_a(self, message):
+    def query_set_a15(self, message):
         return 'a'
 
     @message(r'S')
