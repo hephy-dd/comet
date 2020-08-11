@@ -19,7 +19,7 @@ class MeasureMixin:
 
     @message(r':?(FORM):(ELEM)\?')
     def query_format_elements(self, message):
-        return "READ".format(vdc)
+        return "READ"
 
     @message(r':?(INIT)')
     def write_init(self, message):

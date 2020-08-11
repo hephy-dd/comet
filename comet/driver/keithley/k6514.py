@@ -45,6 +45,11 @@ class Calculate1(Driver):
     def format(self, value: str):
         self.resource.write(f':CALC:FORM {value:s}')
 
+class Format(Driver):
+
+    def __init__(self, resource):
+        super().__init__(resource)
+
 class System(Driver):
 
     def __init__(self, resource):
@@ -78,11 +83,6 @@ class System(Driver):
     @opc_wait
     def lfrequency(self, value: int):
         self.resource.write(f':SYST:LFR {value:d}')
-
-    @Property(values=(50, 60))
-    def lfrequency(self) -> int:
-        """Power line frequency."""
-        return int(self.resource.query(':SYST:LFR?'))
 
     @Property()
     def time(self) -> float:

@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='comet',
-    version='0.10.2',
+    version='0.10.3',
     author="Bernhard Arnold",
     author_email="bernhard.arnold@oeaw.ac.at",
     description="Control and Measurement Toolkit",
@@ -13,7 +13,7 @@ setup(
         'PyVISA-sim',
         'pint>=0.10',
         'numpy>=1.17',
-        'qutie>=1.3',
+        'qutie>=1.4',
         'QCharted>=1.1',
     ],
     package_data={

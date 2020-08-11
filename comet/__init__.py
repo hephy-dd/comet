@@ -13,4 +13,4 @@ from .version import __version__
 
 def app():
     """Returns reference to global application object."""
-    return CoreApplication.app()
+    return Application.instance()
