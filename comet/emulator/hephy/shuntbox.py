@@ -20,38 +20,38 @@ class ShuntBoxHandler(RequestHandler):
     channels = 10
 
     @message(r'\*IDN\?')
-    def query_get_idn(self, message):
+    def query_get_idn(self):
         return self.identification
 
     @message(r'GET:UP \?')
-    def query_get_up(self, message):
+    def query_get_up(self):
         return format(uptime())
 
     @message(r'GET:RAM \?')
-    def query_get_ram(self, message):
+    def query_get_ram(self):
         return format(self.memory_bytes)
 
     @message(r'GET:TEMP ALL')
-    def query_get_temp_all(self, message):
+    def query_get_temp_all(self):
         values = []
         for i in range(self.channels):
             values.append(format(random.uniform(22.0, 26.0), '.1f'))
         return ",".join(values)
 
-    @message(r'GET:TEMP \d+')
-    def query_get_temp(self, message):
+    @message(r'GET:TEMP (\d+)')
+    def query_get_temp(self, value):
         return format(random.uniform(22.0, 26.0), '.1f')
 
     @message(r'SET:REL_(ON|OFF) (\d+|ALL)')
-    def query_set_rel(self, message):
+    def query_set_rel(self, state, value):
         return "OK"
 
     @message(r'GET:REL (\d+)')
-    def query_get_rel(self, message):
+    def query_get_rel(self, value):
         return "0"
 
     @message(r'GET:REL ALL')
-    def query_get_rel_all(self, message):
+    def query_get_rel_all(self):
         return ",".join(["0"] * self.channels + 4)
 
 if __name__ == "__main__":

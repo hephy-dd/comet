@@ -10,24 +10,24 @@ class IEC60488Handler(RequestHandler):
 
     identification = "Generic IEC60488 Instrument, Spanish Inquisition Inc."
 
-    @message(r'\*(IDN)\?')
-    def query_idn(self, message):
-        return self.identification
+    @message(r'\*IDN\?')
+    def query_idn(self):
+        return type(self).identification
 
-    @message(r'\*(CLS)')
-    def write_cls(self, message):
+    @message(r'\*CLS')
+    def write_cls(self):
         pass
 
-    @message(r'\*(OPC)\?')
-    def query_opc(self, message):
+    @message(r'\*OPC\?')
+    def query_opc(self):
         return "1"
 
-    @message(r'\*(OPC)')
-    def write_opc(self, message):
+    @message(r'\*OPC')
+    def write_opc(self):
         pass
 
-    @message(r'\*(ESR)\?')
-    def query_esr(self, message):
+    @message(r'\*ESR\?')
+    def query_esr(self):
         return format(random.randint(0, 1))
 
 if __name__ == "__main__":
