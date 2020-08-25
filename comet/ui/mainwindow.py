@@ -26,20 +26,20 @@ class MainWindow(ui.MainWindow, ProcessMixin):
         )
         self.preferences_action = ui.Action(
             text="Prefere&nces",
-            triggered=self.showPreferences
+            triggered=self.show_preferences
         )
         self.contents_action = ui.Action(
             text="&Contents",
             shortcut="F1",
-            triggered=self.showContents
+            triggered=self.show_contents
         )
         self.about_qt_action = ui.Action(
             text="About Qt",
-            triggered=self.showAboutQt
+            triggered=self.show_about_qt
         )
         self.about_action = ui.Action(
             text="&About",
-            triggered=self.showAbout
+            triggered=self.show_about
         )
         # Menus
         self.file_menu = self.menubar.append("&File")
@@ -51,10 +51,10 @@ class MainWindow(ui.MainWindow, ProcessMixin):
         self.help_menu.append(self.about_qt_action)
         self.help_menu.append(self.about_action)
         # Setup status bar widgets
-        self.__messageLabel = ui.Label()
-        self.statusbar.append(self.__messageLabel)
-        self.__progressBar = ui.ProgressBar()
-        self.statusbar.append(self.__progressBar)
+        self.__message_label = ui.Label()
+        self.statusbar.append(self.__message_label)
+        self.__progress_bar = ui.ProgressBar()
+        self.statusbar.append(self.__progress_bar)
         # Dialogs
         self.about_dialog = AboutDialog()
         self.about_dialog.hide()
@@ -65,61 +65,61 @@ class MainWindow(ui.MainWindow, ProcessMixin):
         self.close_request = close_request
         self.resize(800, 600)
 
-    def showPreferences(self):
+    def show_preferences(self):
         """Show modal preferences dialog."""
         self.preferences_dialog.run()
 
-    def showContents(self):
+    def show_contents(self):
         """Open local webbrowser with contets URL."""
         webbrowser.open(self.contents_url)
 
-    def showAbout(self):
+    def show_about(self):
         """Show modal about dialog."""
         self.about_dialog.run()
 
-    def aboutText(self):
+    @property
+    def about_text(self):
         return self.about_dialog.about_textarea.value
 
-    def setAboutText(self, text):
-        self.about_dialog.about_textarea.value = text
+    @about_text.setter
+    def about_text(self, value):
+        self.about_dialog.about_textarea.value = value
 
-    def showAboutQt(self):
+    def show_about_qt(self):
         """Show modal about Qt dialog."""
         ui.qt.QtWidgets.QMessageBox.aboutQt(self.qt)
 
-    def messageLabel(self):
-        return self.__messageLabel
+    @property
+    def message_label(self):
+        return self.__message_label
 
-    def showMessage(self, message):
-        self.messageLabel().text = message
-        self.messageLabel().show()
+    def show_message(self, message):
+        self.message_label.text = message
+        self.message_label.show()
 
-    def clearMessage(self):
-        self.messageLabel().clear()
-        self.messageLabel().hide()
+    def hide_message(self):
+        self.message_label.clear()
+        self.message_label.hide()
 
-    def progressBar(self):
-        return self.__progressBar
+    @property
+    def progress_bar(self):
+        return self.__progress_bar
 
-    def showProgress(self, value, maximum):
-        self.progressBar().range = 0, maximum
-        self.progressBar().value = value
-        self.progressBar().show()
+    def show_progress(self, value, maximum):
+        self.progress_bar.range = 0, maximum
+        self.progress_bar.value = value
+        self.progress_bar.show()
 
-    def hideProgress(self):
-        self.progressBar().hide()
+    def hide_progress(self):
+        self.progress_bar.range = 0, 0
+        self.progress_bar.value = 0
+        self.progress_bar.hide()
 
-    def showException(self, exception):
+    def show_exception(self, exception, tb=None):
         """Raise message box showing exception inforamtion."""
-        box = QtWidgets.QMessageBox(self)
-        box.setIcon(box.Icon.Critical)
-        box.setWindowTitle(self.tr("Error"))
-        box.setText(format(exception))
-        if hasattr(exception, 'details'):
-            box.setDetailedText(format(exception.details))
-        box.exec_()
-        self.showMessage(self.tr("Error"))
-        self.hideProgress()
+        ui.show_exception(exception, tb)
+        self.show_message("Error")
+        self.hide_progress()
 
     def on_close_event(self):
         if ui.show_question(

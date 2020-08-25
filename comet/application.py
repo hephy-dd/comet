@@ -36,7 +36,7 @@ class Application(ui.Application, SettingsMixin, ProcessMixin, ResourceMixin):
             self.icon = make_path('assets', 'icons', 'comet.svg')
 
         # Connections
-        self.qt.lastWindowClosed.connect(self.qt.quit)
+        self.last_window_closed = self.qt.quit
 
         # Initialize main window
         self.__window = MainWindow()
@@ -80,11 +80,11 @@ class Application(ui.Application, SettingsMixin, ProcessMixin, ResourceMixin):
 
     @property
     def about(self):
-        return self.window.aboutText()
+        return self.window.about_text
 
     @about.setter
     def about(self, value):
-        self.window.setAboutText(value)
+        self.window.about_text = value
 
     @property
     def message(self):
@@ -94,9 +94,9 @@ class Application(ui.Application, SettingsMixin, ProcessMixin, ResourceMixin):
     def message(self, message):
         self.__message = message
         if message is None:
-            self.window.clearMessage()
+            self.window.hide_message()
         else:
-            self.window.showMessage(message)
+            self.window.show_message(message)
 
     @property
     def progress(self):
@@ -106,9 +106,9 @@ class Application(ui.Application, SettingsMixin, ProcessMixin, ResourceMixin):
     def progress(self, args):
         self.__progress = args
         if args is None:
-            self.window.hideProgress()
+            self.window.hide_progress()
         else:
-            self.window.showProgress(*args[:2])
+            self.window.show_progress(*args[:2])
 
     @property
     def window(self):
