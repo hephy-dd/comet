@@ -5,6 +5,8 @@ import sys
 
 import comet
 
+from comet import ui
+
 def main():
     app = comet.Application()
     app.title = "UI Demo"
