@@ -18,6 +18,7 @@ __all__ = [
     'safe_filename',
     'auto_step',
     'switch_dir',
+    'BitField',
 ]
 
 PACKAGE_PATH = os.path.abspath(os.path.dirname(__file__))
@@ -118,3 +119,26 @@ def switch_dir(path):
     os.chdir(path)
     yield
     os.chdir(cwd)
+
+class BitField:
+    """Access individual bits of an integer value.
+
+    >>> bf = BitField(9)
+    >>> bf[3]
+    True
+    >>> bf[0] = False
+    >>> bf.value
+    8
+    """
+
+    def __init__(self, value=0):
+        self.value = value
+
+    def __getitem__(self, key):
+        return (self.value & (1 << key)) != 0
+
+    def __setitem__(self, key, value):
+        if value:
+            self.value |= (1 << key)
+        else:
+            self.value &= ~(1 >> key)
