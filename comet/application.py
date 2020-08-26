@@ -7,7 +7,7 @@ from qutie.qt import QtCore
 from qutie.qt import QtGui
 
 from .version import __version__
-from .widgets import MainWindow
+from .ui.mainwindow import MainWindow
 from .settings import SettingsMixin
 from .resource import ResourceMixin
 from .process import ProcessMixin
@@ -36,10 +36,10 @@ class Application(ui.Application, SettingsMixin, ProcessMixin, ResourceMixin):
             self.icon = make_path('assets', 'icons', 'comet.svg')
 
         # Connections
-        self.qt.lastWindowClosed.connect(self.qt.quit)
+        self.last_window_closed = self.qt.quit
 
         # Initialize main window
-        self.qt.window = MainWindow()
+        self.__window = MainWindow()
         self.__widget = ui.Widget()
 
         # Main window properties
@@ -52,39 +52,39 @@ class Application(ui.Application, SettingsMixin, ProcessMixin, ResourceMixin):
         if height is not None:
             self.height = height
 
-        self.qt.window.setCentralWidget(self.__widget.qt)
+        self.window.layout = self.__widget
 
     @property
     def title(self):
-        return self.qt.window.windowTitle()
+        return self.window.title
 
     @title.setter
     def title(self, value):
-        self.qt.window.setWindowTitle(value)
+        self.window.title = value
 
     @property
     def width(self):
-        return self.qt.window.width()
+        return self.window.width
 
     @width.setter
     def width(self, width):
-        self.qt.window.resize(width, self.height)
+        self.window.width = width
 
     @property
     def height(self):
-        return self.qt.window.height()
+        return self.window.height
 
     @height.setter
     def height(self, height):
-        self.qt.window.resize(self.width, height)
+        self.window.height = height
 
     @property
     def about(self):
-        return self.qt.window.aboutText()
+        return self.window.about_text
 
     @about.setter
     def about(self, value):
-        self.qt.window.setAboutText(value)
+        self.window.about_text = value
 
     @property
     def message(self):
@@ -94,9 +94,9 @@ class Application(ui.Application, SettingsMixin, ProcessMixin, ResourceMixin):
     def message(self, message):
         self.__message = message
         if message is None:
-            self.qt.window.clearMessage()
+            self.window.hide_message()
         else:
-            self.qt.window.showMessage(message)
+            self.window.show_message(message)
 
     @property
     def progress(self):
@@ -106,9 +106,13 @@ class Application(ui.Application, SettingsMixin, ProcessMixin, ResourceMixin):
     def progress(self, args):
         self.__progress = args
         if args is None:
-            self.qt.window.hideProgress()
+            self.window.hide_progress()
         else:
-            self.qt.window.showProgress(*args[:2])
+            self.window.show_progress(*args[:2])
+
+    @property
+    def window(self):
+        return self.__window
 
     @property
     def layout(self):
@@ -116,15 +120,13 @@ class Application(ui.Application, SettingsMixin, ProcessMixin, ResourceMixin):
 
     @layout.setter
     def layout(self, layout):
-        if callable(layout):
-            layout = layout()
         self.__widget.layout = layout
 
     def run(self):
         """Run application event loop."""
         # Show main window
-        self.qt.window.show()
-        self.qt.window.raise_()
+        self.window.show()
+        self.window.up()
 
         # Run event loop
         result = super().run()

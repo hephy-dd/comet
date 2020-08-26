@@ -19,6 +19,7 @@ The application object permits to register devices, processes and the main windo
 
 ```python
 import comet
+from comet import ui
 
 app = comet.Application("example")
 app.version = "1.0"
@@ -31,11 +32,20 @@ app.run()
 ## Layout
 
 The application object provides a main window, use property `layout` to assign
-[UI elements](ui.md).
+[UI elements](ui.md). Provided for convenience.
 
 ```python
-app.layout = comet.Column(
-    comet.Text(value="Spam"),
-    comet.Button(text="Click")
+app.layout = ui.Column(
+    ui.Text(value="Spam"),
+    ui.Button(text="Click")
 )
+```
+
+# Main window
+
+The application object provides a main window, use property `window` to access
+it directly.
+
+```python
+app.window.width = 100
 ```

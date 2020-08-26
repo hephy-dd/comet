@@ -15,6 +15,8 @@ nav_order: 3
 
 ## Inputs
 
+COMET extends [Qutie](https://pypi.org/qutie/) UI.
+
 ### Button
 
 A simple push button, inheriting class `Widget`.

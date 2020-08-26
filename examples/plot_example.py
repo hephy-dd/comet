@@ -5,6 +5,7 @@ import random
 import sys, os
 
 import comet
+from comet import ui
 
 class FakeDataProducer:
     """Fake data source providing realistic temperature and humidity readings."""
@@ -51,23 +52,23 @@ def main():
         else:
             plot.fit()
 
-    plot = comet.Plot(legend="bottom")
+    plot = ui.Plot(legend="bottom")
     plot.add_axis("x", align="bottom", type="datetime")
     plot.add_axis("y1", align="left", text="Temperature [°C]", color="red")
     plot.add_axis("y2", align="right", text="Humidity [%rH]", color="blue")
     plot.add_series("temp", "x", "y1", text="Temperature", color="red")
     plot.add_series("humid", "x", "y2", text="Humidity", color="blue")
 
-    reset_button = comet.Button(text="Reset", clicked=on_reset)
+    reset_button = ui.Button(text="Reset", clicked=on_reset)
 
-    app.layout = comet.Column(
+    app.layout = ui.Column(
         plot,
         reset_button
     )
 
     process = comet.Process(target=fake_data)
     process.reading = on_reading
-    process.failed = comet.show_exception
+    process.failed = ui.show_exception
     process.start()
     app.processes.add("process", process)
 

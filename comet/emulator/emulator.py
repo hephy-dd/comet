@@ -50,8 +50,9 @@ class RequestHandler(socketserver.BaseRequestHandler):
             for message in data.split(self.read_termination):
                 message = message.strip()
                 for expression, method in _expressions.items():
-                    if re.match(expression, message):
-                        result = method(self, message)
+                    match = re.match(expression, message)
+                    if match:
+                        result = method(self, *match.groups())
                         if result is not None:
                             self.send(result)
 

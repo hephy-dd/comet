@@ -5,6 +5,7 @@ import time
 import sys
 
 import comet
+from comet import ui
 
 def measure(process):
     while process.running:
@@ -44,23 +45,23 @@ def main():
 
     process = comet.Process(target=measure)
     process.finished = on_finish
-    process.failed = comet.show_exception
+    process.failed = ui.show_exception
     process.reading = on_reading
     app.processes.add("measure", process)
 
-    voltage_number = comet.Number(value=0, minimum=0, maximum=1000, decimals=1, suffix="V", changed=on_voltage)
-    current_number = comet.Number(readonly=True, value=0, decimals=3, suffix="mA", stylesheet="color: red")
-    start_button = comet.Button(text="Start", clicked=on_start)
-    stop_button = comet.Button(text="Stop", enabled=False, clicked=on_stop)
+    voltage_number = ui.Number(value=0, minimum=0, maximum=1000, decimals=1, suffix="V", changed=on_voltage)
+    current_number = ui.Number(readonly=True, value=0, decimals=3, suffix="mA", stylesheet="color: red")
+    start_button = ui.Button(text="Start", clicked=on_start)
+    stop_button = ui.Button(text="Stop", enabled=False, clicked=on_stop)
 
-    l = comet.Column(
-        comet.Label("Voltage"),
+    l = ui.Column(
+        ui.Label("Voltage"),
         voltage_number,
-        comet.Label("Current"),
+        ui.Label("Current"),
         current_number,
         start_button,
         stop_button,
-        comet.Spacer()
+        ui.Spacer()
     )
     app.layout = l
 

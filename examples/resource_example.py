@@ -5,6 +5,7 @@ application restart.
 """
 
 import comet
+from comet import ui
 
 app = comet.Application("comet-example")
 
@@ -16,7 +17,7 @@ app.resources.add("LCR", comet.Resource("ASRL3::INSTR", visa_library="@sim"))
 # Load stored settings (optional)
 app.resources.load_settings()
 
-table = comet.Table(header=["Name", "Resource", "VISA Library"])
+table = ui.Table(header=["Name", "Resource", "VISA Library"])
 
 # List resources
 for name, resource in app.resources.items():

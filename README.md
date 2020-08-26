@@ -18,7 +18,7 @@ See the documentation on https://hephy-dd.github.io/comet/
 Install from GitHub using pip
 
 ```bash
-pip install git+https://github.com/hephy-dd/comet.git@0.10.3
+pip install git+https://github.com/hephy-dd/comet.git@0.11.0
 ```
 
 ## Quick start
@@ -29,6 +29,7 @@ field and a button.
 
 ```python
 import comet
+from comet import ui
 
 # Create application
 app = comet.Application("example")
@@ -49,14 +50,14 @@ def on_update():
         text.value = instr.identification
 
 # Create UI layout
-text = comet.Text(readonly=True)
-button = comet.Button(text="Read IDN", clicked=on_update)
-app.layout = comet.Column(
-    comet.Row(
+text = ui.Text(readonly=True)
+button = ui.Button(text="Read IDN", clicked=on_update)
+app.layout = ui.Column(
+    ui.Row(
         text_field,
         button
     ),
-    comet.Stretch()
+    ui.Stretch()
 )
 
 # Run event loop

@@ -4,6 +4,7 @@ import random
 import sys
 
 import comet
+from comet import ui
 
 def main():
     app = comet.Application()
@@ -11,36 +12,36 @@ def main():
 
     values = ["Chapman", "Cleese", "Gilliam", "Idle", "Jones", "Palin"]
 
-    tab1 = comet.Tab(title="Tab 1", layout=comet.Column(
-        comet.Row(
-            comet.Column(
-                comet.GroupBox(title="Numbers", layout=comet.Column(
-                    comet.Label(text="Number 1"),
-                    comet.Number(value=1, minimum=0, maximum=10, step=1, prefix="#"),
-                    comet.Label(text="Number 2"),
-                    comet.Number(value=2.345, minimum=0, maximum=10, step=.1, decimals=3, suffix="mV"),
-                    comet.Label(text="Number 3"),
-                    comet.Number(value=1.23, minimum=0, maximum=10, decimals=2, suffix="mA", readonly=True),
-                    comet.Label(text="Number 4"),
-                    comet.Number(value=4.2, minimum=0, maximum=10, decimals=1, suffix="dB", enabled=False)
+    tab1 = ui.Tab(title="Tab 1", layout=ui.Column(
+        ui.Row(
+            ui.Column(
+                ui.GroupBox(title="Numbers", layout=ui.Column(
+                    ui.Label(text="Number 1"),
+                    ui.Number(value=1, minimum=0, maximum=10, step=1, prefix="#"),
+                    ui.Label(text="Number 2"),
+                    ui.Number(value=2.345, minimum=0, maximum=10, step=.1, decimals=3, suffix="mV"),
+                    ui.Label(text="Number 3"),
+                    ui.Number(value=1.23, minimum=0, maximum=10, decimals=2, suffix="mA", readonly=True),
+                    ui.Label(text="Number 4"),
+                    ui.Number(value=4.2, minimum=0, maximum=10, decimals=1, suffix="dB", enabled=False)
                 ))
             ),
-            comet.Column(
-                comet.GroupBox(title="Text", layout=comet.Column(
-                    comet.Label(text="Text 1"),
-                    comet.Text(value="Chapman"),
-                    comet.Label(text="Text 2"),
-                    comet.Text(value="Cleese", clearable=True),
-                    comet.Label(text="Text 3"),
-                    comet.Text(value="Idle", readonly=True),
-                    comet.Label(text="Text 4"),
-                    comet.Text(value="Palin", enabled=False)
+            ui.Column(
+                ui.GroupBox(title="Text", layout=ui.Column(
+                    ui.Label(text="Text 1"),
+                    ui.Text(value="Chapman"),
+                    ui.Label(text="Text 2"),
+                    ui.Text(value="Cleese", clearable=True),
+                    ui.Label(text="Text 3"),
+                    ui.Text(value="Idle", readonly=True),
+                    ui.Label(text="Text 4"),
+                    ui.Text(value="Palin", enabled=False)
                 ))
             ),
-            comet.Spacer(),
+            ui.Spacer(),
             stretch=(2, 2, 3)
         ),
-        comet.Spacer(),
+        ui.Spacer(),
         stretch=(0, 1)
     ))
 
@@ -52,39 +53,51 @@ def main():
         if list1.current is not None:
             list1.remove(list1.current)
 
-    list1 = comet.List()
-    tab2 = comet.Tab(title="Tab 2", layout=comet.Column(
-        comet.Row(
-            comet.GroupBox(title="List 1", layout=comet.Column(
+    list1 = ui.List()
+    tab2 = ui.Tab(title="Tab 2", layout=ui.Column(
+        ui.Row(
+            ui.GroupBox(title="List 1", layout=ui.Column(
                 list1,
-                comet.Button(text="&Add", clicked=on_append),
-                comet.Button(text="&Remove", clicked=on_remove)
+                ui.Button(text="&Add", clicked=on_append),
+                ui.Button(text="&Remove", clicked=on_remove)
             )),
-            comet.GroupBox(title="List 2", layout=comet.List(items=values)),
-            comet.GroupBox(title="List 3", layout=comet.List(items=values, enabled=False))
+            ui.GroupBox(title="List 2", layout=ui.List(items=values)),
+            ui.GroupBox(title="List 3", layout=ui.List(items=values, enabled=False))
         ),
-        comet.Spacer(),
+        ui.Spacer(),
         stretch=(0, 1)
     ))
 
-    table1 = comet.Table(header=["Key", "Value"])
-    tab3 = comet.Tab(title="Tab 3", layout=comet.Column(
+    table1 = ui.Table(header=["Key", "Value"])
+    tab3 = ui.Tab(title="Tab 3", layout=ui.Column(
         table1
     ))
 
-    tree1 = comet.Tree(header=["Key", "Value"])
-    tab4 = comet.Tab(title="Tab 4", layout=comet.Column(
+    tree1 = ui.Tree(header=["Key", "Value"])
+    tab4 = ui.Tab(title="Tab 4", layout=ui.Column(
         tree1
     ))
 
-    first = comet.Button(text="Click")
-    scroll = comet.ScrollArea(layout=comet.Column(*[comet.CheckBox(text=f"Option {i+1}", checked=random.choice([True, False])) for i in range(64)]))
-    second = comet.Column(
+    first = ui.Button(text="Click")
+    scroll = ui.ScrollArea(layout=ui.Column(*[ui.CheckBox(text=f"Option {i+1}", checked=random.choice([True, False])) for i in range(64)]))
+    second = ui.Column(
         scroll
     )
-    tab5 = comet.Tab(title="Tab 5", layout=first)
+    tab5 = ui.Tab(title="Tab 5", layout=first)
     tab5.layout = second
     del first
+
+    tab6 = ui.Tab(title="Tab 6", layout=ui.Row(
+        ui.Column(
+            ui.Label("Metric 1"),
+            ui.Metric('V', decimals=3, changed=lambda value: print(value)),
+            ui.Label("Metric 2"),
+            ui.Metric('A', prefixes='munp', changed=lambda value: print(value)),
+            ui.Spacer()
+        ),
+        ui.Spacer(),
+        stretch=(1, 2)
+    ))
 
     def on_changed(value):
         app.message = value
@@ -92,31 +105,31 @@ def main():
     def on_click():
         app.message = combobox1.current
 
-    tabs = comet.Tabs(tab1, tab2, tab3, tab4, tab5)
-    combobox1 = comet.ComboBox(items=values)
+    tabs = ui.Tabs(tab1, tab2, tab3, tab4, tab5, tab6)
+    combobox1 = ui.ComboBox(items=values)
 
-    app.layout = comet.Row(
-        comet.Column(
-            comet.GroupBox(title="GroupBox 1", layout=comet.Column(
-                comet.Button(text="Button 1", clicked=on_click),
-                comet.Button(text="Button 2", enabled=False),
-                comet.Button(text="Button 3", checkable=True),
-                comet.Button(text="Button 4", checkable=True, enabled=False),
-                comet.Button(text="Button 5", checkable=True, checked=True)
+    app.layout = ui.Row(
+        ui.Column(
+            ui.GroupBox(title="GroupBox 1", layout=ui.Column(
+                ui.Button(text="Button 1", clicked=on_click),
+                ui.Button(text="Button 2", enabled=False),
+                ui.Button(text="Button 3", checkable=True),
+                ui.Button(text="Button 4", checkable=True, enabled=False),
+                ui.Button(text="Button 5", checkable=True, checked=True)
             )),
-            comet.GroupBox(title="GroupBox 2", layout=comet.Column(
-                comet.CheckBox(text="CheckBox 1"),
-                comet.CheckBox(text="CheckBox 2", enabled=False),
-                comet.CheckBox(text="CheckBox 3", checked=True, enabled=False),
-                comet.CheckBox(text="CheckBox 4", checked=True)
+            ui.GroupBox(title="GroupBox 2", layout=ui.Column(
+                ui.CheckBox(text="CheckBox 1"),
+                ui.CheckBox(text="CheckBox 2", enabled=False),
+                ui.CheckBox(text="CheckBox 3", checked=True, enabled=False),
+                ui.CheckBox(text="CheckBox 4", checked=True)
             )),
-            comet.GroupBox(title="GroupBox 3", layout=comet.Column(
-                comet.ComboBox(),
+            ui.GroupBox(title="GroupBox 3", layout=ui.Column(
+                ui.ComboBox(),
                 combobox1,
-                comet.ComboBox(items=values, current="Cleese", changed=on_changed),
-                comet.ComboBox(items=values, current="Idle", enabled=False)
+                ui.ComboBox(items=values, current="Cleese", changed=on_changed),
+                ui.ComboBox(items=values, current="Idle", enabled=False)
             )),
-            comet.Spacer()
+            ui.Spacer()
         ),
         tabs,
         stretch=(2, 7)
@@ -137,7 +150,7 @@ def main():
     spam.append(["Eggs", 40])
 
     # Add an remove tab
-    tab = comet.Tab()
+    tab = ui.Tab()
     tabs.insert(0, tab)
     tab.title = "Spam"
     tabs.remove(tab)

@@ -31,7 +31,7 @@ graphical user interface. It runs on both Linux and Windows operating systems.
 Install from GitHub using pip
 
 ```bash
-pip install git+https://github.com/hephy-dd/comet.git@0.10.0
+pip install git+https://github.com/hephy-dd/comet.git@0.11.0
 ```
 
 ### Quick start
@@ -45,6 +45,7 @@ field and a button.
 
 ```python
 import comet
+from comet import ui
 
 # Create application
 app = comet.Application("example")
@@ -64,18 +65,18 @@ def on_update():
         idn_text.value = instr.query("*IDN?")
 
 # Create read-only text input
-idn_text = comet.Text(readonly=True)
+idn_text = ui.Text(readonly=True)
 
 # Create read button with on-click callback
-read_button = comet.Button("Read IDN", clicked=on_update)
+read_button = ui.Button("Read IDN", clicked=on_update)
 
 # Create window layout
-app.layout = comet.Column(
-    comet.Row(
+app.layout = ui.Column(
+    ui.Row(
         idn_text,
         read_button
     ),
-    comet.Spacer()
+    ui.Spacer()
 )
 
 # Run event loop
