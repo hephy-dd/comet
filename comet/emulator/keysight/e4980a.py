@@ -21,7 +21,7 @@ class E4980AHandler(IEC60488Handler):
     def query_system_error(self):
         return '0, "no error"'
 
-    @message(r':?FETC[H]\?')
+    @message(r':?FETC[H]?\?')
     def query_fetch(self):
         return '{:E},{:E}'.format(random.random(), random.random())
 

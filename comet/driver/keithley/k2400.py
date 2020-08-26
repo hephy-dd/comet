@@ -6,7 +6,7 @@ from comet.driver import lock, Driver, Action, Property
 from comet.driver import IEC60488
 from comet.driver.iec60488 import opc_wait, opc_poll
 
-__all__ = ['K2400', 'K2410']
+__all__ = ['K2400']
 
 class System(Driver):
 

@@ -57,7 +57,7 @@ class ResourcesTab(PreferencesTab, ResourceMixin):
                 'resource_name': item.children[0][1].value,
                 'read_termination': unescape_string(item.children[1][1].value),
                 'write_termination': unescape_string(item.children[2][1].value),
-                'timeout': item.children[3][1].value,
+                'timeout': int(item.children[3][1].value),
                 'visa_library': item.children[4][1].value
             }
         self.settings['resources'] = resources
