@@ -64,6 +64,8 @@ class MainWindow(ui.MainWindow, ProcessMixin):
         self.close_event = self.on_close_event
         self.close_request = close_request
         self.resize(800, 600)
+        self.hide_message()
+        self.hide_progress()
 
     def show_preferences(self):
         """Show modal preferences dialog."""

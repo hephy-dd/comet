@@ -3,17 +3,18 @@ import time
 import sys
 
 import comet
+from comet import ui
 
 def main():
     app = comet.Application()
 
     def on_activated(item):
-        comet.show_info(text=format(item.value))
+        ui.show_info(text=format(item.value))
 
     def on_selected(item):
         print("Item", format(item.value))
 
-    table = comet.Table()
+    table = ui.Table()
     table.header = "Name", "Status", "HV", "Current", "Temp.", "Calib."
     table.stretch = True
     table.activated = on_activated
@@ -37,12 +38,12 @@ def main():
     table.fit()
 
     def on_activated(index, item):
-        comet.show_info(text=format(item[index].value))
+        ui.show_info(text=format(item[index].value))
 
     def on_selected(item):
         print("Item", format(item[0].value))
 
-    tree = comet.Tree()
+    tree = ui.Tree()
     tree.header = "Measurement", "Status"
     tree.activated = on_activated
     tree.selected = on_selected
@@ -124,7 +125,7 @@ def main():
             else:
                 item[1].value = None
 
-    app.layout = comet.Column(
+    app.layout = ui.Column(
         table,
         tree
     )

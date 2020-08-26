@@ -1,6 +1,7 @@
 """Example using resources and drivers."""
 
 import comet
+from comet import ui
 
 app = comet.Application("comet-example")
 
@@ -16,16 +17,16 @@ def on_click():
         with app.resources.get("INSTR") as instr:
             idn_text.value = comet.IEC60488(instr).identification
     except comet.ResourceError as exc:
-        comet.show_exception(exc)
+        ui.show_exception(exc)
 
-idn_text = comet.Text(readonly=True)
+idn_text = ui.Text(readonly=True)
 
-app.layout = comet.Column(
-    comet.Row(
+app.layout = ui.Column(
+    ui.Row(
         idn_text,
-        comet.Button("Reload", clicked=on_click)
+        ui.Button("Reload", clicked=on_click)
     ),
-    comet.Spacer(),
+    ui.Spacer(),
     stretch=(0, 1)
 )
 

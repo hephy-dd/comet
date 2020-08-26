@@ -13,7 +13,7 @@ setup(
         'PyVISA-sim',
         'pint>=0.10',
         'numpy>=1.17',
-        'qutie>=1.4',
+        'qutie>=1.5.1',
         'QCharted>=1.1',
     ],
     package_data={

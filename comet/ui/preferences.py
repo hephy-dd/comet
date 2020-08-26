@@ -161,7 +161,7 @@ class PreferencesDialog(ui.Dialog):
             self.operators_tab
         )
         self.button_box = ui.DialogButtonBox(
-            buttons=('close',),
+            buttons=('apply', 'cancel'),
             clicked=self.on_clicked
         )
         self.layout = ui.Column(
@@ -170,11 +170,14 @@ class PreferencesDialog(ui.Dialog):
         )
 
     def on_clicked(self, value):
-        if value == 'close':
+        if value == 'apply':
             self.on_apply()
-            self.close()
+        self.close()
 
     def on_apply(self):
+        ui.show_info(
+            text="Application restart required for changes to take effect."
+        )
         for tab in self.tab_widget:
             tab.store()
 
