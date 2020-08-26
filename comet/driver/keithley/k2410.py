@@ -4,5 +4,4 @@ __all__ = ['K2410']
 
 class K2410(K2400):
     """Keithley Model 2410 SourceMeter."""
-
     pass
