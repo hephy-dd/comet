@@ -17,12 +17,18 @@ class AboutDialog(ui.Dialog):
         self.title_label = ui.Label(f"COMET {__version__}")
         self.title_label.stylesheet = 'QLabel{font-size: 18px; font-weight: bold; }'
         self.caption_label = ui.Label("Control and Measurement Toolkit")
-        self.about_textarea = ui.TextArea("A COMET application.")
+        self.about_textarea = ui.TextArea(
+            value="A COMET application.",
+            readonly=True
+        )
         self.about_tab = ui.Tab(
             title="&About",
             layout=self.about_textarea
         )
-        self.authors_textarea = ui.TextArea("Bernhard Arnold <bernhard.arnold@oeaw.ac.at>")
+        self.authors_textarea = ui.TextArea(
+            value="Bernhard Arnold <bernhard.arnold@oeaw.ac.at>",
+            readonly=True
+        )
         self.authors_tab = ui.Tab(
             title="A&uthors",
             layout=self.authors_textarea

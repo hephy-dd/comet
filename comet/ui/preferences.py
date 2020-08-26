@@ -16,6 +16,10 @@ class PreferencesTab(ui.Tab, SettingsMixin):
 
 class ResourcesTab(PreferencesTab, ResourceMixin):
 
+    default_write_termination = '\n'
+    default_read_termination = '\n'
+    default_timeout = 2000
+
     def __init__(self):
         super().__init__(title="Resources")
         self.tree = ui.Tree(
@@ -43,21 +47,30 @@ class ResourcesTab(PreferencesTab, ResourceMixin):
         for key, resource in self.resources.items():
             item = self.tree.append([key, None])
             d = resources.get(key) or {}
-            item.append(['resource_name', d.get('resource_name') or resource.resource_name])
-            item.append(['read_termination', escape_string(d.get('read_termination') or resource.options.get('read_termination') or '\n')])
-            item.append(['write_termination', escape_string(d.get('write_termination') or resource.options.get('write_termination') or '\n')])
-            item.append(['timeout', d.get('timeout') or resource.options.get('timeout') or 2000])
-            item.append(['visa_library', d.get('visa_library') or resource.visa_library])
+            resource_name = d.get('resource_name') or resource.resource_name
+            read_termination = d.get('read_termination') or resource.options.get('read_termination') or self.default_read_termination
+            write_termination = d.get('write_termination') or resource.options.get('write_termination') or self.default_write_termination
+            timeout = d.get('timeout') or resource.options.get('timeout') or self.default_timeout
+            visa_library = d.get('visa_library') or resource.visa_library
+            item.append(['resource_name', resource_name])
+            item.append(['read_termination', escape_string(read_termination)])
+            item.append(['write_termination', escape_string(write_termination)])
+            item.append(['timeout', timeout])
+            item.append(['visa_library', visa_library])
         self.tree.fit()
 
     def store(self):
         resources = {}
         for item in self.tree:
+            try:
+                timeout = int(item.children[3][1].value)
+            except ValueError:
+                timeout = self.default_timeout
             resources[item[0].value] = {
                 'resource_name': item.children[0][1].value,
                 'read_termination': unescape_string(item.children[1][1].value),
                 'write_termination': unescape_string(item.children[2][1].value),
-                'timeout': int(item.children[3][1].value),
+                'timeout': timeout,
                 'visa_library': item.children[4][1].value
             }
         self.settings['resources'] = resources

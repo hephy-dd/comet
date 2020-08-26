@@ -61,9 +61,9 @@ exception occurred.
 
 ```python
 def on_finished():
-    comet.show_info(title="My Process", text="Process finished!")
+    ui.show_info(title="My Process", text="Process finished!")
 def on_error(exc, tb):
-    comet.show_exception(exc, tb)
+    ui.show_exception(exc, tb)
 
 def run(process):
     raise RuntimeError("Spam!")
