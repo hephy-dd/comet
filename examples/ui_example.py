@@ -9,6 +9,10 @@ from comet import ui
 def main():
     app = comet.Application()
     app.title = "UI Demo"
+    app.width = 1200
+    app.height = 300
+    app.window.minimum_size = 1000, 300
+    app.window.maximum_width = 1400
 
     values = ["Chapman", "Cleese", "Gilliam", "Idle", "Jones", "Palin"]
 
