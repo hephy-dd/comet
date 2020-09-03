@@ -96,10 +96,12 @@ class MainWindow(ui.MainWindow, ProcessMixin):
         return self.__message_label
 
     def show_message(self, message):
+        """Show status message."""
         self.message_label.text = message
         self.message_label.show()
 
     def hide_message(self):
+        """Hide status message."""
         self.message_label.clear()
         self.message_label.hide()
 
@@ -108,17 +110,19 @@ class MainWindow(ui.MainWindow, ProcessMixin):
         return self.__progress_bar
 
     def show_progress(self, value, maximum):
+        """Show progress bar."""
         self.progress_bar.range = 0, maximum
         self.progress_bar.value = value
         self.progress_bar.show()
 
     def hide_progress(self):
+        """Hide progress bar."""
         self.progress_bar.range = 0, 0
         self.progress_bar.value = 0
         self.progress_bar.hide()
 
     def show_exception(self, exception, tb=None):
-        """Raise message box showing exception inforamtion."""
+        """Raise message box showing exception information."""
         ui.show_exception(exception, tb)
         self.show_message("Error")
         self.hide_progress()

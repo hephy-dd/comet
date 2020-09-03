@@ -56,6 +56,7 @@ class Application(ui.Application, SettingsMixin, ProcessMixin, ResourceMixin):
 
     @property
     def title(self):
+        """Main window title."""
         return self.window.title
 
     @title.setter
@@ -64,22 +65,25 @@ class Application(ui.Application, SettingsMixin, ProcessMixin, ResourceMixin):
 
     @property
     def width(self):
+        """Main window width."""
         return self.window.width
 
     @width.setter
     def width(self, width):
-        self.window.width = width
+        self.window.resize(width, self.height)
 
     @property
     def height(self):
+        """Main window height."""
         return self.window.height
 
     @height.setter
     def height(self, height):
-        self.window.height = height
+        self.window.resize(self.width, height)
 
     @property
     def about(self):
+        """Application about text."""
         return self.window.about_text
 
     @about.setter
@@ -128,11 +132,10 @@ class Application(ui.Application, SettingsMixin, ProcessMixin, ResourceMixin):
         self.window.show()
         self.window.up()
 
-        # Run event loop
-        result = super().run()
-
-        # Stop processes
-        self.processes.stop()
-        self.processes.join()
-
-        return result
+        try:
+            # Run event loop
+            return super().run()
+        finally:
+            # Stop processes
+            self.processes.stop()
+            self.processes.join()
