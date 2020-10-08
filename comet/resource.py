@@ -2,7 +2,7 @@ import logging
 import threading
 from contextlib import ContextDecorator
 
-import visa
+import pyvisa as visa
 
 from .collection import Collection
 from .settings import SettingsManager
