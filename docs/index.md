@@ -31,7 +31,7 @@ graphical user interface. It runs on both Linux and Windows operating systems.
 Install from GitHub using pip
 
 ```bash
-pip install git+https://github.com/hephy-dd/comet.git@0.11.2
+pip install git+https://github.com/hephy-dd/comet.git@0.12.0
 ```
 
 ### Quick start
