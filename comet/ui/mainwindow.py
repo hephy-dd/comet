@@ -1,6 +1,7 @@
 import webbrowser
 
 import qutie as ui
+from qutie.qutie import QtWidgets
 
 from ..process import ProcessMixin
 from ..utils import make_path
@@ -89,7 +90,7 @@ class MainWindow(ui.MainWindow, ProcessMixin):
 
     def show_about_qt(self):
         """Show modal about Qt dialog."""
-        ui.qt.QtWidgets.QMessageBox.aboutQt(self.qt)
+        QtWidgets.QMessageBox.aboutQt(self.qt)
 
     @property
     def message_label(self):
@@ -138,7 +139,7 @@ class MainWindow(ui.MainWindow, ProcessMixin):
             return True
         return False
 
-class ProcessDialog(ui.qt.QtWidgets.QProgressDialog, ProcessMixin):
+class ProcessDialog(QtWidgets.QProgressDialog, ProcessMixin):
 
     def __init__(self, parent=None):
         super().__init__(parent)

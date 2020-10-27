@@ -1,8 +1,7 @@
 import QCharted
 
-from qutie.qt import QtCore
-from qutie.qt import QtGui
-from qutie.qt import bind
+from qutie.qutie import QtCore
+from qutie.qutie import QtGui
 from qutie.widget import Widget
 
 __all__ = ['Plot']
@@ -80,8 +79,9 @@ class Series:
     def clear(self):
         self.qt.data().clear()
 
-@bind(QCharted.ChartView)
 class Plot(Widget):
+
+    QtClass = QCharted.ChartView
 
     def __init__(self, axes={}, series={}, legend=None, **kwargs):
         super().__init__(**kwargs)
