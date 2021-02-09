@@ -1,5 +1,4 @@
 import re
-import time
 from typing import Dict, List, Tuple
 
 from comet.driver import IEC60488

@@ -4,7 +4,6 @@ import contextlib
 import datetime
 import os
 import re
-import sys
 
 __all__ = [
     'PACKAGE_PATH',

@@ -1,7 +1,3 @@
-import weakref
-import threading
-import random
-import time
 from contextlib import ContextDecorator
 
 from ..resource import Resource

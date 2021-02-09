@@ -42,7 +42,7 @@ class IEC60488(Driver):
     @Property()
     def identification(self) -> str:
         """Returns instrument identification."""
-        return self.resource.query('*IDN?')
+        return self.resource.query('*IDN?').strip()
 
     @Property()
     def event_status(self) -> int:

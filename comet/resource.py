@@ -1,4 +1,3 @@
-import logging
 import threading
 from contextlib import ContextDecorator
 

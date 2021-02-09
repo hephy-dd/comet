@@ -8,6 +8,30 @@ from comet.emulator.iec60488 import IEC60488Handler
 
 __all__ = ['K2400Handler']
 
+class FormatMixin:
+
+    elements = ['VOLT', 'TIME']
+
+    @message(r':?FORM:ELEM\?')
+    def query_format_elements(self):
+        return ','.join((type(self).elements))
+
+    @message(r':?FORM:ELEM\s+(?:(VOLT|CURR|RES|TIME|\,)+)')
+    def write_format_elements(self, values):
+        type(self).elements = [value.strip() for value in values.split(',')]
+
+class RouteMixin:
+
+    terminals = 0
+
+    @message(r':?ROUT:TERM\?')
+    def query_format_elements(self):
+        return ','.join((type(self).elements))
+
+    @message(r':?ROUT:TERM\s+(?:(VOLT|CURR|RES|TIME|\,)+)')
+    def write_format_elements(self, values):
+        type(self).elements = [value.strip() for value in values.split(',')]
+
 class SystemMixin:
 
     beeper_state = False

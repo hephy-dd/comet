@@ -1,8 +1,5 @@
 """Corvus TT Venus-1 emulator."""
 
-import random
-import time
-
 from comet.emulator.emulator import message, run
 from comet.emulator.emulator import RequestHandler
 
