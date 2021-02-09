@@ -1,6 +1,4 @@
-import tempfile
 import unittest
-import os
 
 from comet.application import Application
 
