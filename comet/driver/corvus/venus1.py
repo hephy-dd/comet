@@ -143,7 +143,7 @@ class Axis(Driver):
 
         >>> instr.x.polepairs = 16
         """
-        assert 2<= value <= 16
+        assert 2 <= value <= 16
         self.resource.write(f'{value:d} {self._index} setphaseares')
 
     @property
@@ -161,7 +161,7 @@ class Axis(Driver):
 
         >>> instr.x.motiondir = 0
         """
-        assert 0<= value <= 1
+        assert 0 <= value <= 1
         self.resource.write(f'{value:d} {self._index} setmotiondir')
 
     # TODO ncalvel
@@ -271,7 +271,7 @@ class Axis(Driver):
 
         >>> instr.x.mp = 1
         """
-        assert 0<= value <= 1
+        assert 0 <= value <= 1
         self.resource.write(f'{value:d} {self._axis} getmp')
 
     # TODO pdisplay
@@ -347,7 +347,7 @@ class System(Driver):
 
         >>> instr.beep(1000) # beep 1 sec
         """
-        assert 1<= value <= 10000
+        assert 1 <= value <= 10000
         self.resource.write(f'{value:d} beep')
 
     @property
@@ -553,7 +553,7 @@ class Venus1(Driver):
 
         >>> instr.powerup = 0
         """
-        assert (0<= value <= 7) or (15<= value <= 16)
+        assert (0 <= value <= 7) or (15 <= value <= 16)
         self.resource.write(f'{value:d} setpowerup')
 
     @property

@@ -3,8 +3,10 @@ import logging
 import time
 
 from comet.driver import Driver
-from comet.driver import lock, Property, Action
-from comet.driver import IEC60488
+from comet.driver import lock
+
+from comet.driver.iec60488 import IEC60488
+from comet.driver.iec60488 import opc_wait
 
 __all__ = ['K2657A']
 
@@ -13,30 +15,27 @@ class K2657A(IEC60488):
 
     class Beeper(Driver):
 
-        @Property(values=[False, True])
+        @property
         def enable(self):
             return bool(float(self.resource.query('print(beeper.enable)')))
 
         @enable.setter
-        @lock
+        @opc_wait
         def enable(self, value):
             self.resource.write(f'beeper.enable = {value:d}')
-            self.resource.query('*OPC?')
 
     class ErrorQueue(Driver):
 
-        @Property()
+        @property
         def count(self):
             return bool(float(self.resource.query('print(errorqueue.count)')))
 
-        @Action()
         def next(self):
             return self.resource.query('print(errorqueue.next())').split('\t')
 
-        @Action()
+        @opc_wait
         def clear(self):
             self.resource.write('errorqueue.clear()')
-            self.resource.query('*OPC?')
 
     class Measure(Driver):
 
@@ -46,148 +45,157 @@ class K2657A(IEC60488):
 
         class Filter(Driver):
 
-            @Property(minimum=1, maximum=100)
+            @property
             def count(self):
-                return int(self.resource.query('print(smua.measure.filter.count)'))
+                return int(self.resource.query('print(errorqueue.count)'))
 
             @count.setter
-            @lock
+            @opc_wait
             def count(self, value):
-                self.resource.write(f'smua.measure.filter.count = {value:d}')
-                self.resource.query('*OPC?')
+                if 1 <= value <= 100:
+                    self.resource.write(f'smua.measure.filter.count = {value:d}')
+                raise ValueError("filter count out of range")
 
-            @Property(values=[False, True])
+            @property
             def enable(self):
                 return bool(int(self.resource.query('print(smua.measure.filter.enable)')))
 
             @enable.setter
-            @lock
+            @opc_wait
             def enable(self, value):
                 self.resource.write(f'smua.measure.filter.enable = {value:d}')
-                self.resource.query('*OPC?')
 
-            @Property()
+            @property
             def type(self):
                 value = int(float(self.resource.query('print(smua.measure.filter.type)')))
                 return {0: 'MOVING', 1: 'REPEAT', 2: 'MEDIAN'}[value]
 
             @type.setter
-            @lock
+            @opc_wait
             def type(self, value):
                 value = {'MOVING': 0, 'REPEAT': 1, 'MEDIAN': 2}[value]
                 self.resource.write(f'smua.measure.filter.type = {value:d}')
-                self.resource.query('*OPC?')
 
-        @Property(minimum=0.001, maximum=25.0)
+        @property
         def nplc(self):
             return float(self.resource.query('print(smua.measure.nplc)'))
 
         @nplc.setter
-        @lock
+        @opc_wait
         def nplc(self, value):
-            self.resource.write(f'smua.measure.nplc = {value:E}')
-            self.resource.query('*OPC?')
+            if 0.001 <= value <=25.0:
+                self.resource.write(f'smua.measure.nplc = {value:E}')
+            raise ValueError("nplc out of range")
 
-        @Action()
         def i(self):
             return float(self.resource.query('print(smua.measure.i())'))
 
-        @Action()
         def v(self):
             return float(self.resource.query('print(smua.measure.v())'))
 
-        @Action()
         def r(self):
             return float(self.resource.query('print(smua.measure.r())'))
 
-        @Action()
         def p(self):
             return float(self.resource.query('print(smua.measure.p())'))
 
-        @Action()
         def iv(self):
-            result = self.resource.query('print(smua.measure.iv())').split(',')
-            return float(result[0]), float(result[1])
+            results = self.resource.query('print(smua.measure.iv())').split(',')
+            return float(results[0]), float(results[1])
 
     class Source(Driver):
 
-        @Property()
+        @property
         def compliance(self):
             return {'false': False, 'true': True}[self.resource.query('print(smua.source.compliance)')]
 
-        @Property()
+        OUTPUT_DCAMPS = 'DCAMPS'
+        OUTPUT_DCVOLTS = 'DCVOLTS'
+
+        @property
         def func(self):
             value = int(float(self.resource.query('print(smua.source.func)')))
-            return {0: 'DCAMPS', 1: 'DCVOLTS'}[value]
+            return {
+                0: self.OUTPUT_DCAMPS,
+                1: self.OUTPUT_DCVOLTS
+            }[value]
 
         @func.setter
-        @lock
+        @opc_wait
         def func(self, value):
-            value = {'DCAMPS': 0, 'DCVOLTS': 1}[value]
+            value = {
+                self.OUTPUT_DCAMPS: 0,
+                self.OUTPUT_DCVOLTS: 1
+            }[value]
             self.resource.write(f'smua.source.func = {value:d}')
-            self.resource.query('*OPC?')
 
-        @Property(values=[False, True])
+        @property
         def highc(self):
             return bool(float(self.resource.query('print(smua.source.highc)')))
 
         @highc.setter
-        @lock
+        @opc_wait
         def highc(self, value):
             self.resource.write(f'smua.source.highc = {value:d}')
-            self.resource.query('*OPC?')
 
-        @Property()
+        @property
         def leveli(self):
             return float(self.resource.query('print(smua.source.leveli)'))
 
         @leveli.setter
-        @lock
+        @opc_wait
         def leveli(self, value):
             self.resource.write(f'smua.source.leveli = {value:E}')
-            self.resource.query('*OPC?')
 
-        @Property()
+        @property
         def limiti(self):
             return float(self.resource.query('print(smua.source.limiti)'))
 
         @limiti.setter
-        @lock
+        @opc_wait
         def limiti(self, value):
             self.resource.write(f'smua.source.limiti = {value:E}')
-            self.resource.query('*OPC?')
 
-        @Property()
+        @property
         def levelv(self):
             return float(self.resource.query('print(smua.source.levelv)'))
 
         @levelv.setter
-        @lock
+        @opc_wait
         def levelv(self, value):
             self.resource.write(f'smua.source.levelv = {value:E}')
-            self.resource.query('*OPC?')
 
-        @Property()
+        @property
         def limitv(self):
             return float(self.resource.query('print(smua.source.limitv)'))
 
         @limitv.setter
-        @lock
+        @opc_wait
         def limitv(self, value):
             self.resource.write(f'smua.source.limitv = {value:E}')
-            self.resource.query('*OPC?')
 
-        @Property()
+        OUTPUT_OFF = 'OFF'
+        OUTPUT_ON = 'ON'
+        OUTPUT_HIGH_Z = 'HIGH_Z'
+
+        @property
         def output(self):
             value = int(float(self.resource.query('print(smua.source.output)')))
-            return {0: 'OFF', 1: 'ON', 2: 'HIGH_Z'}[value]
+            return {
+                0: self.OUTPUT_OFF,
+                1: self.OUTPUT_ON,
+                2: self.OUTPUT_HIGH_Z
+            }[value]
 
         @output.setter
-        @lock
+        @opc_wait
         def output(self, value):
-            value = {'OFF': 0, 'ON': 1, 'HIGH_Z': 2}[value]
+            value = {
+                self.OUTPUT_OFF: 0,
+                self.OUTPUT_ON: 1,
+                self.OUTPUT_HIGH_Z: 2
+            }[value]
             self.resource.write(f'smua.source.output = {value:d}')
-            self.resource.query('*OPC?')
 
     def __init__(self, resource):
         super().__init__(resource)
@@ -196,20 +204,25 @@ class K2657A(IEC60488):
         self.measure = self.Measure(resource)
         self.source = self.Source(resource)
 
-    @Action()
-    @lock
-    def reset(self):
-        self.resource.write('smua.reset()')
-        self.resource.query('*OPC?')
+    SENSE_LOCAL = 'LOCAL'
+    SENSE_REMOTE = 'REMOTE'
+    SENSE_CALA = 'CALA'
 
-    @Property()
+    @property
     def sense(self):
         value = int(float(self.resource.query('print(smua.sense)')))
-        return {0: 'LOCAL', 1: 'REMOTE', 2: 'CALA'}[value]
+        return {
+            0: self.SENSE_LOCAL,
+            1: self.SENSE_REMOTE,
+            2: self.SENSE_CALA
+        }[value]
 
     @sense.setter
-    @lock
+    @opc_wait
     def sense(self, value):
-        value = {'LOCAL': 0, 'REMOTE': 1, 'CALA': 2}[value]
+        value = {
+            self.SENSE_LOCAL: 0,
+            self.SENSE_REMOTE: 1,
+            self.SENSE_CALA: 2
+        }[value]
         self.resource.write(f'smua.sense = {value:d}')
-        self.resource.query('*OPC?')
