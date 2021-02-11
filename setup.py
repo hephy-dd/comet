@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='comet',
-    version='0.12.0',
+    version='0.13.0',
     author="Bernhard Arnold",
     author_email="bernhard.arnold@oeaw.ac.at",
     description="Control and Measurement Toolkit",

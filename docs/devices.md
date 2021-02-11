@@ -70,7 +70,7 @@ dialog.
 >>> app.resources.add("name", device)
 # Access a registerd device
 >>> app.resources.get("name")
-<Driver object at ...>
+<comet.Resource object at ...>
 ```
 
 ## Load settings
