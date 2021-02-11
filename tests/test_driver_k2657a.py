@@ -12,7 +12,7 @@ class K2657ATest(BaseDriverTest):
 
     driver_type = K2657A
 
-    def testBeeperEnable(self):
+    def test_beeper_enable(self):
         for value in (True, False, 1, 0):
             self.resource.buffer = ['1']
             self.driver.beeper.enable = value

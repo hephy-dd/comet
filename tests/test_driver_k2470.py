@@ -12,7 +12,7 @@ class K2470Test(BaseDriverTest):
 
     driver_type = K2470
 
-    def testBeeper(self):
+    def test_beeper(self):
         for value in (True, False, 1, 0):
             self.resource.buffer = ['1']
             self.driver.beeper = value
@@ -22,7 +22,7 @@ class K2470Test(BaseDriverTest):
             self.assertEqual(self.driver.beeper, value)
             self.assertEqual(self.resource.buffer, ['print(beeper)'])
 
-    def testSourceAutorange(self):
+    def test_source_autorange(self):
         for value in (True, False, 1, 0):
             self.resource.buffer = ['1']
             self.driver.source.autorange = value
@@ -32,7 +32,7 @@ class K2470Test(BaseDriverTest):
             self.assertEqual(self.driver.source.autorange, value)
             self.assertEqual(self.resource.buffer, ['print(smu.source.autorange)'])
 
-    def testSourceAutodelay(self):
+    def test_source_autodelay(self):
         for value in (True, False, 1, 0):
             self.resource.buffer = ['1']
             self.driver.source.autodelay = value
@@ -42,7 +42,7 @@ class K2470Test(BaseDriverTest):
             self.assertEqual(self.driver.source.autodelay, value)
             self.assertEqual(self.resource.buffer, ['print(smu.source.autodelay)'])
 
-    def testSourceDelay(self):
+    def test_source_delay(self):
         for value in (0, 3, 0.42):
             self.resource.buffer = ['1']
             self.driver.source.delay = value
@@ -52,7 +52,7 @@ class K2470Test(BaseDriverTest):
             self.assertEqual(self.driver.source.delay, value)
             self.assertEqual(self.resource.buffer, ['print(smu.source.delay)'])
 
-    def testSourceOutput(self):
+    def test_source_output(self):
         for value in (True, False, 1, 0):
             self.resource.buffer = ['1']
             self.driver.source.output = value
@@ -62,7 +62,7 @@ class K2470Test(BaseDriverTest):
             self.assertEqual(self.driver.source.output, value)
             self.assertEqual(self.resource.buffer, ['print(smu.source.output)'])
 
-    def testSourceProtectTripped(self):
+    def test_source_protect_tripped(self):
         for value in (True, False, 1, 0):
             self.resource.buffer = [f'{value:d}']
             self.assertEqual(self.driver.source.protect.tripped, value)

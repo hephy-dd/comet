@@ -12,7 +12,7 @@ class K2400Test(BaseDriverTest):
 
     driver_type = K2400
 
-    def testRouteTerminals(self):
+    def test_route_terminals(self):
         for key, value in (
             ('VOLT,TIME', ('VOLTAGE', 'TIME')),
             ('CURR', ('CURRENT', )),
@@ -26,7 +26,7 @@ class K2400Test(BaseDriverTest):
             self.assertEqual(self.driver.route.terminals, value)
             self.assertEqual(self.resource.buffer, [':FORM:ELEM?'])
 
-    def testRouteTerminals(self):
+    def test_route_terminals(self):
         for key_in, key_out, value in (
             ('FRON', '0', 'FRONT'),
             ('REAR', '1', 'REAR')
@@ -39,7 +39,7 @@ class K2400Test(BaseDriverTest):
             self.assertEqual(self.driver.route.terminals, value)
             self.assertEqual(self.resource.buffer, [':ROUT:TERM?'])
 
-    def testSystemError(self):
+    def test_system_error(self):
         for key, value in (
             (0, 'no error'),
             (42, 'spam alert')
@@ -48,7 +48,7 @@ class K2400Test(BaseDriverTest):
             self.assertEqual(self.driver.system.error, (key, value))
             self.assertEqual(self.resource.buffer, [':SYST:ERR?'])
 
-    def testSystemRsense(self):
+    def test_system_rsense(self):
 
         self.resource.buffer = ['1']
         self.driver.system.rsense = 'OFF'
@@ -66,7 +66,7 @@ class K2400Test(BaseDriverTest):
         self.assertEqual(self.driver.system.rsense, 'ON')
         self.assertEqual(self.resource.buffer, [':SYST:RSEN?'])
 
-    def testSystemBeeper(self):
+    def test_system_beeper(self):
         for value in (True, False, 1, 0):
             self.resource.buffer = ['1']
             self.driver.system.beeper.status = value
@@ -76,12 +76,12 @@ class K2400Test(BaseDriverTest):
             self.assertEqual(self.driver.system.beeper.status, value)
             self.assertEqual(self.resource.buffer, [':SYST:BEEP:STAT?'])
 
-    def testSource(self):
+    def test_source(self):
         self.resource.buffer = ['1']
         self.driver.source.clear()
         self.assertEqual(self.resource.buffer, [':SOUR:CLE', '*OPC?'])
 
-    def testSourceFunction(self):
+    def test_source_function(self):
         for key, value in (
             ('CURR', 'CURRENT'),
             ('VOLT', 'VOLTAGE'),
@@ -95,7 +95,7 @@ class K2400Test(BaseDriverTest):
             self.assertEqual(self.driver.source.function.mode, value)
             self.assertEqual(self.resource.buffer, [':SOUR:FUNC:MODE?'])
 
-    def testSourceVoltage(self):
+    def test_source_voltage(self):
         for value in (float(format(random.randrange(-1100, +1100), 'E')) for _ in range(8)):
             self.resource.buffer = ['1']
             self.driver.source.voltage.level = value
@@ -105,7 +105,7 @@ class K2400Test(BaseDriverTest):
             self.assertEqual(self.driver.source.voltage.level, value)
             self.assertEqual(self.resource.buffer, [':SOUR:VOLT:LEV?'])
 
-    def testSourceVoltageRangeAuto(self):
+    def test_source_voltage_range_auto(self):
         for value in (True, False, 1, 0):
             self.resource.buffer = ['1']
             self.driver.source.voltage.range.auto = value
@@ -115,7 +115,7 @@ class K2400Test(BaseDriverTest):
             self.assertEqual(self.driver.source.voltage.range.auto, value)
             self.assertEqual(self.resource.buffer, [':SOUR:VOLT:RANG:AUTO?'])
 
-    def testSourceVoltageRangeLevel(self):
+    def test_source_voltage_range_level(self):
         for value in (float(format(random.randrange(-1100, +1100), 'E')) for _ in range(8)):
             self.resource.buffer = ['1']
             self.driver.source.voltage.range.level = value

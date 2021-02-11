@@ -4,7 +4,7 @@ from comet.collection import Collection
 
 class CollectionTest(unittest.TestCase):
 
-    def testCollection(self):
+    def test_collection(self):
         c = Collection()
         self.assertEqual(c.ValueType, None)
         self.assertEqual(len(c), 0)

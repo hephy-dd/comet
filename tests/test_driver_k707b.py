@@ -12,7 +12,7 @@ class K707BTest(BaseDriverTest):
 
     driver_type = K707B
 
-    def testChannel(self):
+    def test_channel(self):
         self.resource.buffer = ['nil']
         self.assertEqual(self.driver.channel.getclose(), [])
         self.assertEqual(self.resource.buffer, ['print(channel.getclose("allslots"))'])
@@ -41,7 +41,7 @@ class K707BTest(BaseDriverTest):
         self.driver.channel.open(['44B', '16A'])
         self.assertEqual(self.resource.buffer, ['channel.open("44B,16A")', '*OPC?'])
 
-    def testIdentification(self):
+    def test_identification(self):
         self.resource.buffer = ['Keithley K707B matrix ']
         self.assertEqual(self.driver.identification, 'Keithley K707B matrix')
         self.assertEqual(self.resource.buffer, ['*IDN?'])

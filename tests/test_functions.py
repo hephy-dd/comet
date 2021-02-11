@@ -12,7 +12,7 @@ class FunctionsTest(unittest.TestCase):
                 break
         self.assertEqual(l, ref)
 
-    def testRange(self):
+    def test_range(self):
         self.assertRange(0, 0, 0, [])
         self.assertRange(0, 1, 0, [])
         self.assertRange(1, 0, 0, [])

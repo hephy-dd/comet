@@ -12,7 +12,7 @@ class K2700Test(BaseDriverTest):
 
     driver_type = K2700
 
-    def testSystemBeeper(self):
+    def test_system_beeper(self):
         for value in (True, False, 1, 0):
             self.resource.buffer = ['1']
             self.driver.system.beeper.status = value

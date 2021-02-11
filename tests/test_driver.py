@@ -37,12 +37,12 @@ class BaseDriverTest(unittest.TestCase):
 
 class DriverTest(unittest.TestCase):
 
-    def testDriverPlain(self):
+    def test_driver_plain(self):
         with Resource("ASRL1::INSTR", visa_library="@sim") as res:
             instr = Driver(res)
             self.assertEqual(instr.resource.resource_name, "ASRL1::INSTR")
 
-    def testDriverResource(self):
+    def test_driver_resource(self):
         with Resource("ASRL1::INSTR", visa_library="@sim") as res:
             instr = Driver(res)
             self.assertEqual(instr.resource.resource_name, "ASRL1::INSTR")

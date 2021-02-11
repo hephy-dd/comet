@@ -6,7 +6,7 @@ from comet.process import Process, ProcessManager, ProcessMixin
 
 class ProcessTest(unittest.TestCase):
 
-    def testProcess(self):
+    def test_process(self):
         app = CoreApplication()
         def run(process):
             process.set('value', True)
@@ -28,14 +28,14 @@ class ProcessTest(unittest.TestCase):
         self.assertEqual(p.get('failed'), None)
         self.assertEqual(p.get('event'), True)
 
-    def testProcessManager(self):
+    def test_process_manager(self):
         p = Process()
         m = ProcessManager()
         self.assertEqual(m.ValueType , type(p))
         m.add("process", p)
         self.assertEqual(m.get("process"), p)
 
-    def testProcessMixin(self):
+    def test_process_mixin(self):
         class C(ProcessMixin): pass
         p = Process()
         c = C()

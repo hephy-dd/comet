@@ -4,7 +4,7 @@ from comet.application import Application
 
 class ApplicationTest(unittest.TestCase):
 
-    def testApplication(self):
+    def test_application(self):
         app = Application(name="comet")
         self.assertEqual(app.name, "comet")
         self.assertEqual(app.title, "")
