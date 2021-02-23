@@ -61,8 +61,8 @@ def main():
                 ui.Button(text="&Add", clicked=on_append),
                 ui.Button(text="&Remove", clicked=on_remove)
             )),
-            ui.GroupBox(title="List 2", layout=ui.List(items=values)),
-            ui.GroupBox(title="List 3", layout=ui.List(items=values, enabled=False))
+            ui.GroupBox(title="List 2", layout=ui.List(values)),
+            ui.GroupBox(title="List 3", layout=ui.List(values, enabled=False))
         ),
         ui.Spacer(),
         stretch=(0, 1)
@@ -106,7 +106,7 @@ def main():
         app.message = combobox1.current
 
     tabs = ui.Tabs(tab1, tab2, tab3, tab4, tab5, tab6)
-    combobox1 = ui.ComboBox(items=values)
+    combobox1 = ui.ComboBox(values)
 
     app.layout = ui.Row(
         ui.Column(
@@ -126,8 +126,8 @@ def main():
             ui.GroupBox(title="GroupBox 3", layout=ui.Column(
                 ui.ComboBox(),
                 combobox1,
-                ui.ComboBox(items=values, current="Cleese", changed=on_changed),
-                ui.ComboBox(items=values, current="Idle", enabled=False)
+                ui.ComboBox(values, current="Cleese", changed=on_changed),
+                ui.ComboBox(values, current="Idle", enabled=False)
             )),
             ui.Spacer()
         ),
