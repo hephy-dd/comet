@@ -17,6 +17,7 @@ __all__ = [
     'safe_filename',
     'auto_step',
     'switch_dir',
+    'format_metric',
     'BitField',
 ]
 
@@ -118,6 +119,42 @@ def switch_dir(path):
     os.chdir(path)
     yield
     os.chdir(cwd)
+
+def format_metric(value, unit, decimals=3, default=None):
+    """Pretty format metric units.
+
+    >>> format_metric(.0042, 'A')
+    '4.200 mA'
+    >>> format_metric(1500, 'V')
+    '1.500 kV'
+    """
+    scales = (
+        (1e+24, 'Y', 'yotta'),
+        (1e+21, 'Z', 'zetta'),
+        (1e+18, 'E', 'exa'),
+        (1e+15, 'P', 'peta'),
+        (1e+12, 'T', 'tera'),
+        (1e+9, 'G', 'giga'),
+        (1e+6, 'M', 'mega'),
+        (1e+3, 'k', 'kilo'),
+        (1e+0, '', ''),
+        (1e-3, 'm', 'milli'),
+        (1e-6, 'u', 'micro'),
+        (1e-9, 'n', 'nano'),
+        (1e-12, 'p', 'pico'),
+        (1e-15, 'f', 'femto'),
+        (1e-18, 'a', 'atto'),
+        (1e-21, 'z', 'zepto'),
+        (1e-24, 'y', 'yocto')
+    )
+    if value is None:
+        if default is not None:
+            return default
+        return "n/a"
+    for scale, prefix, _ in scales:
+        if abs(value) >= scale:
+            return f"{value * (1 / scale):.{decimals}f} {prefix}{unit}"
+    return f"{value:.{decimals}f} {unit}"
 
 class BitField:
     """Access individual bits of an integer value.
