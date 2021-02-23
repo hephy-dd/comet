@@ -37,4 +37,4 @@ class SettingsMixin:
 
     @property
     def settings(self):
-        return self.__class__.__settings
+        return type(self).__settings

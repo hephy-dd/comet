@@ -83,14 +83,14 @@ class MeasureMixin:
     @message(r'print\(smua\.measure\.i\(\)\)')
     def query_measure_i(self):
         if SourceMixin.func == 0:
-            return format(SourceMixin.leveli+random.uniform(-0.001, 0.001), 'E')
+            return format(SourceMixin.leveli + random.uniform(-0.001, 0.001), 'E')
         else:
             return format(random.uniform(0.001, 0.01), 'E')
 
     @message(r'print\(smua\.measure\.v\(\)\)')
     def query_measure_v(self):
         if SourceMixin.func == 1:
-            return format(SourceMixin.levelv+random.uniform(-0.001, 0.001), 'E')
+            return format(SourceMixin.levelv + random.uniform(-0.001, 0.001), 'E')
         else:
             return format(random.uniform(1.0, 10.0), 'E')
 
@@ -105,9 +105,9 @@ class MeasureMixin:
     @message(r'print\(smua\.measure\.iv\(\)\)')
     def query_measure_iv(self):
         if SourceMixin.func == 0:
-            return '{},{}'.format(SourceMixin.leveli+random.uniform(-0.001, 0.001), random.uniform(1.0, 10.0))
+            return '{},{}'.format(SourceMixin.leveli + random.uniform(-0.001, 0.001), random.uniform(1.0, 10.0))
         else:
-            return '{},{}'.format(random.uniform(0.001, 0.01), SourceMixin.levelv+random.uniform(-0.001, 0.001))
+            return '{},{}'.format(random.uniform(0.001, 0.01), SourceMixin.levelv + random.uniform(-0.001, 0.001))
 
 class SourceMixin:
 

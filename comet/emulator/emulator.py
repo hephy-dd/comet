@@ -1,12 +1,8 @@
 """Instrument emulation on TCP sockets."""
 
 import argparse
-import datetime
 import logging
-import random
 import re
-import time
-import signal
 import socketserver
 
 __all__ = ['RequestHandler', 'TCPServer']
@@ -23,6 +19,7 @@ def message(expression):
     return wrapper
 
 class RequestHandler(socketserver.BaseRequestHandler):
+    """Bsaic request handler to be inherited by instrument emulators."""
 
     write_termination = "\r\n"
     read_termination = "\r\n"
@@ -77,7 +74,7 @@ class TCPServer:
         logging.info("Instrument emulation stopped.")
 
 def run(handler):
-
+    """Run TCP server using a request handler type."""
     parser = argparse.ArgumentParser()
     parser.add_argument('--host', default='localhost')
     parser.add_argument('-p', '--port', default=10001, type=int)

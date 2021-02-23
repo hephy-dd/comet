@@ -1,10 +1,4 @@
-import logging
-import signal
-import sys
-
 import qutie as ui
-from qutie.qutie import QtCore
-from qutie.qutie import QtGui
 
 from .version import __version__
 from .ui.mainwindow import MainWindow

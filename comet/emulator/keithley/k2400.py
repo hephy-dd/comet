@@ -8,6 +8,30 @@ from comet.emulator.iec60488 import IEC60488Handler
 
 __all__ = ['K2400Handler']
 
+class FormatMixin:
+
+    elements = ['VOLT', 'TIME']
+
+    @message(r':?FORM:ELEM\?')
+    def query_format_elements(self):
+        return ','.join((type(self).elements))
+
+    @message(r':?FORM:ELEM\s+(?:(VOLT|CURR|RES|TIME|\,)+)')
+    def write_format_elements(self, values):
+        type(self).elements = [value.strip() for value in values.split(',')]
+
+class RouteMixin:
+
+    terminals = 0
+
+    @message(r':?ROUT:TERM\?')
+    def query_format_elements(self):
+        return ','.join((type(self).elements))
+
+    @message(r':?ROUT:TERM\s+(?:(VOLT|CURR|RES|TIME|\,)+)')
+    def write_format_elements(self, values):
+        type(self).elements = [value.strip() for value in values.split(',')]
+
 class SystemMixin:
 
     beeper_state = False
@@ -37,9 +61,33 @@ class MeasureMixin:
 
 class SourceMixin:
 
+    source_function = 'VOLT'
+    source_voltage_level = 0.0
+    source_current_level = 0.0
+
+    @message(r':?SOUR:FUNC:MODE\?')
+    def query_source_function_mode(self):
+        return type(self).source_function
+
+    @message(r':?SOUR:FUNC:MODE\s+(CURR|VOLT|MEM)')
+    def write_source_function_mode(self, mode):
+        type(self).source_function = mode
+
     @message(r':?SOUR:VOLT:LEV\?')
     def query_source_voltage_level(self):
-        return format(0.0, 'E')
+        return format(type(self).source_voltage_level, 'E')
+
+    @message(r':?SOUR:VOLT:LEV\s+(.*)')
+    def write_source_voltage_level(self, value):
+        type(self).source_voltage_level = float(value)
+
+    @message(r':?SOUR:CURR:LEV\?')
+    def query_source_current_level(self):
+        return format(type(self).source_current_level, 'E')
+
+    @message(r':?SOUR:CURR:LEV\s+(.*)')
+    def write_source_current_level(self, value):
+        type(self).source_current_level = float(value)
 
 class SenseMixin:
 
@@ -55,7 +103,7 @@ class SenseMixin:
     def query_current_protection_rsyncronized(self):
         return 0
 
-    @message(r':?SENS:(VOLT):PROT:LEV\?')
+    @message(r':?SENS:VOLT:PROT:LEV\?')
     def query_voltage_protection_level(self):
         return format(0.0, 'E')
 
@@ -75,6 +123,8 @@ class K2400Handler(IEC60488Handler, SystemMixin, MeasureMixin, SourceMixin,
 
     format_elements = 'VOLT', 'CURR', 'FOO', 'STAT', 'TIME'
 
+    output_state = 0
+
     @message(r':?SYST:ERR\?')
     def query_system_error(self):
         return '0,"no error"'
@@ -82,7 +132,12 @@ class K2400Handler(IEC60488Handler, SystemMixin, MeasureMixin, SourceMixin,
     @message(r':?OUTP\?')
     @message(r':?OUTP:STAT\?')
     def query_output(self):
-        return 1
+        return type(self).output_state
+
+    @message(r':?OUTP\s+(0|1|OFF|ON)')
+    @message(r':?OUTP:STAT\s+(0|1|OFF|ON)')
+    def write_output(self, state):
+        type(self).output_state = {'0': 0, '1': 1, 'OFF': 0, 'ON': 1}.get(state, 0)
 
     @message(r':?FORM:ELEM\?')
     def query_format_elements(self):

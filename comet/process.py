@@ -35,4 +35,4 @@ class ProcessMixin:
 
     @property
     def processes(self):
-        return self.__class__.__processes
+        return type(self).__processes

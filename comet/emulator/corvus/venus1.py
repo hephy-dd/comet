@@ -1,8 +1,5 @@
 """Corvus TT Venus-1 emulator."""
 
-import random
-import time
-
 from comet.emulator.emulator import message, run
 from comet.emulator.emulator import RequestHandler
 
@@ -49,7 +46,7 @@ class Venus1Handler(RequestHandler):
 
     @message(r'pos')
     def query_pos(self):
-        cls = self.__class__
+        cls = type(self)
         return f'{cls.x_pos:.6f} {cls.y_pos:.6f} {cls.z_pos:.6f}'
 
     @message(r'([+-]?\d+(?:\.\d+)?) ([+-]?\d+(?:\.\d+)?) ([+-]?\d+(?:\.\d+)?) move')
@@ -90,37 +87,37 @@ class Venus1Handler(RequestHandler):
 
     @message(r'-1 getunit')
     def query_getunit_all(self):
-        cls = self.__class__
+        cls = type(self)
         return f'{cls.x_unit} {cls.y_unit} {cls.z_unit} 1'
 
     @message(r'1 getunit')
     def query_getunit_x(self):
-        cls = self.__class__
+        cls = type(self)
         return f'{cls.x_unit}'
 
     @message(r'2 getunit')
     def query_getunit_y(self):
-        cls = self.__class__
+        cls = type(self)
         return f'{cls.y_unit}'
 
     @message(r'3 getunit')
     def query_getunit_z(self):
-        cls = self.__class__
+        cls = type(self)
         return f'{cls.z_unit}'
 
     @message(r'(\d) 1 setunit')
     def write_setunit_x(self, value):
-        cls = self.__class__
+        cls = type(self)
         cls.x_unit = int(value)
 
     @message(r'(\d) 2 setunit')
     def write_setunit_y(self, value):
-        cls = self.__class__
+        cls = type(self)
         cls.y_unit = int(value)
 
     @message(r'(\d) 3 setunit')
     def write_setunit_z(self, value):
-        cls = self.__class__
+        cls = type(self)
         cls.z_unit = int(value)
 
 

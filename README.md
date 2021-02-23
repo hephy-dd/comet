@@ -18,7 +18,7 @@ See the documentation on https://hephy-dd.github.io/comet/
 Install from GitHub using pip
 
 ```bash
-pip install git+https://github.com/hephy-dd/comet.git@0.12.0
+pip install git+https://github.com/hephy-dd/comet.git@0.13.0
 ```
 
 ## Quick start
@@ -41,7 +41,7 @@ app.height = 240
 app.resources.add("res", comet.Resource("ASRL2::INSTR", visa_library="@sim"))
 
 # Load persistent settings
-app.devices.load_settings()
+app.resources.load_settings()
 
 # Define a callback
 def on_update():
@@ -51,11 +51,10 @@ def on_update():
 
 # Create UI layout
 text = ui.Text(readonly=True)
-button = ui.Button(text="Read IDN", clicked=on_update)
 app.layout = ui.Column(
     ui.Row(
-        text_field,
-        button
+        text,
+        ui.Button(text="Read IDN", clicked=on_update)
     ),
     ui.Stretch()
 )

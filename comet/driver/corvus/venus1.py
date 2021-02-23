@@ -143,7 +143,7 @@ class Axis(Driver):
 
         >>> instr.x.polepairs = 16
         """
-        assert 2<= value <= 16
+        assert 2 <= value <= 16
         self.resource.write(f'{value:d} {self._index} setphaseares')
 
     @property
@@ -161,7 +161,7 @@ class Axis(Driver):
 
         >>> instr.x.motiondir = 0
         """
-        assert 0<= value <= 1
+        assert 0 <= value <= 1
         self.resource.write(f'{value:d} {self._index} setmotiondir')
 
     # TODO ncalvel
@@ -263,7 +263,7 @@ class Axis(Driver):
         >>> instr.x.mp
         1
         """
-        return int(self.resource.query(f'{self._axis} getmp'))
+        return int(self.resource.query(f'{self._index} getmp'))
 
     @mp.setter
     def mp(self, value: int):
@@ -271,8 +271,8 @@ class Axis(Driver):
 
         >>> instr.x.mp = 1
         """
-        assert 0<= value <= 1
-        self.resource.write(f'{value:d} {self._axis} getmp')
+        assert 0 <= value <= 1
+        self.resource.write(f'{value:d} {self._index} setmp')
 
     # TODO pdisplay
 
@@ -287,7 +287,7 @@ class Axis(Driver):
         >>> instr.x.joyspeed
         20.0
         """
-        return float(self.resource.query(f'{self._axis} getnjoyspeed'))
+        return float(self.resource.query(f'{self._index} getnjoyspeed'))
 
     @joyspeed.setter
     def joyspeed(self, value: float):
@@ -295,7 +295,7 @@ class Axis(Driver):
 
         >>> instr.x.joyspeed = 20.0
         """
-        self.resource.write(f'{value:.6f} {self._axis} setnjoyspeed')
+        self.resource.write(f'{value:.6f} {self._index} setnjoyspeed')
 
     # TODO wheelres
 
@@ -347,7 +347,7 @@ class System(Driver):
 
         >>> instr.beep(1000) # beep 1 sec
         """
-        assert 1<= value <= 10000
+        assert 1 <= value <= 10000
         self.resource.write(f'{value:d} beep')
 
     @property
@@ -553,7 +553,7 @@ class Venus1(Driver):
 
         >>> instr.powerup = 0
         """
-        assert (0<= value <= 7) or (15<= value <= 16)
+        assert (0 <= value <= 7) or (15 <= value <= 16)
         self.resource.write(f'{value:d} setpowerup')
 
     @property
@@ -727,6 +727,7 @@ class Venus1(Driver):
 
         >>> instr.rangemeasure()
         """
+        self.resource.write('rangemeasure')
 
     rm = rangemeasure
 
@@ -793,7 +794,7 @@ class Venus1(Driver):
         >>> instr.mp
         (0, 1, 1)
         """
-        values = self.resource.query('-1 getmp')
+        values = self.resource.query('-1 getmp').split()
         return tuple(map(int, values))
 
     @property
@@ -847,9 +848,10 @@ class Venus1(Driver):
 
     @property
     def ico(self):
-        """Reset rotated coordinate system.
+        """Get rotated coordinate system.
 
         >>> instr.ico
+        1
         """
         return int(self.resource.query('getico'))
 

@@ -5,7 +5,8 @@ from . import ui
 
 from .application import *
 from .process import *
-from .driver import Driver, IEC60488
+from .settings import *
+from .driver import Driver, IEC60488, TSP
 from .resource import *
 from .functions import Range
 from .ureg import *

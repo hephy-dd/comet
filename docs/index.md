@@ -31,7 +31,7 @@ graphical user interface. It runs on both Linux and Windows operating systems.
 Install from GitHub using pip
 
 ```bash
-pip install git+https://github.com/hephy-dd/comet.git@0.12.0
+pip install git+https://github.com/hephy-dd/comet.git@0.13.0
 ```
 
 ### Quick start
@@ -87,7 +87,7 @@ app.run()
 
 ## About the project
 
-COMET is &copy; 2019-2020 by [Bernhard Arnold](https://github.com/arnobaer/),
+COMET is &copy; 2019-2021 by [Bernhard Arnold](https://github.com/arnobaer/),
 Institute of High Energy Physics, Austrian Academy of Sciences.
 
 ### License

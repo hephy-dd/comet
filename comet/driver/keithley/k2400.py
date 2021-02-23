@@ -1,14 +1,58 @@
-import re
-import time
 from typing import Dict, List, Tuple
 
-from comet.driver import lock, Driver, Action, Property
+from comet.driver import lock, Driver, Property
 from comet.driver import IEC60488
 from comet.driver.iec60488 import opc_wait, opc_poll
 
 __all__ = ['K2400']
 
+class Format(Driver):
+
+    ELEMENT_VOLTAGE = 'VOLTAGE'
+    ELEMENT_CURRENT = 'CURRENT'
+    ELEMENT_RESISTANCE = 'RESISTANCE'
+    ELEMENT_TIME = 'TIME'
+
+    @property
+    def elements(self):
+        tr = {
+            'VOLT': self.ELEMENT_VOLTAGE,
+            'CURR': self.ELEMENT_CURRENT,
+            'RES': self.ELEMENT_RESISTANCE,
+            'TIME': self.ELEMENT_TIME
+        }
+        values = self.resource.query(':FORM:ELEM?').split(',')
+        return list(map(lambda key: tr[key.strip()], values))
+
+    @elements.setter
+    @opc_wait
+    def elements(self, value):
+        tr = {
+            self.ELEMENT_VOLTAGE: 'VOLT',
+            self.ELEMENT_CURRENT: 'CURR',
+            self.ELEMENT_RESISTANCE: 'RES',
+            self.ELEMENT_TIME: 'TIME'
+        }
+        value = ','.join(map(lambda key: tr[key], value))
+        self.resource.write(f':FORM:ELEM {value}')
+
+class Route(Driver):
+
+    @property
+    def terminals(self):
+        value = int(float(self.resource.query(':ROUT:TERM?')))
+        return {'FRON': 'FRONT', 'REAR': 'REAR', 0: 'FRONT', 1: 'REAR'}[value]
+
+    @terminals.setter
+    @opc_wait
+    def terminals(self, value):
+        value = {'FRONT': 'FRON', 'REAR': 'REAR', 0: 'FRON', 1: 'REAR'}[value]
+        self.resource.write(f':ROUT:TERM {value}')
+
 class System(Driver):
+
+    RSENSE_ON = 'ON'
+    RSENSE_OFF = 'OFF'
 
     class Beeper(Driver):
 
@@ -26,17 +70,16 @@ class System(Driver):
         super().__init__(resource)
         self.beeper = self.Beeper(resource)
 
-    @Property()
+    @property
     def error(self) -> Tuple[int, str]:
         """Returns current instrument error.
-
         >>> system.error
         (0, "No error")
         """
         result = self.resource.query(':SYST:ERR?').split(',')
         return int(result[0]), result[1].strip().strip('"')
 
-    @Property(values={'OFF': 0, 'ON': 1})
+    @Property(values={RSENSE_OFF: 0, RSENSE_ON: 1})
     def rsense(self) -> int:
         return int(self.resource.query(':SYST:RSEN?'))
 
@@ -64,6 +107,44 @@ class Source(Driver):
 
     class Voltage(Driver):
 
+        class Range(Driver):
+
+            @property
+            def auto(self) -> bool:
+                return bool(int(self.resource.query(':SOUR:VOLT:RANG:AUTO?')))
+
+            @auto.setter
+            @opc_wait
+            def auto(self, value: bool):
+                self.resource.write(f':SOUR:VOLT:RANG:AUTO {value:d}')
+
+            @property
+            def level(self) -> float:
+                return float(self.resource.query(':SOUR:VOLT:RANG?'))
+
+            @level.setter
+            @opc_wait
+            def level(self, value: float):
+                self.resource.write(f':SOUR:VOLT:RANG {value:E}')
+
+        class Protection(Driver):
+
+            @property
+            def level(self) -> float:
+                """Returns over voltage limit."""
+                return float(self.resource.query(':SOUR:VOLT:PROT:LEV?'))
+
+            @level.setter
+            @opc_wait
+            def level(self, value: float):
+                """Set over voltage limit for V-Source."""
+                self.resource.write(f':SOUR:VOLT:PROT:LEV {value:E}')
+
+        def __init__(self, resource):
+            super().__init__(resource)
+            self.range = self.Range(resource)
+            self.protection = self.Protection(resource)
+
         @property
         def level(self) -> float:
             return float(self.resource.query(':SOUR:VOLT:LEV?'))
@@ -73,10 +154,46 @@ class Source(Driver):
         def level(self, value: float):
             self.resource.write(f':SOUR:VOLT:LEV {value:E}')
 
+    class Current(Driver):
+
+        class Range(Driver):
+
+            @property
+            def auto(self) -> bool:
+                return bool(int(self.resource.query(':SOUR:CURR:RANG:AUTO?')))
+
+            @auto.setter
+            @opc_wait
+            def auto(self, value: bool):
+                self.resource.write(f':SOUR:CURR:RANG:AUTO {value:d}')
+
+            @property
+            def level(self) -> float:
+                return float(self.resource.query(':SOUR:CURR:RANG?'))
+
+            @level.setter
+            @opc_wait
+            def level(self, value: float):
+                self.resource.write(f':SOUR:CURR:RANG {value:E}')
+
+        def __init__(self, resource):
+            super().__init__(resource)
+            self.range = self.Range(resource)
+
+        @property
+        def level(self) -> float:
+            return float(self.resource.query(':SOUR:CURR:LEV?'))
+
+        @level.setter
+        @opc_wait
+        def level(self, value: float):
+            self.resource.write(f':SOUR:CURR:LEV {value:E}')
+
     def __init__(self, resource):
         super().__init__(resource)
         self.function = self.Function(resource)
         self.voltage = self.Voltage(resource)
+        self.current = self.Current(resource)
 
     @opc_wait
     def clear(self):
@@ -87,7 +204,10 @@ class Sense(Driver):
 
     class Average(Driver):
 
-        @Property(values={'MOVING': 'MOV', 'REPEAT': 'REP'})
+        TCONTROL_MOVING = 'MOVING'
+        TCONTROL_REPEAT = 'REPEAT'
+
+        @Property(values={TCONTROL_MOVING: 'MOV', TCONTROL_REPEAT: 'REP'})
         def tcontrol(self) -> str:
             return float(self.resource.query(':SENS:AVER:TCON?'))
 
@@ -98,7 +218,7 @@ class Sense(Driver):
 
         @Property(minimum=1, maximum=100)
         def count(self) -> int:
-            return int(self.resource.query(':SENS:AVER:COUN?'))
+            return int(float(self.resource.query(':SENS:AVER:COUN?')))
 
         @count.setter
         @opc_wait
@@ -107,7 +227,7 @@ class Sense(Driver):
 
         @Property(values={False: 0, True: 1})
         def state(self) -> int:
-            return int(self.resource.query(':SENS:AVER:STAT?'))
+            return int(float(self.resource.query(':SENS:AVER:STAT?')))
 
         @state.setter
         @opc_wait
@@ -145,9 +265,21 @@ class Sense(Driver):
                 """Enable or disable measure and compliance range syncronization."""
                 self.resource.write(f':SENS:CURR:PROT:RSYN {value:d}')
 
+        class Range(Driver):
+
+            @property
+            def auto(self) -> bool:
+                return bool(int(self.resource.query(':SENS:CURR:RANG:AUTO?')))
+
+            @auto.setter
+            @opc_wait
+            def auto(self, value: bool):
+                self.resource.write(f':SENS:CURR:RANG:AUTO {value:d}')
+
         def __init__(self, resource):
             super().__init__(resource)
             self.protection = self.Protection(resource)
+            self.range = self.Range(resource)
 
     class Voltage(Driver):
 
@@ -194,7 +326,6 @@ class PowerMixin:
     @Property(values={False: 0, True: 1})
     def output(self) -> bool:
         """Returns True if output enabled.
-
         >>> instr.output
         True
         """
@@ -204,37 +335,30 @@ class PowerMixin:
     @opc_wait
     def output(self, value: int):
         """Enable or disable output.
-
         >>> instr.output = True
         """
         self.resource.write(f':OUTP:STAT {value:d}')
 
 class MeasureMixin:
 
-    @Action()
     @opc_poll
     def init(self):
         """Initiate a measurement.
-
         >>> instr.init()
         """
         self.resource.write(':INIT')
 
-    @Action()
     def fetch(self) -> List[float]:
         """Returns the latest available reading as list.
-
         >>> instr.fetch()
         [-4.32962079e-05, 0.0, 0.0, ...]
         """
         result = self.resource.query(':FETC?')
         return list(map(float, result.split(',')))
 
-    @Action()
     def read(self) -> List[Dict[str, float]]:
         """High level command to perform a singleshot measurement. It resets the
         trigger model, initiates it, and fetches a new reading.
-
         >>> instr.read()
         [-4.32962079e-05, 0.0, 0.0, ...]
         """
@@ -246,6 +370,8 @@ class K2400(IEC60488, MeasureMixin, PowerMixin):
 
     def __init__(self, resource, **kwargs):
         super().__init__(resource, **kwargs)
-        self.system = System(self.resource)
-        self.source = Source(self.resource)
-        self.sense = Sense(self.resource)
+        self.format = Format(resource)
+        self.route = Route(resource)
+        self.system = System(resource)
+        self.source = Source(resource)
+        self.sense = Sense(resource)

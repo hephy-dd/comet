@@ -39,4 +39,4 @@ class Collection:
         return value
 
     def __repr__(self):
-        return f"{self.__class__.__name__}({list(self.items())})"
+        return f"{type(self).__name__}({list(self.items())})"

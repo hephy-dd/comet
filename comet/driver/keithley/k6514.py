@@ -29,7 +29,7 @@ system.clear()
 
 """
 
-from comet.driver import Driver, Action, Property
+from comet.driver import Driver, Property
 from comet.driver.iec60488 import IEC60488, opc_wait, opc_poll
 
 __all__ = ['K6514']
@@ -68,7 +68,6 @@ class System(Driver):
     def zcheck(self, value: int):
         self.resource.write(f':SYST:ZCH {value:d}')
 
-    @Action()
     @opc_wait
     def preset(self):
         """Return to preset defaults."""
@@ -84,12 +83,12 @@ class System(Driver):
     def lfrequency(self, value: int):
         self.resource.write(f':SYST:LFR {value:d}')
 
-    @Property()
+    @property
     def time(self) -> float:
         """Timestamp."""
         return float(self.resource.query(':SYST:TIME?'))
 
-    @Property()
+    @property
     def version(self) -> str:
         """SCPI revision level."""
         return self.resource.query(':SYST:VERS?')
@@ -106,7 +105,6 @@ class ZCorrect(Driver):
     def state(self, value: int):
         self.resource.write(f':SYST:ZCOR:STAT {value:d}')
 
-    @Action()
     @opc_wait
     def acquire(self):
         """Acquire a new zero correct value."""
@@ -130,19 +128,18 @@ class Error(Driver):
         super().__init__(resource)
         self.code = Code(resource)
 
-    @Property()
+    @property
     def next(self) -> str:
         return self.resource.query(':SYST:ERR:NEXT?')
 
-    @Property()
+    @property
     def all(self) -> str:
         return self.resource.query(':SYST:ERR:ALL?')
 
-    @Property()
+    @property
     def count(self) -> int:
         return int(self.resource.query(':SYST:ERR:COUN?'))
 
-    @Action()
     @opc_wait
     def clear(self):
         """Clear messages from error queue."""
@@ -150,11 +147,11 @@ class Error(Driver):
 
 class Code(Driver):
 
-    @Property()
+    @property
     def next(self) -> str:
         return self.resource.query(':SYST:ERR:CODE:NEXT?')
 
-    @Property()
+    @property
     def all(self) -> str:
         return self.resource.query(':SYST:ERR:CODE:ALL?')
 
@@ -166,22 +163,18 @@ class K6514(IEC60488):
         self.format = Format(resource)
         self.system = System(resource)
 
-    @Action()
     @opc_wait
     def initiate(self):
         """Initiate one trigger cycle."""
         self.resource.write(':INIT')
 
-    @Action()
     @opc_wait
     def abort(self):
         """Reset trigger system."""
         self.resource.write(':ABOR')
 
-    @Action()
     def fetch(self):
         return self.resource.query(':FETC?')
 
-    @Action()
     def read(self):
         return self.resource.query(':READ?')
