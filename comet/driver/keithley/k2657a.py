@@ -54,7 +54,8 @@ class K2657A(IEC60488):
             def count(self, value):
                 if 1 <= value <= 100:
                     self.resource.write(f'smua.measure.filter.count = {value:d}')
-                raise ValueError("filter count out of range")
+                else:
+                    raise ValueError("filter count out of range")
 
             @property
             def enable(self):
@@ -85,7 +86,8 @@ class K2657A(IEC60488):
         def nplc(self, value):
             if 0.001 <= value <=25.0:
                 self.resource.write(f'smua.measure.nplc = {value:E}')
-            raise ValueError("nplc out of range")
+            else:
+                raise ValueError("nplc out of range")
 
         def i(self):
             return float(self.resource.query('print(smua.measure.i())'))
