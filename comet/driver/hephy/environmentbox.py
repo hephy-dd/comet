@@ -3,7 +3,7 @@ import logging
 import time
 
 from comet.driver import Driver
-from comet.driver import lock, Property, Action
+from comet.driver import lock, Property
 from comet.driver import IEC60488
 
 from comet.utils import BitField
@@ -73,7 +73,7 @@ class EnvironmentBox(Driver):
             self.chuck_temperature_state = int(data[37])
             self.chuck_block_temperature_state = int(data[38])
 
-    @Property()
+    @property
     def identification(self):
         """Device identification.
 
@@ -99,7 +99,6 @@ class EnvironmentBox(Driver):
         if result != 'OK':
             raise RuntimeError(result)
 
-    @Action()
     @lock
     def discharge(self):
         """Executes AUTO discarge of decoupling box.
@@ -214,7 +213,7 @@ class EnvironmentBox(Driver):
         if result != 'OK':
             raise RuntimeError(result)
 
-    @Property()
+    @property
     def probecard_light(self):
         """Probe card light switch and actual light relay state.
 
@@ -231,7 +230,7 @@ class EnvironmentBox(Driver):
         if result != 'OK':
             raise RuntimeError(result)
 
-    @Property()
+    @property
     def probecard_camera(self):
         """Probe card camera switch and actual camera relay state.
 
@@ -282,7 +281,7 @@ class EnvironmentBox(Driver):
         if result != 'OK':
             raise RuntimeError(result)
 
-    @Property()
+    @property
     def uptime(self):
         """CPU uptime in seconds.
 
@@ -298,7 +297,7 @@ class EnvironmentBox(Driver):
         )
         return int(dt.total_seconds())
 
-    @Property()
+    @property
     def log(self):
         """List of log messages.
 
@@ -307,7 +306,7 @@ class EnvironmentBox(Driver):
         """
         return self.resource.query('GET:LOG ?')
 
-    @Property()
+    @property
     def version(self):
         """Firmware version.
 
@@ -316,7 +315,7 @@ class EnvironmentBox(Driver):
         """
         return self.resource.query('GET:VERSION ?')
 
-    @Property()
+    @property
     def pc_data(self):
         """Snapshot of current device state. Returns instance of type `PCData`.
 

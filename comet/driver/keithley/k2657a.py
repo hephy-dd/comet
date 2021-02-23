@@ -22,7 +22,7 @@ class K2657A(IEC60488):
         @enable.setter
         @opc_wait
         def enable(self, value):
-            self.resource.write(f'beeper.enable = {value:d}')
+            self.resource.write(f'beeper.enable = {bool(value):d}')
 
     class ErrorQueue(Driver):
 

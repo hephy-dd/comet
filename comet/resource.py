@@ -148,4 +148,4 @@ class ResourceMixin:
 
     @property
     def resources(self):
-        return self.__class__.__resources
+        return type(self).__resources

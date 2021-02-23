@@ -136,7 +136,7 @@ class K2400Handler(IEC60488Handler, SystemMixin, MeasureMixin, SourceMixin,
 
     @message(r':?OUTP\s+(0|1|OFF|ON)')
     @message(r':?OUTP:STAT\s+(0|1|OFF|ON)')
-    def query_output(self, state):
+    def write_output(self, state):
         type(self).output_state = {'0': 0, '1': 1, 'OFF': 0, 'ON': 1}.get(state, 0)
 
     @message(r':?FORM:ELEM\?')

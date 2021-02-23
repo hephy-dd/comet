@@ -1,6 +1,6 @@
 from typing import Dict, List, Tuple
 
-from comet.driver import lock, Driver, Action, Property
+from comet.driver import lock, Driver, Property
 from comet.driver import IEC60488
 from comet.driver.iec60488 import opc_wait, opc_poll
 
@@ -195,7 +195,6 @@ class Source(Driver):
         self.voltage = self.Voltage(resource)
         self.current = self.Current(resource)
 
-    @Action()
     @opc_wait
     def clear(self):
         """Turn output source off when in idle."""
@@ -219,7 +218,7 @@ class Sense(Driver):
 
         @Property(minimum=1, maximum=100)
         def count(self) -> int:
-            return int(self.resource.query(':SENS:AVER:COUN?'))
+            return int(float(self.resource.query(':SENS:AVER:COUN?')))
 
         @count.setter
         @opc_wait
@@ -228,7 +227,7 @@ class Sense(Driver):
 
         @Property(values={False: 0, True: 1})
         def state(self) -> int:
-            return int(self.resource.query(':SENS:AVER:STAT?'))
+            return int(float(self.resource.query(':SENS:AVER:STAT?')))
 
         @state.setter
         @opc_wait
@@ -239,7 +238,7 @@ class Sense(Driver):
 
         class Protection(Driver):
 
-            @Property()
+            @property
             def level(self) -> float:
                 """Returns current compliance limit."""
                 return float(self.resource.query(':SENS:CURR:PROT:LEV?'))
@@ -250,12 +249,12 @@ class Sense(Driver):
                 """Set current compliance limit for V-Source."""
                 self.resource.write(f':SENS:CURR:PROT:LEV {value:E}')
 
-            @Property()
+            @property
             def tripped(self) -> bool:
                 """Returns True if in current compliance."""
                 return bool(int(self.resource.query(':SENS:CURR:PROT:TRIP?')))
 
-            @Property()
+            @property
             def rsyncronize(self) -> bool:
                 """Returns True if range syncronization enabled."""
                 return bool(int(self.resource.query(':SENS:CURR:PROT:RSYN?')))
@@ -268,7 +267,7 @@ class Sense(Driver):
 
         class Range(Driver):
 
-            @Property()
+            @property
             def auto(self) -> bool:
                 return bool(int(self.resource.query(':SENS:CURR:RANG:AUTO?')))
 
@@ -286,7 +285,7 @@ class Sense(Driver):
 
         class Protection(Driver):
 
-            @Property()
+            @property
             def level(self) -> float:
                 """Returns voltage compliance limit."""
                 return float(self.resource.query(':SENS:VOLT:PROT:LEV?'))
@@ -297,12 +296,12 @@ class Sense(Driver):
                 """Set voltage compliance limit for V-Source."""
                 self.resource.write(f':SENS:VOLT:PROT:LEV {value:E}')
 
-            @Property()
+            @property
             def tripped(self) -> bool:
                 """Returns True if in voltage compliance."""
                 return bool(int(self.resource.query(':SENS:VOLT:PROT:TRIP?')))
 
-            @Property()
+            @property
             def rsyncronize(self) -> bool:
                 """Returns True if range syncronization enabled."""
                 return bool(int(self.resource.query(':SENS:VOLT:PROT:RSYN?')))
@@ -342,7 +341,6 @@ class PowerMixin:
 
 class MeasureMixin:
 
-    @Action()
     @opc_poll
     def init(self):
         """Initiate a measurement.
@@ -350,7 +348,6 @@ class MeasureMixin:
         """
         self.resource.write(':INIT')
 
-    @Action()
     def fetch(self) -> List[float]:
         """Returns the latest available reading as list.
         >>> instr.fetch()
@@ -359,7 +356,6 @@ class MeasureMixin:
         result = self.resource.query(':FETC?')
         return list(map(float, result.split(',')))
 
-    @Action()
     def read(self) -> List[Dict[str, float]]:
         """High level command to perform a singleshot measurement. It resets the
         trigger model, initiates it, and fetches a new reading.

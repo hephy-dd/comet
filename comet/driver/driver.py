@@ -2,7 +2,11 @@ from contextlib import ContextDecorator
 
 from ..resource import Resource
 
-__all__ = ['lock', 'Driver', 'Action', 'Property']
+__all__ = [
+    'lock',
+    'Driver',
+    'Property'
+]
 
 def lock(function):
     """Decorator function, locks decorated functions to a resource specific RLock."""
@@ -15,7 +19,7 @@ class Driver:
     """Base class for custom VISA instrument drivers.
 
     >>> class MyInstrument(comet.Driver):
-    ...     @Property()
+    ...     @property
     ...     def voltage(self):
     ...         return float(self.resource.query(":VOLT?"))
     ...     @voltage.setter
@@ -45,17 +49,6 @@ class Driver:
         if name in self.__dict__ and isinstance(self.__dict__.get(name), Driver):
             raise AttributeError("can't set attribute")
         super().__setattr__(name, value)
-
-class Action:
-    """Driver action decorator."""
-
-    def __init__(self):
-        pass
-
-    def __call__(self, method):
-        def action(self, *args, **kwargs):
-            return method(self, *args, **kwargs)
-        return action
 
 def Property(*, values=None, minimum=None, maximum=None, keys=None):
     """Driver property decorator."""

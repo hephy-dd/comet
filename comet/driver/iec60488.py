@@ -1,6 +1,6 @@
 import time
 
-from comet.driver import lock, Driver, Property, Action
+from comet.driver import lock, Driver
 
 __all__ = ['IEC60488']
 
@@ -39,17 +39,17 @@ class IEC60488(Driver):
     standard.
     """
 
-    @Property()
+    @property
     def identification(self) -> str:
         """Returns instrument identification."""
         return self.resource.query('*IDN?').strip()
 
-    @Property()
+    @property
     def event_status(self) -> int:
         """Returns event status."""
         return int(self.resource.query('*ESR?'))
 
-    @Property()
+    @property
     def event_status_enable(self) -> int:
         """Returns event status enable register."""
         return int(self.resource.query('*ESE?'))
@@ -59,37 +59,32 @@ class IEC60488(Driver):
         """Set event status enable register."""
         self.resource.write(f'*ESE {value:d}')
 
-    @Property()
+    @property
     def status(self) -> int:
         """Returns status register."""
         return int(self.resource.query('*STB?'))
 
-    @Property()
+    @property
     def operation_complete(self) -> bool:
         """Retruns operation complete state."""
         return bool(self.resource.query('*OPC?'))
 
-    @Action()
     def complete_operation(self):
         """Sets the operation complete bit of the event status register."""
         self.resource.write('*OPC')
 
-    @Action()
     def clear(self):
         """Clears instrument status."""
         self.resource.write('*CLS')
 
-    @Action()
     def reset(self):
         """Performs an instrument reset."""
         self.resource.write('*RST')
 
-    @Action()
     def test(self) -> int:
         """Runs internal self test, returns result value."""
         return int(self.resource.query('*TST?'))
 
-    @Action()
     def wait_to_continue(self):
         """Prevents command execution until no operation flag is set."""
         self.resource.write('*WAI')
