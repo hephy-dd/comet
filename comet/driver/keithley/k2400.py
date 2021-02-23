@@ -13,8 +13,8 @@ class Format(Driver):
     ELEMENT_RESISTANCE = 'RESISTANCE'
     ELEMENT_TIME = 'TIME'
 
-    @Property()
-    def elements(self) -> List[str]:
+    @property
+    def elements(self):
         tr = {
             'VOLT': self.ELEMENT_VOLTAGE,
             'CURR': self.ELEMENT_CURRENT,
@@ -38,7 +38,7 @@ class Format(Driver):
 
 class Route(Driver):
 
-    @Property()
+    @property
     def terminals(self):
         value = int(float(self.resource.query(':ROUT:TERM?')))
         return {'FRON': 'FRONT', 'REAR': 'REAR', 0: 'FRONT', 1: 'REAR'}[value]
@@ -70,7 +70,7 @@ class System(Driver):
         super().__init__(resource)
         self.beeper = self.Beeper(resource)
 
-    @Property()
+    @property
     def error(self) -> Tuple[int, str]:
         """Returns current instrument error.
         >>> system.error
@@ -127,9 +127,23 @@ class Source(Driver):
             def level(self, value: float):
                 self.resource.write(f':SOUR:VOLT:RANG {value:E}')
 
+        class Protection(Driver):
+
+            @property
+            def level(self) -> float:
+                """Returns over voltage limit."""
+                return float(self.resource.query(':SOUR:VOLT:PROT:LEV?'))
+
+            @level.setter
+            @opc_wait
+            def level(self, value: float):
+                """Set over voltage limit for V-Source."""
+                self.resource.write(f':SOUR:VOLT:PROT:LEV {value:E}')
+
         def __init__(self, resource):
             super().__init__(resource)
             self.range = self.Range(resource)
+            self.protection = self.Protection(resource)
 
         @property
         def level(self) -> float:
@@ -140,10 +154,46 @@ class Source(Driver):
         def level(self, value: float):
             self.resource.write(f':SOUR:VOLT:LEV {value:E}')
 
+    class Current(Driver):
+
+        class Range(Driver):
+
+            @property
+            def auto(self) -> bool:
+                return bool(int(self.resource.query(':SOUR:CURR:RANG:AUTO?')))
+
+            @auto.setter
+            @opc_wait
+            def auto(self, value: bool):
+                self.resource.write(f':SOUR:CURR:RANG:AUTO {value:d}')
+
+            @property
+            def level(self) -> float:
+                return float(self.resource.query(':SOUR:CURR:RANG?'))
+
+            @level.setter
+            @opc_wait
+            def level(self, value: float):
+                self.resource.write(f':SOUR:CURR:RANG {value:E}')
+
+        def __init__(self, resource):
+            super().__init__(resource)
+            self.range = self.Range(resource)
+
+        @property
+        def level(self) -> float:
+            return float(self.resource.query(':SOUR:CURR:LEV?'))
+
+        @level.setter
+        @opc_wait
+        def level(self, value: float):
+            self.resource.write(f':SOUR:CURR:LEV {value:E}')
+
     def __init__(self, resource):
         super().__init__(resource)
         self.function = self.Function(resource)
         self.voltage = self.Voltage(resource)
+        self.current = self.Current(resource)
 
     @Action()
     @opc_wait
