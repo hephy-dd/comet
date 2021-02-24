@@ -77,6 +77,11 @@ class K2400Test(BaseDriverTest):
             self.assertEqual(self.resource.buffer, [':SYST:BEEP:STAT?'])
 
     def test_source(self):
+        context = self.driver.source
+        self.assertEqual(type(context.voltage), context.Voltage)
+        self.assertEqual(type(context.current), context.Current)
+
+    def test_source_clear(self):
         self.resource.buffer = ['1']
         self.driver.source.clear()
         self.assertEqual(self.resource.buffer, [':SOUR:CLE', '*OPC?'])
@@ -91,7 +96,7 @@ class K2400Test(BaseDriverTest):
             self.driver.source.function.mode = value
             self.assertEqual(self.resource.buffer, [f':SOUR:FUNC:MODE {key}', '*OPC?'])
 
-            self.resource.buffer = [f'{key}']
+            self.resource.buffer = [key]
             self.assertEqual(self.driver.source.function.mode, value)
             self.assertEqual(self.resource.buffer, [':SOUR:FUNC:MODE?'])
 
@@ -124,6 +129,84 @@ class K2400Test(BaseDriverTest):
             self.resource.buffer = [f'{value:E}']
             self.assertEqual(self.driver.source.voltage.range.level, value)
             self.assertEqual(self.resource.buffer, [':SOUR:VOLT:RANG?'])
+
+    def test_sense(self):
+        context = self.driver.sense
+        self.assertEqual(type(context.average), context.Average)
+        self.assertEqual(type(context.voltage), context.Voltage)
+        self.assertEqual(type(context.current), context.Current)
+
+    def test_sense_average_tcontrol(self):
+        context = self.driver.sense.average
+        for key, result, value in (
+            ('MOV', '0', context.TCONTROL_MOVING),
+            ('REP', '1', context.TCONTROL_REPEAT)
+        ):
+            self.resource.buffer = ['1']
+            context.tcontrol = value
+            self.assertEqual(self.resource.buffer, [f':SENS:AVER:TCON {key}', '*OPC?'])
+
+            self.resource.buffer = [result]
+            self.assertEqual(context.tcontrol, value)
+            self.assertEqual(self.resource.buffer, [':SENS:AVER:TCON?'])
+
+    def test_sense_average_count(self):
+        context = self.driver.sense.average
+        for value in (1, 42, 100):
+            self.resource.buffer = ['1']
+            context.count = value
+            self.assertEqual(self.resource.buffer, [f':SENS:AVER:COUN {value:d}', '*OPC?'])
+
+            self.resource.buffer = [format(value, 'd')]
+            self.assertEqual(context.count, value)
+            self.assertEqual(self.resource.buffer, [':SENS:AVER:COUN?'])
+
+    def test_sense_average_state(self):
+        context = self.driver.sense.average
+        for value in (0, 1, False, True):
+            self.resource.buffer = ['1']
+            context.state = value
+            self.assertEqual(self.resource.buffer, [f':SENS:AVER:STAT {value:d}', '*OPC?'])
+
+            self.resource.buffer = [format(value, 'd')]
+            self.assertEqual(context.state, value)
+            self.assertEqual(self.resource.buffer, [':SENS:AVER:STAT?'])
+
+    def test_sense_current_protection_level(self):
+        context = self.driver.sense.current.protection
+        for value in (0.0, 0.1, 1.0):
+            self.resource.buffer = ['1']
+            context.level = value
+            self.assertEqual(self.resource.buffer, [f':SENS:CURR:PROT:LEV {value:E}', '*OPC?'])
+
+            self.resource.buffer = [format(value, 'E')]
+            self.assertEqual(context.level, value)
+            self.assertEqual(self.resource.buffer, [':SENS:CURR:PROT:LEV?'])
+
+    def test_sense_current_protection_tripped(self):
+        context = self.driver.sense.current.protection
+        for value in (False, True):
+            self.resource.buffer = [format(value, 'd')]
+            self.assertEqual(context.tripped, value)
+            self.assertEqual(self.resource.buffer, [':SENS:CURR:PROT:TRIP?'])
+
+    def test_sense_voltage_protection_level(self):
+        context = self.driver.sense.voltage.protection
+        for value in (0.0, 0.1, 42.0, 100.0):
+            self.resource.buffer = ['1']
+            context.level = value
+            self.assertEqual(self.resource.buffer, [f':SENS:VOLT:PROT:LEV {value:E}', '*OPC?'])
+
+            self.resource.buffer = [format(value, 'E')]
+            self.assertEqual(context.level, value)
+            self.assertEqual(self.resource.buffer, [':SENS:VOLT:PROT:LEV?'])
+
+    def test_sense_voltage_protection_tripped(self):
+        context = self.driver.sense.voltage.protection
+        for value in (False, True):
+            self.resource.buffer = [format(value, 'd')]
+            self.assertEqual(context.tripped, value)
+            self.assertEqual(self.resource.buffer, [':SENS:VOLT:PROT:TRIP?'])
 
 if __name__ == '__main__':
     unittest.main()

@@ -207,13 +207,21 @@ class Sense(Driver):
         TCONTROL_MOVING = 'MOVING'
         TCONTROL_REPEAT = 'REPEAT'
 
-        @Property(values={TCONTROL_MOVING: 'MOV', TCONTROL_REPEAT: 'REP'})
+        @property
         def tcontrol(self) -> str:
-            return float(self.resource.query(':SENS:AVER:TCON?'))
+            key = int(float(self.resource.query(':SENS:AVER:TCON?')))
+            return {
+                0: self.TCONTROL_MOVING,
+                1: self.TCONTROL_REPEAT
+            }.get(key)
 
         @tcontrol.setter
         @opc_wait
         def tcontrol(self, value: str):
+            value = {
+                self.TCONTROL_MOVING: 'MOV',
+                self.TCONTROL_REPEAT: 'REP'
+            }[value]
             self.resource.write(f':SENS:AVER:TCON {value:s}')
 
         @Property(minimum=1, maximum=100)
@@ -319,7 +327,7 @@ class Sense(Driver):
         super().__init__(resource)
         self.average = self.Average(resource)
         self.current = self.Current(resource)
-        self.voltage = self.Current(resource)
+        self.voltage = self.Voltage(resource)
 
 class PowerMixin:
 
