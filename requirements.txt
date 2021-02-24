@@ -1,7 +1,7 @@
 PyVISA>=1.10
 PyVISA-py
 PyVISA-sim
-pint>=0.10
+pint>=0.16
 numpy>=1.17
-qutie>=1.7.0
-QCharted>=1.1
+qutie==1.7.*
+QCharted==1.1.*
