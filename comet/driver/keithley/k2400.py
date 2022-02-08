@@ -99,6 +99,10 @@ class K2400(SourceMeterUnit):
         self.write(f':SOUR:VOLT:RANG {level:E}')
         self.waitcomplete()
 
+    def set_voltage_compliance(self, level: float) -> None:
+        self.write(f':SENS:VOLT:PROT:LEV {level:.3E}')
+        self.waitcomplete()
+
     def get_current(self) -> float:
         return float(self.query(':SOUR:CURR:LEV?'))
 
@@ -112,6 +116,14 @@ class K2400(SourceMeterUnit):
     def set_current_range(self, level: float) -> None:
         self.write(f':SOUR:CURR:RANG {level:E}')
         self.waitcomplete()
+
+    def set_current_compliance(self, level: float) -> None:
+        self.write(f':SENS:CURR:PROT:LEV {level:.3E}')
+        self.waitcomplete()
+
+    def compliance_tripped(self) -> bool:
+        return int(self.query(':SENS:CURR:PROT:TRIP?')) or \
+            int(self.query(':SENS:VOLT:PROT:TRIP?'))
 
     def read_voltage(self) -> float:
         self.write(':FORM:ELEM VOLT')

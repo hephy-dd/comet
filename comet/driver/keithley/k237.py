@@ -1,0 +1,175 @@
+import time
+from typing import Optional
+
+from comet.driver.generic import SourceMeterUnit
+from comet.driver.generic import InstrumentError
+
+__all__ = ['K237']
+
+ERROR_MESSAGES = {
+    0: "Trigger Overrun",
+    1: "IDDC",
+    2: "IDDCO",
+    3: "Interlock Present",
+    4: "Illegal Measure Range",
+    5: "Illegal Source Range",
+    6: "Invalid Sweep Mix",
+    7: "Log Cannot Cross Zero",
+    8: "Autoranging Source With Pulse Sweep",
+    9: "In Calibration",
+    10: "In Standby",
+    11: "Unit is a 236",
+    12: "IOU DPRAM Failed",
+    13: "IOU EEPROM Failed",
+    14: "IOU Cal Checksum Error",
+    15: "DPRAM Lockup",
+    16: "DPRAM Link Error",
+    17: "Cal ADC Zero Error",
+    18: "Cal ADC Gain Error",
+    19: "Cal SRC Zero Error",
+    20: "Cal SRC Gain Error",
+    21: "Cal Common Mode Error",
+    22: "Cal Compliance Error",
+    23: "Cal Value Error",
+    24: "Cal Constants Error",
+    25: "Cal Invalid Error"
+}
+
+VOLTAGE_RANGE = {
+    0: 0.,
+    1: 1.1,
+    2: 11.,
+    3: 110.,
+    4: 1100.,
+}
+
+CURRENT_RANGE = {
+    0: 0.,
+    1: 1e-09,
+    2: 1e-08,
+    3: 1e-07,
+    4: 1e-06,
+    5: 1e-05,
+    6: 1e-04,
+    7: 1e-03,
+    8: 1e-02,
+    9: 1e-01,
+    10: 1e-00
+}
+
+
+def select_range_index(values: dict, level: float) -> int:
+    level = abs(level)
+    for index, value in sorted(values.items()):
+        if level <= value:
+            return index
+    return 0  # auto
+
+
+class K237(SourceMeterUnit):
+
+    WRITE_DELAY = 0.250
+
+    def identify(self) -> str:
+        value = self.query('U0X')
+        model = value[0:3]
+        revision = value[3:6]
+        return f'Keithley Inc., Model {model}, rev. {revision}'
+
+    def reset(self) -> None:
+        self.resource.clear()
+
+    def clear(self) -> None:
+        self.resource.clear()
+
+    def next_error(self) -> Optional[InstrumentError]:
+        values = self.query('U1X')[3:]
+        for index, value in enumerate(values):
+            if value == '1':
+                message = ERROR_MESSAGES.get(index, "Unknown Error")
+                return InstrumentError(index, message)
+        return None
+
+    def get_terminal(self) -> str:
+        return self.TERMINAL_FRONT
+
+    def set_terminal(self, terminal: str) -> None:
+        {self.TERMINAL_FRONT: None}[terminal]
+
+    def get_output(self) -> bool:
+        return self.query('U3X')[18:20] == 'N1'
+
+    def set_output(self, state: bool) -> None:
+        value = {False: 'N0X', True: 'N1X'}[state]
+        self.write(value)
+
+    def get_function(self) -> str:
+        return {
+            0: self.FUNCTION_VOLTAGE,
+            1: self.FUNCTION_CURRENT
+        }[int(self.query('U4X')[8])]
+
+    def set_function(self, function: str) -> None:
+        value = {
+            self.FUNCTION_VOLTAGE: 0,
+            self.FUNCTION_CURRENT: 1
+        }[function]
+        self.write(f'F{value:d},0X')
+
+    def get_voltage(self) -> float:
+        self.write('G1,2,0X')  # output format
+        return float(self.query('X'))
+
+    def set_voltage(self, level: float) -> None:
+        self.write(f'B{level:.3E},,X')
+
+    def get_voltage_range(self) -> float:
+        range = int(self.query('U4X')[5:7])
+        return VOLTAGE_RANGE[range]
+
+    def set_voltage_range(self, level: float) -> None:
+        range = select_range_index(VOLTAGE_RANGE, level)
+        self.write(f'B,{range:d},X')
+
+    def set_voltage_compliance(self, level: float) -> None:
+        self.write(f'L{level:.3E},0X')
+
+    def get_current(self) -> float:
+        self.write('G1,2,0X')  # output format
+        return float(self.query('X'))
+
+    def set_current(self, level: float) -> None:
+        self.write(f'B{level:.3E},,X')
+
+    def get_current_range(self) -> float:
+        range = int(self.query('U4X')[5:7])
+        return CURRENT_RANGE[range]
+
+    def set_current_range(self, level: float) -> None:
+        range = select_range_index(CURRENT_RANGE, level)
+        self.write(f'B,{range:d},X')
+
+    def set_current_compliance(self, level: float) -> None:
+        self.write(f'L{level:.3E},0X')
+
+    def compliance_tripped(self) -> bool:
+        self.write('G1,0,0X')
+        return self.query('X')[0:2] == 'OS'
+
+    def read_voltage(self) -> float:
+        self.write('G4,2,0X')
+        return float(self.query('X'))
+
+    def read_current(self) -> float:
+        self.write('G4,2,0X')
+        return float(self.query('X'))
+
+    # Helper
+
+    def write(self, message):
+        self.resource.write(message)
+        # throttle consecutive writes
+        time.sleep(self.WRITE_DELAY)
+
+    def query(self, message: str) -> str:
+        return self.resource.query(message).strip()

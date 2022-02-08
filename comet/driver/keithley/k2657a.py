@@ -79,6 +79,15 @@ class K2657A(SourceMeterUnit):
         self.write(f'smua.source.rangev = {level:E}')
         self.waitcomplete()
 
+    # Compliance voltage
+
+    def get_voltage_compliance(self) -> float:
+        return float(self.tsp_print('smua.source.limitv'))
+
+    def set_voltage_compliance(self, level: float) -> None:
+        self.write(f'smua.source.limitv = {level:E}')
+        self.waitcomplete()
+
     def get_current(self) -> str:
         return float(self.tsp_print('smua.source.leveli'))
 
@@ -93,20 +102,6 @@ class K2657A(SourceMeterUnit):
         self.write(f'smua.source.rangei = {level:E}')
         self.waitcomplete()
 
-    # Compliance tripped
-
-    def compliance_tripped(self) -> bool:
-        return {'false': False, 'true': True}[self.tsp_print('smua.source.compliance')]
-
-    # Compliance voltage
-
-    def get_voltage_compliance(self) -> float:
-        return float(self.tsp_print('smua.source.limitv'))
-
-    def set_voltage_compliance(self, level: float) -> None:
-        self.write(f'smua.source.limitv = {level:E}')
-        self.waitcomplete()
-
     # Compliance current
 
     def get_current_compliance(self) -> float:
@@ -115,6 +110,11 @@ class K2657A(SourceMeterUnit):
     def set_current_compliance(self, level: float) -> None:
         self.write(f'smua.source.limiti = {level:E}')
         self.waitcomplete()
+
+    # Compliance tripped
+
+    def compliance_tripped(self) -> bool:
+        return {'false': False, 'true': True}[self.tsp_print('smua.source.compliance')]
 
     # Measure
 

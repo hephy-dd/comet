@@ -92,6 +92,9 @@ class K2470(SourceMeterUnit):
         self.write(f':SOUR:VOLT:RANG {level:E}')
         self.waitcomplete()
 
+    def set_voltage_compliance(self, level: float) -> None:
+        self.write(f':SOUR:CURR:VLIM:LEV {level:.3E}')
+
     def get_current(self) -> float:
         return float(self.query(':SOUR:CURR:LEV?'))
 
@@ -105,6 +108,13 @@ class K2470(SourceMeterUnit):
     def set_current_range(self, level: float) -> None:
         self.write(f':SOUR:CURR:RANG {level:E}')
         self.waitcomplete()
+
+    def set_current_compliance(self, level: float) -> None:
+        self.write(f':SOUR:VOLT:ILIM:LEV {level:.3E}')
+
+    def compliance_tripped(self) -> bool:
+        return int(self.query(':SOUR:CURR:VLIM:LEV:TRIP?')) or \
+            int(self.query(':SOUR:VOLT:ILIM:LEV:TRIP?'))
 
     def read_voltage(self) -> float:
         return float(self.query(':MEAS:VOLT?'))
@@ -122,4 +132,3 @@ class K2470(SourceMeterUnit):
 
     def waitcomplete(self) -> None:
         self.query('*OPC?')
-

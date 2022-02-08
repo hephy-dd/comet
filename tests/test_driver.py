@@ -9,6 +9,9 @@ class Resource:
     def __init__(self):
         self.buffer = []
 
+    def clear(self):
+        pass  # VISA bus clear
+
     def read(self):
         return self.buffer.pop(0)
 

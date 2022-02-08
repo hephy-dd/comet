@@ -85,6 +85,10 @@ class SourceMeterUnit(Instrument):
         pass
 
     @abstractmethod
+    def set_voltage_compliance(self, level: float) -> None:
+        pass
+
+    @abstractmethod
     def get_current(self) -> float:
         pass
 
@@ -98,6 +102,14 @@ class SourceMeterUnit(Instrument):
 
     @abstractmethod
     def set_current_range(self, level: float) -> None:
+        pass
+
+    @abstractmethod
+    def set_current_compliance(self, level: float) -> None:
+        pass
+
+    @abstractmethod
+    def compliance_tripped(self) -> bool:
         pass
 
     @abstractmethod
