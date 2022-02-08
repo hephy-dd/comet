@@ -58,6 +58,15 @@ class Emulator:
         return None
 
 
+def create_handler(emulator: Emulator, termination: str, delay: float) -> TCPHandler:
+    handler = TCPHandler
+    handler.message_handler = [emulator]
+    handler.read_termination = termination
+    handler.write_termination = termination
+    handler.request_delay = delay
+    return handler
+
+
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--hostname', default='localhost')
@@ -74,12 +83,7 @@ def run(emulator):
 
     termination = args.termination.replace('\\n', '\n').replace('\\r', '\r')
 
-    handler = TCPHandler
-    handler.message_handler = emulator
-    handler.read_termination = termination
-    handler.write_termination = termination
-    handler.request_delay = args.delay
-
+    handler = create_handler(emulator, termination, args.delay)
     server = TCPServer((args.hostname, args.port), handler)
 
     def serve_forever(server):

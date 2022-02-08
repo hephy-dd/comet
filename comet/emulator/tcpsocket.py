@@ -5,11 +5,11 @@ import time
 import socketserver
 import re
 
-from typing import Iterator
+from typing import Callable, Iterator, List
 
 logger = logging.getLogger(__name__)
 
-__all__ = ['TCPServer', 'TCPServer']
+__all__ = ['TCPServer', 'TCPHandler']
 
 
 def split_messages(data: str, separator: str) -> Iterator:
@@ -32,7 +32,7 @@ class TCPHandler(socketserver.BaseRequestHandler):
 
     recv_size = 1024
 
-    message_handler = None
+    message_handler: List[Callable] = []
 
     def recv(self, n):
         data = self.request.recv(n)
@@ -57,8 +57,8 @@ class TCPHandler(socketserver.BaseRequestHandler):
                 self.handle_message(message)
 
     def handle_message(self, message):
-        if callable(self.message_handler):
-            result = self.message_handler(message)
+        for message_handler in self.message_handler:
+            result = message_handler(message)
             time.sleep(self.request_delay)
             if result is not None:
                 self.send(result)
