@@ -1,6 +1,8 @@
 from typing import Optional
 
 from comet.driver.generic import SourceMeterUnit
+from comet.driver.generic import ErrorQueue
+from comet.driver.generic import RouteTerminal
 from comet.driver.generic import InstrumentError
 
 __all__ = ['K2400']
@@ -11,7 +13,27 @@ def parse_error(response: str):
     return int(code), message.strip('\"')
 
 
-class K2400(SourceMeterUnit):
+class K2400RouteTerminal(RouteTerminal):
+
+    def get_route_terminal(self) -> str:
+        resource = getattr(self, 'resource')
+        value = resource.query(':ROUT:TERM?')
+        return {
+            'FRON': type(self).ROUTE_TERMINAL_FRONT,
+            'REAR': type(self).ROUTE_TERMINAL_REAR
+        }[value]
+
+    def set_route_terminal(self, route_terminal: str) -> None:
+        resource = getattr(self, 'resource')
+        value = {
+            type(self).ROUTE_TERMINAL_FRONT: 'FRON',
+            type(self).ROUTE_TERMINAL_REAR: 'REAR'
+        }[route_terminal]
+        resource.write(f':ROUT:TERM {value}')
+        resource.query('*OPC?')
+
+
+class K2400(K2400RouteTerminal, SourceMeterUnit):
 
     def identify(self) -> str:
         return self.query('*IDN?')
@@ -32,21 +54,6 @@ class K2400(SourceMeterUnit):
 
     def set_mute(self, state: bool) -> None:
         self.write(f':SYST:BEEP:STAT {state:d}')
-        self.waitcomplete()
-
-    def get_terminal(self) -> str:
-        value = self.query(':ROUT:TERM?')
-        return {
-            'FRON': self.TERMINAL_FRONT,
-            'REAR': self.TERMINAL_REAR
-        }[value]
-
-    def set_terminal(self, terminal: str) -> None:
-        value = {
-            self.TERMINAL_FRONT: 'FRON',
-            self.TERMINAL_REAR: 'REAR'
-        }[terminal]
-        self.write(f':ROUT:TERM {value}')
         self.waitcomplete()
 
     def get_output(self) -> bool:
@@ -122,8 +129,8 @@ class K2400(SourceMeterUnit):
         self.waitcomplete()
 
     def compliance_tripped(self) -> bool:
-        return int(self.query(':SENS:CURR:PROT:TRIP?')) or \
-            int(self.query(':SENS:VOLT:PROT:TRIP?'))
+        return bool(int(self.query(':SENS:CURR:PROT:TRIP?'))) or \
+            bool(int(self.query(':SENS:VOLT:PROT:TRIP?')))
 
     def read_voltage(self) -> float:
         self.write(':FORM:ELEM VOLT')

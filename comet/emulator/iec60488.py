@@ -1,3 +1,5 @@
+import random
+
 from comet.emulator import Emulator
 from comet.emulator import message, run
 
@@ -14,7 +16,7 @@ class IEC60488Emulator(Emulator):
 
     @message(r'\*ESR\?')
     def get_esr(self):
-        return 0
+        return random.choice((0, 1))  # emulate operation complete
 
     @message(r'\*ESE\?')
     def get_ese(self):

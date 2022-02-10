@@ -1,4 +1,4 @@
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from typing import List, Optional, Tuple
 
 from .driver import Driver
@@ -11,7 +11,28 @@ class InstrumentError:
         self.message = message
 
 
-class Instrument(Driver):
+class ErrorQueue(ABC):
+
+    @abstractmethod
+    def next_error(self) -> Optional[InstrumentError]:
+        pass
+
+
+class RouteTerminal(ABC):
+
+    ROUTE_TERMINAL_FRONT = 'front'
+    ROUTE_TERMINAL_REAR = 'rear'
+
+    @abstractmethod
+    def get_route_terminal(self) -> str:
+        pass
+
+    @abstractmethod
+    def set_route_terminal(self, route_terminal: str) -> None:
+        pass
+
+
+class Instrument(ErrorQueue, Driver):
 
     @abstractmethod
     def identify(self) -> str:
@@ -25,26 +46,11 @@ class Instrument(Driver):
     def clear(self) -> None:
         pass
 
-    @abstractmethod
-    def next_error(self) -> Optional[InstrumentError]:
-        pass
-
     def set_mute(self, state: bool) -> None:
         pass
 
 
 class SourceMeterUnit(Instrument):
-
-    TERMINAL_FRONT = 'front'
-    TERMINAL_REAR = 'rear'
-
-    @abstractmethod
-    def get_terminal(self) -> str:
-        pass
-
-    @abstractmethod
-    def set_terminal(self, terminal: str) -> None:
-        pass
 
     OUTPUT_ON = True
     OUTPUT_OFF = False

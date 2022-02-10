@@ -20,7 +20,7 @@ class Axis(Driver):
         return float(self.resource.query(f'{self._index} getpitch'))
 
     @pitch.setter
-    def pitch(self, value: float):
+    def pitch(self, value: float) -> None:
         """Set axis pitch.
 
         >>> instr.x.pitch = 2.0
@@ -44,7 +44,7 @@ class Axis(Driver):
         return int(self.resource.query(f'{self._index} getunit'))
 
     @unit.setter
-    def unit(self, value: int):
+    def unit(self, value: int) -> None:
         """Set axis unit.
         0: Microstep
         1: μm
@@ -59,7 +59,7 @@ class Axis(Driver):
         self.resource.write(f'{value:d} {self._index} setunit')
 
     @property
-    def umotmin(self) -> Tuple[int]:
+    def umotmin(self) -> int:
         """Returns minimum motor voltage in [mV].
 
         >>> instr.x.umotmin
@@ -68,7 +68,7 @@ class Axis(Driver):
         return int(self.resource.query(f'{self._index} getumotmin'))
 
     @umotmin.setter
-    def umotmin(self, value: int):
+    def umotmin(self, value: int) -> None:
         """Set minimum motor voltage in [mV].
 
         >>> instr.x.umotmin = 1850
@@ -85,7 +85,7 @@ class Axis(Driver):
         return int(self.resource.query(f'{self._index} getumotgrad'))
 
     @umotgrad.setter
-    def umotgrad(self, value: int):
+    def umotgrad(self, value: int) -> None:
         """Set motor phase current/torque.
 
         >>> instr.x.umotgrad = 55
@@ -102,7 +102,7 @@ class Axis(Driver):
         return int(self.resource.query(f'{self._index} getpolepairs'))
 
     @polepairs.setter
-    def polepairs(self, value: int):
+    def polepairs(self, value: int) -> None:
         """Set step motor pole pairs.
 
         >>> instr.x.polepairs = 50
@@ -120,7 +120,7 @@ class Axis(Driver):
         return int(self.resource.query(f'{self._index} getaxis'))
 
     @enabled.setter
-    def enabled(self, value: int):
+    def enabled(self, value: int) -> None:
         """Set axis state.
 
         >>> instr.x.enabled = 1
@@ -138,7 +138,7 @@ class Axis(Driver):
         return int(self.resource.query(f'{self._index} getphaseares'))
 
     @phaseares.setter
-    def phaseares(self, value: int):
+    def phaseares(self, value: int) -> None:
         """Set phase A resolution.
 
         >>> instr.x.polepairs = 16
@@ -156,7 +156,7 @@ class Axis(Driver):
         return int(self.resource.query(f'{self._index} getmotiondir'))
 
     @motiondir.setter
-    def motiondir(self, value: int):
+    def motiondir(self, value: int) -> None:
         """Set motor rotation direction.
 
         >>> instr.x.motiondir = 0
@@ -168,14 +168,14 @@ class Axis(Driver):
 
     # TODO nrmvel
 
-    def speed(self, value):
+    def speed(self, value: float) -> None:
         """Move axis using speed mode.
 
         >>> instr.x.speed(-0.1)
         """
         self.resource.write(f'{value:.6f} {self._index} speed')
 
-    def test(self, value: float):
+    def test(self, value: float) -> None:
         """Executes axis test routine.
 
         >>> instr.x.test(10.0)
@@ -200,7 +200,7 @@ class Axis(Driver):
         (0, 0)
         """
         values = self.resource.query(f'{self._index} getsw').split()
-        return tuple(map(int, values))
+        return int(values[0]), int(values[1])
 
     # TODO sw
 
@@ -216,21 +216,21 @@ class Axis(Driver):
         return float(self.resource.query(f'{self._index} getcalswdist'))
 
     @calswdist.setter
-    def calswdist(self, value: float):
+    def calswdist(self, value: float) -> None:
         """Set axis limit switch distance.
 
         >>> instr.calswdist = 0.0
         """
         self.resource.write(f'{value:.6f} {self._index} setcalswdist')
 
-    def ncal(self):
+    def ncal(self) -> None:
         """Calibrate axis.
 
         >>> instr.x.ncal()
         """
         self.resource.write(f'{self._index} ncal')
 
-    def nrm(self):
+    def nrm(self) -> None:
         """Rangemove axis.
 
         >>> instr.x.nrm()
@@ -266,7 +266,7 @@ class Axis(Driver):
         return int(self.resource.query(f'{self._index} getmp'))
 
     @mp.setter
-    def mp(self, value: int):
+    def mp(self, value: int) -> None:
         """Set state of axis motors (0: currentless, 1: under current).
 
         >>> instr.x.mp = 1
@@ -290,7 +290,7 @@ class Axis(Driver):
         return float(self.resource.query(f'{self._index} getnjoyspeed'))
 
     @joyspeed.setter
-    def joyspeed(self, value: float):
+    def joyspeed(self, value: float) -> None:
         """Set maximum joystick speed for axis in mm/s.
 
         >>> instr.x.joyspeed = 20.0
@@ -305,42 +305,42 @@ class Axis(Driver):
 
 class System(Driver):
 
-    def save(self):
+    def save(self) -> None:
         """Save paramerters.
 
         >>> instr.system.save()
         """
         self.resource.write('save')
 
-    def restore(self):
+    def restore(self) -> None:
         """Restore saved parameters.
 
         >>> instr.system.restore()
         """
         self.resource.write('restore')
 
-    def fpara(self):
+    def fpara(self) -> None:
         """Restores factory defaults.
 
         >>> instr.system.fpara()
         """
         self.resource.write('getfpara')
 
-    def clear(self):
+    def clear(self) -> None:
         """Clears content of parameter stack.
 
         >>> instr.system.clear()
         """
         self.resource.write('clear')
 
-    def reset(self):
+    def reset(self) -> None:
         """Reboot the instrument. Sockets are closed.
 
         >>> instr.system.reset()
         """
         self.resource.write('reset')
 
-    def beep(self, value: int):
+    def beep(self, value: int) -> None:
         """Beep.
 
         Note: Corvus TT only.
@@ -411,12 +411,12 @@ class Venus1(Driver):
     HOST_MODE = 0
     TERMINAL_MODE = 1
 
-    def __init__(self, resource, **kwargs):
+    def __init__(self, resource, **kwargs) -> None:
         super().__init__(resource, **kwargs)
-        self.x = Axis(self.resource, self.X_AXIS)
-        self.y = Axis(self.resource, self.Y_AXIS)
-        self.z = Axis(self.resource, self.Z_AXIS)
-        self.system = System(self.resource)
+        self.x: Axis = Axis(self.resource, self.X_AXIS)
+        self.y: Axis = Axis(self.resource, self.Y_AXIS)
+        self.z: Axis = Axis(self.resource, self.Z_AXIS)
+        self.system: System = System(self.resource)
 
     @property
     def identification(self) -> str:
@@ -524,7 +524,7 @@ class Venus1(Driver):
         return tuple(map(int, values))
 
     @property
-    def axes(self):
+    def axes(self) -> Tuple[int, ...]:
         """Returns axes states.
 
         >>> instr.axes
@@ -543,7 +543,7 @@ class Venus1(Driver):
         return int(self.resource.query('getpowerup'))
 
     @powerup.setter
-    def powerup(self, value: int):
+    def powerup(self, value: int) -> None:
         """Set power up commands.
 
         >>> instr.powerup = 0
@@ -552,7 +552,7 @@ class Venus1(Driver):
         self.resource.write(f'{value:d} setpowerup')
 
     @property
-    def phaseares(self) -> Tuple[int, int ,int]:
+    def phaseares(self) -> Tuple[int, int, int]:
         """Returns tuple containing phase A resolution.
 
         >>> instr.phaseares
@@ -565,7 +565,7 @@ class Venus1(Driver):
         values.append(self.resource.read())
         return tuple(map(int, values))
 
-    def mode(self, value: int):
+    def mode(self, value: int) -> None:
         """Set command mode.
 
         0: HOST_MODE
@@ -578,6 +578,7 @@ class Venus1(Driver):
         # Workaround: clear clogged control characters from internal
         # buffer by reading querying instrument identity.
         self.resource.query('identify')
+
     mode = property(None, mode)
 
     @property
@@ -590,7 +591,7 @@ class Venus1(Driver):
         return self.resource.query('getipadr')
 
     # @ipadr.setter
-    # def ipadr(self, value: str):
+    # def ipadr(self, value: str) -> None:
     #     """Set instrument IP address.
     #
     #     >>> instr.ipadr = '192.168.1.2'
@@ -608,7 +609,7 @@ class Venus1(Driver):
         return float(self.resource.query('getvel'))
 
     @vel.setter
-    def vel(self, value: float):
+    def vel(self, value: float) -> None:
         """Set velocity.
 
         >>> instr.vel = 90.0
@@ -625,7 +626,7 @@ class Venus1(Driver):
         return float(self.resource.query('getaccel'))
 
     @accel.setter
-    def accel(self, value: float):
+    def accel(self, value: float) -> None:
         """Set acceleration.
 
         >>> instr.accel = 200.0
@@ -674,7 +675,7 @@ class Venus1(Driver):
 
     # TODO refvel
 
-    def move(self, x: float, y: float, z: float):
+    def move(self, x: float, y: float, z: float) -> None:
         """Moves axes to absolute coordinates.
 
         >>> instr.move(2, 4, 0)
@@ -683,7 +684,7 @@ class Venus1(Driver):
 
     m = move
 
-    def rmove(self, x: float, y: float, z: float):
+    def rmove(self, x: float, y: float, z: float) -> None:
         """Moves axes relative to current coordinates.
 
         >>> instr.rmove(1, 1, 0)
@@ -692,14 +693,14 @@ class Venus1(Driver):
 
     r = rmove
 
-    def stopspeed(self):
+    def stopspeed(self) -> None:
         """Abort speed mode for all axes.
 
         >>> instr.stopspeed()
         """
         self.resource.write('stopspeed')
 
-    def randmove(self):
+    def randmove(self) -> None:
         """Moves axes to random coordinates using random accelarations and
         velocities.
 
@@ -707,7 +708,7 @@ class Venus1(Driver):
         """
         self.resource.write('randmove')
 
-    def calibrate(self):
+    def calibrate(self) -> None:
         """Calibrates axes by moving to limit switches.
 
         >>> instr.calibrate()
@@ -716,7 +717,7 @@ class Venus1(Driver):
 
     cal = calibrate
 
-    def rangemeasure(self):
+    def rangemeasure(self) -> None:
         """Moves axes to limit switches.
 
         >>> instr.rangemeasure()
@@ -737,7 +738,7 @@ class Venus1(Driver):
         return tuple(map(int, values))
 
     @property
-    def limit(self) -> Tuple[Tuple[float, float]]:
+    def limit(self) -> Tuple[Tuple[float, ...], ...]:
         """Returns tuple containing soft limits (lower, upper) for all axes.
 
         >>> instr.limit
@@ -751,7 +752,7 @@ class Venus1(Driver):
         return tuple(values)
 
     @limit.setter
-    def limit(self, values: Tuple[Tuple[float, float]]):
+    def limit(self, values: Tuple[Tuple[float, float], ...]) -> None:
         """Set soft limits (lower, upper) for all axes.
 
         >>> instr.limit = ((0, 12), (0, 25), (-10, 30))
@@ -766,14 +767,14 @@ class Venus1(Driver):
             values[1][1],
             values[2][1],
         ]
-        limits = " ".join([format(limit, '.6f') for limit in limits])
+        limits = ' '.join([format(limit, '.6f') for limit in limits])
         self.resource.write(f'{limits} setlimit')
 
     # TODO orgsw
 
     # TODO orgswst
 
-    def abort(self):
+    def abort(self) -> None:
         """Aborts currently executed command.
 
         >>> instr.abort()
@@ -801,7 +802,7 @@ class Venus1(Driver):
         return tuple(map(float, values))
 
     @pos.setter
-    def pos(self, values: Tuple[float, float, float]):
+    def pos(self, values: Tuple[float, float, float]) -> None:
         """Set coordinate origin relative to current position.
 
         >>> instr.pos = 0, 0, 0
@@ -824,14 +825,14 @@ class Venus1(Driver):
         return tuple(values)
 
     # TODO ugly
-    def align(self, x, y, org_x, org_y, axis):
+    def align(self, x, y, org_x, org_y, axis) -> None:
         """Align orthogonal coordinate system.
 
         >>> instr.align(0, 0, 10, 10, axis=1)
         """
         self.resource.write(f'{x} {y} {org_x} {org_y} {axis} align')
 
-    def reset_ico(self):
+    def reset_ico(self) -> None:
         """Reset rotated coordinate system.
 
         >>> instr.reset_ico()
@@ -839,7 +840,7 @@ class Venus1(Driver):
         self.resource.write('ico')
 
     @property
-    def ico(self):
+    def ico(self) -> int:
         """Get rotated coordinate system.
 
         >>> instr.ico
@@ -911,7 +912,7 @@ class Venus1(Driver):
         return bool(int(self.resource.query('getjoystick')))
 
     @joystick.setter
-    def joystick(self, value: bool):
+    def joystick(self, value: bool) -> None:
         """Set True to enable joystick.
 
         >>> instr.joystick = True
@@ -928,7 +929,7 @@ class Venus1(Driver):
         return float(self.resource.query('getjoyspeed'))
 
     @joyspeed.setter
-    def joyspeed(self, value: float):
+    def joyspeed(self, value: float) -> None:
         """Set maximum joystick speed in mm/s.
 
         >>> instr.joyspeed = 20.0
@@ -945,7 +946,7 @@ class Venus1(Driver):
         return float(self.resource.query('getjoybspeed'))
 
     @joybspeed.setter
-    def joybspeed(self, value: float):
+    def joybspeed(self, value: float) -> None:
         """Set special joystick button speed in mm/s.
 
         >>> instr.joybspeed = 0.01

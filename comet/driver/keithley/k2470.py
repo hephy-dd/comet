@@ -3,12 +3,12 @@ from typing import Optional
 from comet.driver.generic import SourceMeterUnit
 from comet.driver.generic import InstrumentError
 
-from .k2400 import parse_error
+from .k2400 import parse_error, K2400RouteTerminal
 
 __all__ = ['K2470']
 
 
-class K2470(SourceMeterUnit):
+class K2470(K2400RouteTerminal, SourceMeterUnit):
 
     def identify(self) -> str:
         return self.query('*IDN?')
@@ -26,21 +26,6 @@ class K2470(SourceMeterUnit):
         if code:
             return InstrumentError(code, message)
         return None
-
-    def get_terminal(self) -> str:
-        value = self.query(':ROUT:TERM?')
-        return {
-            'FRON': self.TERMINAL_FRONT,
-            'REAR': self.TERMINAL_REAR
-        }[value]
-
-    def set_terminal(self, terminal: str) -> None:
-        value = {
-            self.TERMINAL_FRONT: 'FRON',
-            self.TERMINAL_REAR: 'REAR'
-        }[terminal]
-        self.write(f':ROUT:TERM {value}')
-        self.waitcomplete()
 
     def get_output(self) -> bool:
         value = int(float(self.query(':OUTP:STAT?')))
@@ -113,8 +98,8 @@ class K2470(SourceMeterUnit):
         self.write(f':SOUR:VOLT:ILIM:LEV {level:.3E}')
 
     def compliance_tripped(self) -> bool:
-        return int(self.query(':SOUR:CURR:VLIM:LEV:TRIP?')) or \
-            int(self.query(':SOUR:VOLT:ILIM:LEV:TRIP?'))
+        return bool(int(self.query(':SOUR:CURR:VLIM:LEV:TRIP?'))) or \
+            bool(int(self.query(':SOUR:VOLT:ILIM:LEV:TRIP?')))
 
     def read_voltage(self) -> float:
         return float(self.query(':MEAS:VOLT?'))

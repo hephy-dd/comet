@@ -1,6 +1,7 @@
-PyQt5==5.15.*
-PyQtChart==5.15.*
 PyVISA==1.11.*
 PyVISA-py==0.5.*
+PyVISA-sim==0.4.*
+pyserial==3.5.*
+pyusb==1.2.*
+numpy==1.19.*
 pint==0.17.*
-

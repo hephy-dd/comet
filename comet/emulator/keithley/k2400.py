@@ -48,11 +48,11 @@ class K2400Emulator(IEC60488Emulator):
     def set_cls(self):
         self.error_queue.clear()
 
-    @message(r':?SYST:ERR:COUN\?')
+    @message(r':?SYST(?:em)?:ERR(?:or)?:COUN(?:t)?\?')
     def get_system_error_count(self):
         return len(self.error_queue)
 
-    @message(r':?SYST:ERR(?::NEXT)?\?')
+    @message(r':?SYST(?:em)?:ERR(?:or)?(?::NEXT)?\?')
     def get_system_error_next(self):
         if self.error_queue:
             code, message = self.error_queue.pop(0)
@@ -61,31 +61,31 @@ class K2400Emulator(IEC60488Emulator):
 
     # Beeper
 
-    @message(r':?SYST:BEEP(?::STAT)?\?')
+    @message(r':?SYST(?:em)?:BEEP(?:er)?(?::STAT(?:e)?)?\?')
     def get_system_beeper_state(self):
         return int(self.system_beeper_state)
 
-    @message(r':?SYST:BEEP(?::STAT)? (OFF|ON|0|1)')
+    @message(r':?SYST(?:em)?:BEEP(?:er)?(?::STAT(?:e)?)? (OFF|ON|0|1)')
     def set_system_beeper_state(self, state):
         self.system_beeper_state = {'OFF': False, 'ON': True, '0': False, '1': True}[state]
 
     # Route terminal
 
-    @message(r':?ROUT:TERM\?')
+    @message(r':?ROUT(?:e)?:TERM(?:inal)?\?')
     def get_route_terminals(self):
         return self.route_terminals
 
-    @message(r':?ROUT:TERM (FRON|REAR)')
+    @message(r':?ROUT(?:e)?:TERM(?:inal)? (FRON|REAR)')
     def set_route_terminals(self, terminal):
         self.route_terminals = terminal
 
     # Output state
 
-    @message(r':?OUTP(?::STAT)?\?')
+    @message(r':?OUTP(?:ut)?(?::STAT(?:e)?)?\?')
     def get_output_state(self):
         return {False: '0', True: '1'}[self.output_state]
 
-    @message(r':?OUTP(?::STAT)? (.+)')
+    @message(r':?OUTP(?:ut)?(?::STAT(?:e)?)? (.+)')
     def set_output_state(self, state):
         try:
             self.output_state = {'ON': True, 'OFF': False, '0': False, '1': True}[state]
@@ -241,6 +241,10 @@ class K2400Emulator(IEC60488Emulator):
         self.format_elements = elements
 
     # Measure
+
+    @message(r':?INIT(?:iate)?')
+    def set_initiate(self):
+        pass
 
     @message(r':?READ\?')
     def get_read(self):

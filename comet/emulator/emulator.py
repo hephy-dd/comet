@@ -3,7 +3,7 @@ import logging
 import re
 import threading
 
-from typing import Callable, List, Optional
+from typing import Callable, List, Optional, Type
 
 from .tcpsocket import TCPServer, TCPHandler
 
@@ -58,7 +58,7 @@ class Emulator:
         return None
 
 
-def create_handler(emulator: Emulator, termination: str, delay: float) -> TCPHandler:
+def create_handler(emulator: Emulator, termination: str, delay: float) -> Type[TCPHandler]:
     handler = TCPHandler
     handler.message_handler = [emulator]
     handler.read_termination = termination

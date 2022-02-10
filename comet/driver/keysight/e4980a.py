@@ -47,14 +47,14 @@ class E4980A(LCRMeter):
         self.write(f':FUNC:IMP:TYPE {value}')
         self.waitcomplete()
 
-    def get_amplitude(self) -> str:
+    def get_amplitude(self) -> float:
         return float(self.query(':VOLT:LEV?'))
 
     def set_amplitude(self, level: float) -> None:
         self.write(f':VOLT:LEV {level:E}')
         self.waitcomplete()
 
-    def get_frequency(self) -> str:
+    def get_frequency(self) -> float:
         return float(self.query(':FREQ:CW?'))
 
     def set_frequency(self, frequency: float) -> None:
@@ -70,8 +70,8 @@ class E4980A(LCRMeter):
         self.waitcomplete()
 
     def read(self) -> Tuple[float, float]:
-        values = self.query(':FETC:IMP:FORM?').split(',')[:2]
-        return tuple(map(float, values))
+        first, second = self.query(':FETC:IMP:FORM?').split(',')[:2]
+        return float(first), float(second)
 
     # Helper
 

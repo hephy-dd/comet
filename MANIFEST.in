@@ -1,0 +1,6 @@
+include README.md
+include LICENSE
+include requirements.txt
+
+include docs/_config.yml
+recursive-include docs/ *.md

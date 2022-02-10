@@ -1,4 +1,5 @@
 import random
+import time
 
 from comet.emulator import IEC60488Emulator, message, run
 
@@ -7,8 +8,11 @@ class E4980AEmulator(IEC60488Emulator):
 
     IDENTITY = "Keysight Inc., Model E4980A, v1.0 (Emulator)"
 
+    CORRECTION_OPEN_DELAY = 4.0
+
     def __init__(self):
         super().__init__()
+        self.correction_open_state = 0
         self.correction_method = 0
         self.correction_channel = 0
         self.bias_voltage_level = 0.
@@ -18,9 +22,21 @@ class E4980AEmulator(IEC60488Emulator):
     def get_system_error(self):
         return '0, "no error"'
 
+    @message(r':?CORR:OPEN:STAT\?')
+    def get_correction_open_state(self):
+        return format(self.correction_open_state, '+d')
+
+    @message(r'^:?CORR:OPEN:STAT\s+(OFF|ON|0|1)$')
+    def set_correction_open_state(self, state):
+        self.correction_open_state = {'0': False, '1': True, 'OFF': False, 'ON': True}[state]
+
+    @message(r':?CORR:OPEN')
+    def get_correction_open(self):
+        time.sleep(type(self).CORRECTION_OPEN_DELAY)
+
     @message(r':?CORR:METH\?')
     def get_correction_method(self):
-        return format(self.correction_method, 'd')
+        return format(self.correction_method, '+d')
 
     @message(r':?CORR:METH\s+SING')
     def set_correction_method_single(self):

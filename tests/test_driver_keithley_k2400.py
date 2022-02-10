@@ -25,3 +25,12 @@ class K2400Test(BaseDriverTest):
         error = self.driver.next_error()
         self.assertEqual(error.code, 42)
         self.assertEqual(error.message, 'test error')
+
+    def test_route_terminal(self):
+        self.resource.buffer = ['FRON']
+        self.assertEqual(self.driver.get_route_terminal(), self.driver.ROUTE_TERMINAL_FRONT)
+        self.assertEqual(self.resource.buffer, [':ROUT:TERM?'])
+
+        self.resource.buffer = ['1']
+        self.assertEqual(self.driver.set_route_terminal(self.driver.ROUTE_TERMINAL_REAR), None)
+        self.assertEqual(self.resource.buffer, [':ROUT:TERM REAR', '*OPC?'])

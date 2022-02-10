@@ -125,7 +125,7 @@ class ITC(ITCDriver):
         return "ITC climate chamber"
 
     @property
-    def time(self) -> object:
+    def time(self) -> datetime.datetime:
         """Returns current date and time of device as datetime object.
 
         >>> instr.time
@@ -135,10 +135,10 @@ class ITC(ITCDriver):
         return datetime.datetime.strptime(result, 'T%d%m%y%H%M%S')
 
     @time.setter
-    def time(self, dt: object):
+    def time(self, dt: datetime.datetime):
         """Update device date and time, returns updated data and time as datetime object.
 
-        >>> instr.time = datetime.now()
+        >>> instr.time = datetime.datetime.now()
         """
         datetime_format = 't%d%m%y%H%M%S'
         result = self.query_bytes(dt.strftime(datetime_format), 13)

@@ -90,12 +90,6 @@ class K237(SourceMeterUnit):
                 return InstrumentError(index, message)
         return None
 
-    def get_terminal(self) -> str:
-        return self.TERMINAL_FRONT
-
-    def set_terminal(self, terminal: str) -> None:
-        {self.TERMINAL_FRONT: None}[terminal]
-
     def get_output(self) -> bool:
         return self.query('U3X')[18:20] == 'N1'
 

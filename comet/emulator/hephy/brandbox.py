@@ -1,3 +1,5 @@
+from typing import Set
+
 from comet.emulator import Emulator
 from comet.emulator import message, run
 
@@ -23,7 +25,7 @@ class BrandBoxEmulator(Emulator):
     SUCCESS = 'OK'
     COMMAND_ERROR = 'Err99'
 
-    closed_channels = set()
+    closed_channels: Set[str] = set()
     test_state = False
     mod = 'N/A'
 

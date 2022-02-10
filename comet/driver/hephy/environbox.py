@@ -117,6 +117,7 @@ class EnvironBox(Instrument):
         values = self.query('GET:PC_DATA ?').split(',')
         return {
             'box_humidity': float(values[1]),
+            'box_temperature': float(values[2]),
             'box_light': bool(int(values[24])),
             'box_door': bool(int(values[25])),
             'discharge_time': float(values[31]),

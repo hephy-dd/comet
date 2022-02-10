@@ -29,12 +29,6 @@ class K2657A(SourceMeterUnit):
         self.write(f'beeper.enable = {state:d}')
         self.waitcomplete()
 
-    def get_terminal(self) -> str:
-        return self.TERMINAL_REAR
-
-    def set_terminal(self, terminal: str) -> None:
-        {self.TERMINAL_REAR: None}[terminal]
-
     def get_output(self) -> bool:
         value = int(float(self.tsp_print('smua.source.output')))
         return {
@@ -65,14 +59,14 @@ class K2657A(SourceMeterUnit):
         self.write(f'smua.source.func = {value:d}')
         self.waitcomplete()
 
-    def get_voltage(self) -> str:
+    def get_voltage(self) -> float:
         return float(self.tsp_print('smua.source.levelv'))
 
     def set_voltage(self, level: float) -> None:
         self.write(f'smua.source.levelv = {level:E}')
         self.waitcomplete()
 
-    def get_voltage_range(self) -> str:
+    def get_voltage_range(self) -> float:
         return float(self.tsp_print('smua.source.rangev'))
 
     def set_voltage_range(self, level: float) -> None:
@@ -88,14 +82,14 @@ class K2657A(SourceMeterUnit):
         self.write(f'smua.source.limitv = {level:E}')
         self.waitcomplete()
 
-    def get_current(self) -> str:
+    def get_current(self) -> float:
         return float(self.tsp_print('smua.source.leveli'))
 
     def set_current(self, level: float) -> None:
         self.write(f'smua.source.leveli = {level:E}')
         self.waitcomplete()
 
-    def get_current_range(self) -> str:
+    def get_current_range(self) -> float:
         return float(self.tsp_print('smua.source.rangei'))
 
     def set_current_range(self, level: float) -> None:
