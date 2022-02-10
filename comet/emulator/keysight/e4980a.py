@@ -10,45 +10,46 @@ class E4980AEmulator(IEC60488Emulator):
 
     CORRECTION_OPEN_DELAY = 4.0
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
-        self.correction_open_state = 0
-        self.correction_method = 0
-        self.correction_channel = 0
-        self.bias_voltage_level = 0.
-        self.bias_state = False
+        self.correction_open_state: int = 0
+        self.correction_use: int = 0
+        self.correction_method: str = 'SING'
+        self.correction_channel: int = 0
+        self.bias_voltage_level: float = 0.
+        self.bias_state: bool = False
 
-    @message(r':SYST:ERR\?')
-    def get_system_error(self):
-        return '0, "no error"'
+    @message(r':SYST(?:em)?:ERR(?:or)?(?:NEXT)?\?')
+    def get_system_error(self) -> str:
+        return '+0, "no error"'
 
     @message(r':?CORR:OPEN:STAT\?')
-    def get_correction_open_state(self):
-        return format(self.correction_open_state, '+d')
+    def get_correction_open_state(self) -> str:
+        return format(self.correction_open_state, 'd')
 
     @message(r'^:?CORR:OPEN:STAT\s+(OFF|ON|0|1)$')
-    def set_correction_open_state(self, state):
+    def set_correction_open_state(self, state: str) -> None:
         self.correction_open_state = {'0': False, '1': True, 'OFF': False, 'ON': True}[state]
 
     @message(r':?CORR:OPEN')
-    def get_correction_open(self):
+    def get_correction_open(self) -> None:
         time.sleep(type(self).CORRECTION_OPEN_DELAY)
 
+    @message(r':?CORR:USE\?')
+    def get_correction_use(self) -> str:
+        return format(self.correction_use, '+d')
+
     @message(r':?CORR:METH\?')
-    def get_correction_method(self):
-        return format(self.correction_method, '+d')
+    def get_correction_method(self) -> str:
+        return self.correction_method
 
-    @message(r':?CORR:METH\s+SING')
-    def set_correction_method_single(self):
-        self.correction_method = 0
-
-    @message(r':?CORR:METH\s+MULT')
-    def set_correction_method_multi(self):
-        self.correction_method = 1
+    @message(r':?CORR:METH\s+(SING|MULT)')
+    def set_correction_method_single(self, method: str) -> None:
+        self.correction_method = method
 
     @message(r':?CORR:USE:CHAN\?')
-    def get_correction_channel(self):
-        return self.correction_channel
+    def get_correction_channel(self) -> str:
+        return format(self.correction_channel, 'd')
 
     @message(r':?CORR:USE:CHAN\s+(\d+)')
     def set_correction_channel(self, value):

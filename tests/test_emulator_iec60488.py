@@ -11,7 +11,7 @@ class IEC60488EmulatorTest(unittest.TestCase):
 
     def test_basic(self):
         self.assertEqual(self.emulator('*IDN?'), 'Generic IEC60488 Instrument (Emulator)')
-        self.assertEqual(self.emulator('*ESR?'), '0')
+        self.assertTrue(self.emulator('*ESR?') in ('0', '1'))
         self.assertEqual(self.emulator('*ESE?'), '0')
         self.assertEqual(self.emulator('*ESE 1'), None)
         self.assertEqual(self.emulator('*STB?'), '0')

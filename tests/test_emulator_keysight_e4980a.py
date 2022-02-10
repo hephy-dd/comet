@@ -14,11 +14,11 @@ class E4980AEmulatorTest(unittest.TestCase):
         self.assertEqual(self.emulator('*OPC?'), '1')
 
     def test_correction_method(self):
-        self.assertEqual(self.emulator(':CORR:METH?'), '0')
+        self.assertEqual(self.emulator(':CORR:METH?'), 'SING')
         self.assertEqual(self.emulator(':CORR:METH MULT'), None)
-        self.assertEqual(self.emulator(':CORR:METH?'), '1')
+        self.assertEqual(self.emulator(':CORR:METH?'), 'MULT')
         self.assertEqual(self.emulator(':CORR:METH SING'), None)
-        self.assertEqual(self.emulator(':CORR:METH?'), '0')
+        self.assertEqual(self.emulator(':CORR:METH?'), 'SING')
 
     def test_fetch_impedance_format(self):
         def get_types(result):

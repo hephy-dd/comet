@@ -1,6 +1,9 @@
+from typing import Set
+
 from comet.emulator import IEC60488Emulator, message, run
 from comet.emulator.utils import tsp_print
 from comet.utils import combine_matrix
+
 
 class K707BEmulator(IEC60488Emulator):
 
@@ -9,16 +12,16 @@ class K707BEmulator(IEC60488Emulator):
 
     def __init__(self):
         super().__init__()
-        self.error_queue = []
-        self.closed_channels = set()
+        self.error_queue: list = []
+        self.closed_channels: Set[str] = set()
 
     @message(r'^reset\(\)|\*RST$')
     def set_reset(self):
-        self.error_queue = []
+        self.error_queue.clear()
 
     @message(r'^clear\(\)|\*CLS$')
     def set_clear(self):
-        self.error_queue = []
+        self.error_queue.clear()
 
     @message(r'errorqueue\.clear\(\)')
     def set_errorqueue_clear(self):
@@ -58,7 +61,6 @@ class K707BEmulator(IEC60488Emulator):
 
     @message(r'^(.*)$')
     def unknown_message(self, v ):
-        print("MALFORMED!@!!", v)
         self.error_queue.append((101, "malformed command"))
 
 
