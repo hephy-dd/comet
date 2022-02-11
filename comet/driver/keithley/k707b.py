@@ -24,11 +24,11 @@ class K707B(SwitchingMatrix):
 
     def reset(self) -> None:
         self.write('*RST')
-        self.waitcomplete()
 
     def clear(self) -> None:
         self.write('*CLS')
-        self.waitcomplete()
+
+    # Error queue
 
     def next_error(self) -> Optional[InstrumentError]:
         code, message = self.tsp_print('errorqueue.next()').split('\t')[:2]
@@ -37,8 +37,7 @@ class K707B(SwitchingMatrix):
         return None
 
     def set_mute(self, state: bool) -> None:
-        self.write(f'beeper.enable = {state:d}')
-        self.waitcomplete()
+        self.tsp_assign('beeper.enable', format(state, 'd'))
 
     def closed_channels(self) -> List[str]:
         channels = self.tsp_print('channel.getclose("allslots")')
@@ -49,16 +48,13 @@ class K707B(SwitchingMatrix):
     def close_channels(self, channels: List[str]) -> None:
         channel_list = join_channels(channels)
         self.write(f'channel.close("{channel_list}")')
-        self.waitcomplete()
 
     def open_channels(self, channels: List[str]) -> None:
         channel_list = join_channels(channels)
         self.write(f'channel.open("{channel_list}")')
-        self.waitcomplete()
 
     def open_all_channels(self) -> None:
         self.write('channel.open("allslots")')
-        self.waitcomplete()
 
     # Helper
 
@@ -67,9 +63,10 @@ class K707B(SwitchingMatrix):
 
     def write(self, message: str) -> None:
         self.resource.write(message)
+        self.query('*OPC?')
 
     def tsp_print(self, expression: str) -> str:
-        return self.resource.query(f'print({expression})').strip()
+        return self.query(f'print({expression})')
 
-    def waitcomplete(self) -> None:
-        self.query('*OPC?')
+    def tsp_assign(self, expression: str, value: str) -> str:
+        return self.write(f'{expression} = {value}')

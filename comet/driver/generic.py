@@ -11,28 +11,30 @@ class InstrumentError:
         self.message = message
 
 
-class ErrorQueue(ABC):
+class ErrorQueueMixin(ABC):
 
     @abstractmethod
     def next_error(self) -> Optional[InstrumentError]:
-        pass
+        ...
 
 
-class RouteTerminal(ABC):
+class RouteTerminalMixin(ABC):
 
     ROUTE_TERMINAL_FRONT = 'front'
     ROUTE_TERMINAL_REAR = 'rear'
 
+    @property
     @abstractmethod
-    def get_route_terminal(self) -> str:
-        pass
+    def route_terminal(self) -> str:
+        ...
 
+    @route_terminal.setter
     @abstractmethod
-    def set_route_terminal(self, route_terminal: str) -> None:
-        pass
+    def route_terminal(self, route_terminal: str) -> None:
+        ...
 
 
-class Instrument(ErrorQueue, Driver):
+class Instrument(ErrorQueueMixin, Driver):
 
     @abstractmethod
     def identify(self) -> str:
@@ -40,11 +42,11 @@ class Instrument(ErrorQueue, Driver):
 
     @abstractmethod
     def reset(self) -> None:
-        pass
+        ...
 
     @abstractmethod
     def clear(self) -> None:
-        pass
+        ...
 
     def set_mute(self, state: bool) -> None:
         pass
@@ -55,24 +57,28 @@ class SourceMeterUnit(Instrument):
     OUTPUT_ON = True
     OUTPUT_OFF = False
 
+    @property
     @abstractmethod
-    def get_output(self) -> bool:
-        pass
+    def output(self) -> bool:
+        ...
 
+    @output.setter
     @abstractmethod
-    def set_output(self, state: bool) -> None:
-        pass
+    def output(self, state: bool) -> None:
+        ...
 
     FUNCTION_VOLTAGE = 'voltage'
     FUNCTION_CURRENT = 'current'
 
+    @property
     @abstractmethod
-    def get_function(self) -> str:
-        pass
+    def function(self) -> str:
+        ...
 
+    @function.setter
     @abstractmethod
-    def set_function(self, function: str) -> None:
-        pass
+    def function(self, function: str) -> None:
+        ...
 
     @abstractmethod
     def get_voltage(self) -> float:
@@ -119,47 +125,67 @@ class SourceMeterUnit(Instrument):
         pass
 
     @abstractmethod
-    def read_voltage(self) -> float:
-        pass
+    def measure_voltage(self) -> float:
+        ...
 
     @abstractmethod
-    def read_current(self) -> float:
-        pass
+    def measure_current(self) -> float:
+        ...
 
 
 class Electrometer(Instrument):
 
-    pass
+    @abstractmethod
+    def measure_voltage(self) -> float:
+        ...
+
+    @abstractmethod
+    def measure_current(self) -> float:
+        ...
+
+    @abstractmethod
+    def measure_resistance(self) -> float:
+        ...
+
+    @abstractmethod
+    def measure_charge(self) -> float:
+        ...
 
 
 class LCRMeter(Instrument):
 
+    @property
     @abstractmethod
-    def get_function(self) -> str:
-        pass
+    def function(self) -> str:
+        ...
+
+    @function.setter
+    @abstractmethod
+    def function(self, function: str) -> None:
+        ...
+
+    @property
+    @abstractmethod
+    def amplitude(self) -> float:
+        ...
+
+    @amplitude.setter
+    @abstractmethod
+    def amplitude(self, level: float) -> None:
+        ...
+
+    @property
+    @abstractmethod
+    def frequency(self) -> float:
+        ...
+
+    @frequency.setter
+    @abstractmethod
+    def frequency(self, frequency: float) -> None:
+        ...
 
     @abstractmethod
-    def set_function(self, function: str) -> None:
-        pass
-
-    @abstractmethod
-    def get_amplitude(self) -> float:
-        pass
-
-    @abstractmethod
-    def set_amplitude(self, level: float) -> None:
-        pass
-
-    @abstractmethod
-    def get_frequency(self) -> float:
-        pass
-
-    @abstractmethod
-    def set_frequency(self, frequency: float) -> None:
-        pass
-
-    @abstractmethod
-    def read(self) -> Tuple[float, float]:
+    def measure(self) -> Tuple[float, float]:
         pass
 
 

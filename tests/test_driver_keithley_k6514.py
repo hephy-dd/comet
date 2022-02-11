@@ -1,17 +1,17 @@
 import unittest
 
-from comet.driver.keithley import K6517B
+from comet.driver.keithley import K6514
 
 from .test_driver import BaseDriverTest
 
 
-class K6517BTest(BaseDriverTest):
+class K6514Test(BaseDriverTest):
 
-    driver_cls = K6517B
+    driver_cls = K6514
 
     def test_basic(self):
-        self.resource.buffer = ['Keithley Model 6517B', '1', '1']
-        self.assertEqual(self.driver.identify(), 'Keithley Model 6517B')
+        self.resource.buffer = ['Keithley Model 6514', '1', '1']
+        self.assertEqual(self.driver.identify(), 'Keithley Model 6514')
         self.assertEqual(self.driver.reset(), None)
         self.assertEqual(self.driver.clear(), None)
         self.assertEqual(self.resource.buffer, ['*IDN?', '*RST', '*OPC?', '*CLS', '*OPC?'])

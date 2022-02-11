@@ -1,17 +1,17 @@
 import unittest
 
-from comet.driver.keithley import K2400
+from comet.driver.keithley import K2470
 
 from .test_driver import BaseDriverTest
 
 
-class K2400Test(BaseDriverTest):
+class K2470Test(BaseDriverTest):
 
-    driver_cls = K2400
+    driver_cls = K2470
 
     def test_basic(self):
-        self.resource.buffer = ['Keithley Model 2400', '1', '1']
-        self.assertEqual(self.driver.identify(), 'Keithley Model 2400')
+        self.resource.buffer = ['Keithley Model 2470', '1', '1']
+        self.assertEqual(self.driver.identify(), 'Keithley Model 2470')
         self.assertEqual(self.driver.reset(), None)
         self.assertEqual(self.driver.clear(), None)
         self.assertEqual(self.resource.buffer, ['*IDN?', '*RST', '*OPC?', '*CLS', '*OPC?'])
@@ -78,11 +78,11 @@ class K2400Test(BaseDriverTest):
         self.assertEqual(self.resource.buffer, [':SOUR:FUNC:MODE CURR', '*OPC?', ':SENS:FUNC \'VOLT\'', '*OPC?'])
 
     def test_measure_voltage(self):
-        self.resource.buffer = ['1', '+4.200000E-03']
+        self.resource.buffer = ['+4.200000E-03']
         self.assertEqual(self.driver.measure_voltage(), 4.2e-03)
-        self.assertEqual(self.resource.buffer, [':FORM:ELEM VOLT', '*OPC?', ':READ?'])
+        self.assertEqual(self.resource.buffer, [':MEAS:VOLT?'])
 
     def test_measure_voltage(self):
-        self.resource.buffer = ['1', '+4.200000E-06']
+        self.resource.buffer = ['+4.200000E-06']
         self.assertEqual(self.driver.measure_current(), 4.2e-06)
-        self.assertEqual(self.resource.buffer, [':FORM:ELEM CURR', '*OPC?', ':READ?'])
+        self.assertEqual(self.resource.buffer, [':MEAS:CURR?'])

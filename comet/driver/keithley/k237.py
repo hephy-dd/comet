@@ -90,20 +90,26 @@ class K237(SourceMeterUnit):
                 return InstrumentError(index, message)
         return None
 
-    def get_output(self) -> bool:
+    # Source meter unit
+
+    @property
+    def output(self) -> bool:
         return self.query('U3X')[18:20] == 'N1'
 
-    def set_output(self, state: bool) -> None:
+    @output.setter
+    def output(self, state: bool) -> None:
         value = {False: 'N0X', True: 'N1X'}[state]
         self.write(value)
 
-    def get_function(self) -> str:
+    @property
+    def function(self) -> str:
         return {
             0: self.FUNCTION_VOLTAGE,
             1: self.FUNCTION_CURRENT
         }[int(self.query('U4X')[8])]
 
-    def set_function(self, function: str) -> None:
+    @function.setter
+    def function(self, function: str) -> None:
         value = {
             self.FUNCTION_VOLTAGE: 0,
             self.FUNCTION_CURRENT: 1
@@ -150,11 +156,11 @@ class K237(SourceMeterUnit):
         self.write('G1,0,0X')
         return self.query('X')[0:2] == 'OS'
 
-    def read_voltage(self) -> float:
+    def measure_voltage(self) -> float:
         self.write('G4,2,0X')
         return float(self.query('X'))
 
-    def read_current(self) -> float:
+    def measure_current(self) -> float:
         self.write('G4,2,0X')
         return float(self.query('X'))
 

@@ -16,6 +16,7 @@ class E4980AEmulator(IEC60488Emulator):
         self.correction_use: int = 0
         self.correction_method: str = 'SING'
         self.correction_channel: int = 0
+        self.correction_length: int = 4
         self.bias_voltage_level: float = 0.
         self.bias_state: bool = False
 
@@ -54,6 +55,14 @@ class E4980AEmulator(IEC60488Emulator):
     @message(r':?CORR:USE:CHAN\s+(\d+)')
     def set_correction_channel(self, value):
         self.correction_channel = int(value)
+
+    @message(r':?CORR:LENG\?')
+    def get_correction_length(self) -> str:
+        return format(self.correction_length, '+d')
+
+    @message(r':?CORR:LENG\s+(\d+)')
+    def set_correction_length(self, length: str) -> None:
+        self.correction_length = int(length)
 
     @message(r':?FETC[H]?(?:(?::IMP)?:FORM)?\?')
     def get_fetch(self):

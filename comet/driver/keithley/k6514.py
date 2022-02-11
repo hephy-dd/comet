@@ -18,17 +18,31 @@ class K6514(Electrometer):
 
     def reset(self) -> None:
         self.write('*RST')
-        self.waitcomplete()
 
     def clear(self) -> None:
         self.write('*CLS')
-        self.waitcomplete()
+
+    # Error queue
 
     def next_error(self) -> Optional[InstrumentError]:
         code, message = parse_error(self.query(':SYST:ERR:NEXT?'))
         if code:
             return InstrumentError(code, message)
         return None
+
+    # Electrometer
+
+    def measure_voltage(self) -> float:
+        return float(self.query(':MEAS:VOLT?'))
+
+    def measure_current(self) -> float:
+        return float(self.query(':MEAS:CURR?'))
+
+    def measure_resistance(self) -> float:
+        return float(self.query(':MEAS:RES?'))
+
+    def measure_charge(self) -> float:
+        return float(self.query(':MEAS:CHAR?'))
 
     # Zero check
 
@@ -38,7 +52,6 @@ class K6514(Electrometer):
     def set_zero_check(self, enabled: bool):
         value = {False: 'OFF', True: 'ON'}[enabled]
         self.write(f':SYST:ZCH {value}')
-        self.waitcomplete()
 
     # Helper
 
@@ -47,6 +60,4 @@ class K6514(Electrometer):
 
     def write(self, message: str) -> None:
         self.resource.write(message)
-
-    def waitcomplete(self) -> None:
         self.query('*OPC?')

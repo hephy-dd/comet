@@ -13,11 +13,15 @@ class K2657A(SourceMeterUnit):
 
     def reset(self) -> None:
         self.write('*RST')
-        self.waitcomplete()
 
     def clear(self) -> None:
         self.write('*CLS')
-        self.waitcomplete()
+
+    def set_mute(self, state: bool) -> None:
+        self.tsp_assign('beeper.enable', format(state, 'd'))
+
+
+    # Error queue
 
     def next_error(self) -> Optional[InstrumentError]:
         code, message = self.tsp_print('errorqueue.next()').split('\t')[:2]
@@ -25,53 +29,51 @@ class K2657A(SourceMeterUnit):
             return InstrumentError(int(code), message.strip('\"\' '))
         return None
 
-    def set_mute(self, state: bool) -> None:
-        self.write(f'beeper.enable = {state:d}')
-        self.waitcomplete()
+    # Source meter unit
 
-    def get_output(self) -> bool:
+    @property
+    def output(self) -> bool:
         value = int(float(self.tsp_print('smua.source.output')))
         return {
             0: self.OUTPUT_OFF,
             1: self.OUTPUT_ON
         }[value]
 
-    def set_output(self, state: bool) -> None:
+    @output.setter
+    def output(self, state: bool) -> None:
         value = {
             self.OUTPUT_OFF: 0,
             self.OUTPUT_ON: 1
         }[state]
-        self.write(f'smua.source.output = {value:d}')
-        self.waitcomplete()
+        self.tsp_assign('smua.source.output', format(value, 'd'))
 
-    def get_function(self) -> str:
+    @property
+    def function(self) -> str:
         value = int(float(self.tsp_print('smua.source.func')))
         return {
             1: self.FUNCTION_VOLTAGE,
             0: self.FUNCTION_CURRENT
         }[value]
 
-    def set_function(self, function: str) -> None:
+    @function.setter
+    def function(self, function: str) -> None:
         value = {
             self.FUNCTION_VOLTAGE: 1,
             self.FUNCTION_CURRENT: 0
         }[function]
-        self.write(f'smua.source.func = {value:d}')
-        self.waitcomplete()
+        self.tsp_assign('smua.source.func', format(value, 'd'))
 
     def get_voltage(self) -> float:
         return float(self.tsp_print('smua.source.levelv'))
 
     def set_voltage(self, level: float) -> None:
-        self.write(f'smua.source.levelv = {level:E}')
-        self.waitcomplete()
+        self.tsp_assign('smua.source.levelv', format(level, 'E'))
 
     def get_voltage_range(self) -> float:
         return float(self.tsp_print('smua.source.rangev'))
 
     def set_voltage_range(self, level: float) -> None:
-        self.write(f'smua.source.rangev = {level:E}')
-        self.waitcomplete()
+        self.tsp_assign('smua.source.rangev', format(level, 'E'))
 
     # Compliance voltage
 
@@ -79,22 +81,19 @@ class K2657A(SourceMeterUnit):
         return float(self.tsp_print('smua.source.limitv'))
 
     def set_voltage_compliance(self, level: float) -> None:
-        self.write(f'smua.source.limitv = {level:E}')
-        self.waitcomplete()
+        self.tsp_assign('smua.source.limitv', format(level, 'E'))
 
     def get_current(self) -> float:
         return float(self.tsp_print('smua.source.leveli'))
 
     def set_current(self, level: float) -> None:
-        self.write(f'smua.source.leveli = {level:E}')
-        self.waitcomplete()
+        self.tsp_assign('smua.source.leveli', format(level, 'E'))
 
     def get_current_range(self) -> float:
         return float(self.tsp_print('smua.source.rangei'))
 
     def set_current_range(self, level: float) -> None:
-        self.write(f'smua.source.rangei = {level:E}')
-        self.waitcomplete()
+        self.tsp_assign('smua.source.rangei', format(level, 'E'))
 
     # Compliance current
 
@@ -102,8 +101,7 @@ class K2657A(SourceMeterUnit):
         return float(self.tsp_print('smua.source.limiti'))
 
     def set_current_compliance(self, level: float) -> None:
-        self.write(f'smua.source.limiti = {level:E}')
-        self.waitcomplete()
+        self.tsp_assign('smua.source.limiti', format(level, 'E'))
 
     # Compliance tripped
 
@@ -112,10 +110,10 @@ class K2657A(SourceMeterUnit):
 
     # Measure
 
-    def read_voltage(self) -> float:
+    def measure_voltage(self) -> float:
         return float(self.tsp_print('smua.measure.v()'))
 
-    def read_current(self) -> float:
+    def measure_current(self) -> float:
         return float(self.tsp_print('smua.measure.i()'))
 
     # Helper
@@ -125,9 +123,10 @@ class K2657A(SourceMeterUnit):
 
     def write(self, message: str) -> None:
         self.resource.write(message)
+        self.query('*OPC?')
 
     def tsp_print(self, expression: str) -> str:
         return self.query(f'print({expression})')
 
-    def waitcomplete(self) -> None:
-        self.query('*OPC?')
+    def tsp_assign(self, expression: str, value: str) -> str:
+        self.write(f'{expression} = {value}')

@@ -30,36 +30,36 @@ class K237Test(BaseDriverTest):
 
     def test_output(self):
         self.resource.buffer = ['MSTG01,0,0K0M000,0N0R1T4,0,0,0V1Y0']
-        self.assertEqual(self.driver.get_output(), self.driver.OUTPUT_OFF)
+        self.assertEqual(self.driver.output, self.driver.OUTPUT_OFF)
         self.assertEqual(self.resource.buffer, ['U3X'])
 
         self.resource.buffer = ['MSTG01,0,0K0M000,0N1R1T4,0,0,0V1Y0']
-        self.assertEqual(self.driver.get_output(), self.driver.OUTPUT_ON)
+        self.assertEqual(self.driver.output, self.driver.OUTPUT_ON)
         self.assertEqual(self.resource.buffer, ['U3X'])
 
         self.resource.buffer = []
-        self.assertEqual(self.driver.set_output(self.driver.OUTPUT_OFF), None)
+        self.driver.output = self.driver.OUTPUT_OFF
         self.assertEqual(self.resource.buffer, ['N0X'])
 
         self.resource.buffer = []
-        self.assertEqual(self.driver.set_output(self.driver.OUTPUT_ON), None)
+        self.driver.output = self.driver.OUTPUT_ON
         self.assertEqual(self.resource.buffer, ['N1X'])
 
     def test_function(self):
         self.resource.buffer = ['IMPL,08F0,0O0P0S0W1Z0']
-        self.assertEqual(self.driver.get_function(), self.driver.FUNCTION_VOLTAGE)
+        self.assertEqual(self.driver.function, self.driver.FUNCTION_VOLTAGE)
         self.assertEqual(self.resource.buffer, ['U4X'])
 
         self.resource.buffer = ['IMPL,08F1,0O0P0S0W1Z0']
-        self.assertEqual(self.driver.get_function(), self.driver.FUNCTION_CURRENT)
+        self.assertEqual(self.driver.function, self.driver.FUNCTION_CURRENT)
         self.assertEqual(self.resource.buffer, ['U4X'])
 
         self.resource.buffer = []
-        self.assertEqual(self.driver.set_function(self.driver.FUNCTION_VOLTAGE), None)
+        self.driver.function = self.driver.FUNCTION_VOLTAGE
         self.assertEqual(self.resource.buffer, ['F0,0X'])
 
         self.resource.buffer = []
-        self.assertEqual(self.driver.set_function(self.driver.FUNCTION_CURRENT), None)
+        self.driver.function = self.driver.FUNCTION_CURRENT
         self.assertEqual(self.resource.buffer, ['F1,0X'])
 
     def test_voltage(self):
@@ -92,3 +92,13 @@ class K237Test(BaseDriverTest):
         self.resource.buffer = ['OP000']
         self.assertEqual(self.driver.compliance_tripped(), False)
         self.assertEqual(self.resource.buffer, ['G1,0,0X', 'X'])
+
+    def test_measure_voltage(self):
+        self.resource.buffer = ['+4.200E-03']
+        self.assertEqual(self.driver.measure_voltage(), 4.2e-03)
+        self.assertEqual(self.resource.buffer, ['G4,2,0X', 'X'])
+
+    def test_measure_voltage(self):
+        self.resource.buffer = ['+4.200E-06']
+        self.assertEqual(self.driver.measure_current(), 4.2e-06)
+        self.assertEqual(self.resource.buffer, ['G4,2,0X', 'X'])

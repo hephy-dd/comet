@@ -10,8 +10,8 @@ class K707BTest(BaseDriverTest):
     driver_cls = K707B
 
     def test_basic(self):
-        self.resource.buffer = ['Keithley Model K707B', '1', '1']
-        self.assertEqual(self.driver.identify(), 'Keithley Model K707B')
+        self.resource.buffer = ['Keithley Model 707B', '1', '1']
+        self.assertEqual(self.driver.identify(), 'Keithley Model 707B')
         self.assertEqual(self.driver.reset(), None)
         self.assertEqual(self.driver.clear(), None)
         self.assertEqual(self.resource.buffer, ['*IDN?', '*RST', '*OPC?', '*CLS', '*OPC?'])

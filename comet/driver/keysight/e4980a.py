@@ -9,18 +9,43 @@ __all__ = ['E4980A']
 class E4980A(LCRMeter):
 
     FUNCTION_CPD = 'CPD'
+    FUNCTION_CPQ = 'CPQ'
+    FUNCTION_CPG = 'CPG'
     FUNCTION_CPRP = 'CPRP'
+    FUNCTION_CSD = 'CSD'
+    FUNCTION_CSQ = 'CSQ'
+    FUNCTION_CSRS = 'CSRS'
+    FUNCTION_LPD = 'LPD'
+    FUNCTION_LPQ = 'LPQ'
+    FUNCTION_LPG = 'LPG'
+    FUNCTION_LPRP = 'LPRP'
+    FUNCTION_LPRD = 'LPRD'
+    FUNCTION_LSD = 'LSD'
+    FUNCTION_LSQ = 'LSQ'
+    FUNCTION_LSRS = 'LSRS'
+    FUNCTION_LS = 'LS'
+    FUNCTION_RD = 'RD'
+    FUNCTION_RX = 'RX'
+    FUNCTION_ZTD = 'ZTD'
+    FUNCTION_ZTR = 'ZTR'
+    FUNCTION_GB = 'GB'
+    FUNCTION_YTD = 'YTD'
+    FUNCTION_YTR = 'YTR'
+    FUNCTION_VDID = 'VDID'
 
     def identify(self) -> str:
         return self.query('*IDN?')
 
     def reset(self) -> None:
         self.write('*RST')
-        self.waitcomplete()
 
     def clear(self) -> None:
         self.write('*CLS')
-        self.waitcomplete()
+
+    def set_mute(self, state: bool) -> None:
+        self.write(f':SYST:BEEP:STAT {state:d}')
+
+    # Error Queue
 
     def next_error(self) -> Optional[InstrumentError]:
         code, message = self.query(':SYST:ERR:NEXT?').split(',')[:2]
@@ -28,48 +53,48 @@ class E4980A(LCRMeter):
             return InstrumentError(int(code), message.strip('\"\' '))
         return None
 
-    def set_mute(self, state: bool) -> None:
-        self.write(f':SYST:BEEP:STAT {state:d}')
-        self.waitcomplete()
+    # LCR Meter
 
-    def get_function(self) -> str:
-        value = self.query(':FUNC:IMP:TYPE?')
-        return {
-            'CPD': self.FUNCTION_CPD,
-            'CPRP': self.FUNCTION_CPRP
-        }[value]
+    @property
+    def function(self) -> str:
+        return self.query(':FUNC:IMP:TYPE?')
 
-    def set_function(self, function: str) -> None:
+    @function.setter
+    def function(self, function: str) -> None:
         value = {
             self.FUNCTION_CPD: 'CPD',
             self.FUNCTION_CPRP: 'CPRP'
         }[function]
         self.write(f':FUNC:IMP:TYPE {value}')
-        self.waitcomplete()
 
-    def get_amplitude(self) -> float:
+    @property
+    def amplitude(self) -> float:
         return float(self.query(':VOLT:LEV?'))
 
-    def set_amplitude(self, level: float) -> None:
+    @amplitude.setter
+    def amplitude(self, level: float) -> None:
         self.write(f':VOLT:LEV {level:E}')
-        self.waitcomplete()
 
-    def get_frequency(self) -> float:
+    @property
+    def frequency(self) -> float:
         return float(self.query(':FREQ:CW?'))
 
-    def set_frequency(self, frequency: float) -> None:
+    @frequency.setter
+    def frequency(self, frequency: float) -> None:
         self.write(f':FREQ:CW {frequency:E}')
-        self.waitcomplete()
 
     def set_measurement_time(self, apterture: str) -> None:
         self.write(f':APER {apterture}')
-        self.waitcomplete()
 
-    def set_correction_length(self, meters: int) -> None:
+    @property
+    def correction_length(self, meters: int) -> None:
+        return int(float(self.query(':CORR:LENG?')))
+
+    @correction_length.setter
+    def correction_length(self, meters: int) -> None:
         self.write(f':CORR:LENG {meters:d}')
-        self.waitcomplete()
 
-    def read(self) -> Tuple[float, float]:
+    def measure(self) -> Tuple[float, float]:
         first, second = self.query(':FETC:IMP:FORM?').split(',')[:2]
         return float(first), float(second)
 
@@ -80,6 +105,4 @@ class E4980A(LCRMeter):
 
     def write(self, message: str) -> None:
         self.resource.write(message)
-
-    def waitcomplete(self) -> None:
         self.query('*OPC?')
