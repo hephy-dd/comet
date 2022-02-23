@@ -24,7 +24,7 @@ class ITCDriver(Driver):
 
 class AnalogChannel(ITCDriver):
 
-    Mapping = {
+    CHANNELS = {
         1: b'A0',
         2: b'A1',
         3: b'A2',
@@ -51,7 +51,7 @@ class AnalogChannel(ITCDriver):
         >>> instr.analog_channel[1] # read temperature target/actual
         (24.5, 25.0)
         """
-        code = self.Mapping[index]
+        code = type(self).CHANNELS[index]
         result, actual, target = self.query_bytes(code, 14).split()
         if result != code.decode():
             raise RuntimeError(f"invalid channel returned: '{result}'")
@@ -64,7 +64,7 @@ class AnalogChannel(ITCDriver):
         """
         if not 1 <= index <= 7:
             raise ValueError(f"invalid channel number: {index}")
-        code = self.Mapping[index].lower().decode() # write requires lower case 'a'
+        code = type(self).CHANNELS[index].lower().decode() # write requires lower case 'a'
         result = self.query_bytes(f"{code} {value:05.1f}", 1)
         if result != 'a':
             raise RuntimeError(f"failed to set target for channel {index}")
@@ -73,7 +73,7 @@ class AnalogChannel(ITCDriver):
 class ITC(ITCDriver):
     """Interface for CTS Climate Chambers."""
 
-    WarningMessages = {
+    WARNING_MESSAGES = {
         '\x01': "Wassernachfüllen",
         '\x02': "Temp. Toleranzband Oben",
         '\x03': "Temp. Toleranzband Unten",
@@ -83,7 +83,7 @@ class ITC(ITCDriver):
     }
     """Warning messages."""
 
-    ErrorMessages = {
+    ERROR_MESSAGES = {
         '\x31': "Temperatur Grenze Min 08-B1",
         '\x32': "Temperatur Grenze Max 08-B1",
         '\x33': "Temp. Begrenzer Pruefr. 01-F1.1",
@@ -114,14 +114,13 @@ class ITC(ITCDriver):
     Status = namedtuple('Status', ('running', 'warning', 'error', 'channels'))
     """Status type container."""
 
-    def __init__(self, resource, **kwargs):
-        super().__init__(resource, **kwargs)
+    def __init__(self, resource):
+        super().__init__(resource)
         self.analog_channel = AnalogChannel(resource)
 
-    @property
-    def identification(self):
+    def identify(self):
         """Returns instrument identification."""
-        self.time # provide device access
+        self.time  # perform device access
         return "ITC climate chamber"
 
     @property
@@ -159,8 +158,8 @@ class ITC(ITCDriver):
         is_error = bool(int(result[2]))
         channels = {channel: bool(int(state)) for channel, state in enumerate(result[3:9])}
         error_nr = result[9]
-        warning = self.WarningMessages[error_nr] if is_error and error_nr in self.WarningMessages else None
-        error = self.ErrorMessages[error_nr] if is_error and error_nr in self.ErrorMessages else None
+        warning = type(self).WARNING_MESSAGES[error_nr] if is_error and error_nr in type(self).WARNING_MESSAGES else None
+        error = type(self).ERROR_MESSAGES[error_nr] if is_error and error_nr in type(self).ERROR_MESSAGES else None
         return self.Status(running, warning, error, channels)
 
     @property
@@ -193,7 +192,7 @@ class ITC(ITCDriver):
         if number != int(result[1:]):
             raise RuntimeError(f"failed to start program '{number}'")
 
-    def start(self):
+    def start(self) -> None:
         """Switch climate chamber ON.
 
         >>> instr.start()
@@ -202,7 +201,7 @@ class ITC(ITCDriver):
         if result != 's1':
             raise RuntimeError("failed to start instrument")
 
-    def stop(self):
+    def stop(self) -> None:
         """Switch climate chamber OFF.
 
         >>> instr.stop()

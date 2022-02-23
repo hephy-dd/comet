@@ -1,1 +1,1 @@
-from .venus1 import *
+from .venus1 import Venus1

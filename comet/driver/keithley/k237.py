@@ -35,28 +35,6 @@ ERROR_MESSAGES = {
     25: "Cal Invalid Error"
 }
 
-VOLTAGE_RANGE = {
-    0: 0.,
-    1: 1.1,
-    2: 11.,
-    3: 110.,
-    4: 1100.,
-}
-
-CURRENT_RANGE = {
-    0: 0.,
-    1: 1e-09,
-    2: 1e-08,
-    3: 1e-07,
-    4: 1e-06,
-    5: 1e-05,
-    6: 1e-04,
-    7: 1e-03,
-    8: 1e-02,
-    9: 1e-01,
-    10: 1e-00
-}
-
 
 def select_range_index(values: dict, level: float) -> int:
     level = abs(level)
@@ -69,6 +47,28 @@ def select_range_index(values: dict, level: float) -> int:
 class K237(SourceMeterUnit):
 
     WRITE_DELAY = 0.250
+
+    VOLTAGE_RANGES = {
+        0: 0.,
+        1: 1.1,
+        2: 11.,
+        3: 110.,
+        4: 1100.,
+    }
+
+    CURRENT_RANGES = {
+        0: 0.,
+        1: 1e-09,
+        2: 1e-08,
+        3: 1e-07,
+        4: 1e-06,
+        5: 1e-05,
+        6: 1e-04,
+        7: 1e-03,
+        8: 1e-02,
+        9: 1e-01,
+        10: 1e-00
+    }
 
     def identify(self) -> str:
         value = self.query('U0X')
@@ -116,52 +116,77 @@ class K237(SourceMeterUnit):
         }[function]
         self.write(f'F{value:d},0X')
 
-    def get_voltage(self) -> float:
-        self.write('G1,2,0X')  # output format
+    # Voltage source
+
+    @property
+    def voltage_level(self) -> float:
+        self.write('G1,2,0X')  # set output format
         return float(self.query('X'))
 
-    def set_voltage(self, level: float) -> None:
+    @voltage_level.setter
+    def voltage_level(self, level: float) -> None:
         self.write(f'B{level:.3E},,X')
 
-    def get_voltage_range(self) -> float:
-        range = int(self.query('U4X')[5:7])
-        return VOLTAGE_RANGE[range]
+    @property
+    def voltage_range(self) -> float:
+        index = int(self.query('U4X')[5:7])
+        return type(self).VOLTAGE_RANGES[index]
 
-    def set_voltage_range(self, level: float) -> None:
-        range = select_range_index(VOLTAGE_RANGE, level)
-        self.write(f'B,{range:d},X')
+    @voltage_range.setter
+    def voltage_range(self, level: float) -> None:
+        index = select_range_index(type(self).VOLTAGE_RANGES, level)
+        self.write(f'B,{index:d},X')
 
-    def set_voltage_compliance(self, level: float) -> None:
+    @property
+    def voltage_compliance(self) -> float:
+        raise AttributeError("Property not readable: voltage_compliance")
+
+    @voltage_compliance.setter
+    def voltage_compliance(self, level: float) -> None:
         self.write(f'L{level:.3E},0X')
 
-    def get_current(self) -> float:
-        self.write('G1,2,0X')  # output format
+    # Current source
+
+    @property
+    def current_level(self) -> float:
+        self.write('G1,2,0X')  # set output format
         return float(self.query('X'))
 
-    def set_current(self, level: float) -> None:
+    @current_level.setter
+    def current_level(self, level: float) -> None:
         self.write(f'B{level:.3E},,X')
 
-    def get_current_range(self) -> float:
-        range = int(self.query('U4X')[5:7])
-        return CURRENT_RANGE[range]
+    @property
+    def current_range(self) -> float:
+        index = int(self.query('U4X')[5:7])
+        return type(self).CURRENT_RANGES[index]
 
-    def set_current_range(self, level: float) -> None:
-        range = select_range_index(CURRENT_RANGE, level)
-        self.write(f'B,{range:d},X')
+    @current_range.setter
+    def current_range(self, level: float) -> None:
+        index = select_range_index(type(self).CURRENT_RANGES, level)
+        self.write(f'B,{index:d},X')
 
-    def set_current_compliance(self, level: float) -> None:
+    @property
+    def current_compliance(self) -> float:
+        raise AttributeError("Property not readable: current_compliance")
+
+    @current_compliance.setter
+    def current_compliance(self, level: float) -> None:
         self.write(f'L{level:.3E},0X')
 
+    @property
     def compliance_tripped(self) -> bool:
-        self.write('G1,0,0X')
+        self.write('G1,0,0X')  # set output format
         return self.query('X')[0:2] == 'OS'
 
+    # Measurements
+
     def measure_voltage(self) -> float:
-        self.write('G4,2,0X')
+        self.write('G4,2,0X')  # set output format
         return float(self.query('X'))
 
     def measure_current(self) -> float:
-        self.write('G4,2,0X')
+        self.write('G4,2,0X')  # set output format
         return float(self.query('X'))
 
     # Helper

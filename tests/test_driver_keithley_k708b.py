@@ -28,15 +28,15 @@ class K708BTest(BaseDriverTest):
 
     def test_channels(self):
         self.resource.buffer = ['']
-        self.assertEqual(self.driver.closed_channels(), [])
+        self.assertEqual(self.driver.closed_channels, [])
         self.assertEqual(self.resource.buffer, ['print(channel.getclose("allslots"))'])
 
         self.resource.buffer = ['1B01']
-        self.assertEqual(self.driver.closed_channels(), ['1B01'])
+        self.assertEqual(self.driver.closed_channels, ['1B01'])
         self.assertEqual(self.resource.buffer, ['print(channel.getclose("allslots"))'])
 
         self.resource.buffer = ['1B01;1A02']
-        self.assertEqual(self.driver.closed_channels(), ['1A02', '1B01'])
+        self.assertEqual(self.driver.closed_channels, ['1A02', '1B01'])
         self.assertEqual(self.resource.buffer, ['print(channel.getclose("allslots"))'])
 
         self.resource.buffer = ['1']

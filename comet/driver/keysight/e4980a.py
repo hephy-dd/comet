@@ -42,8 +42,15 @@ class E4980A(LCRMeter):
     def clear(self) -> None:
         self.write('*CLS')
 
-    def set_mute(self, state: bool) -> None:
-        self.write(f':SYST:BEEP:STAT {state:d}')
+    # Beeper
+
+    @property
+    def beeper(self) -> bool:
+        return bool(int(self.query(':SYST:BEEP:STAT?')))
+
+    @beeper.setter
+    def beeper(self, value: bool) -> None:
+        self.write(f':SYST:BEEP:STAT {value:d}')
 
     # Error Queue
 
@@ -94,7 +101,9 @@ class E4980A(LCRMeter):
     def correction_length(self, meters: int) -> None:
         self.write(f':CORR:LENG {meters:d}')
 
-    def measure(self) -> Tuple[float, float]:
+    # Measurements
+
+    def measure_pair(self) -> Tuple[float, float]:
         first, second = self.query(':FETC:IMP:FORM?').split(',')[:2]
         return float(first), float(second)
 

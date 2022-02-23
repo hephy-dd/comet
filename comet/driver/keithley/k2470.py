@@ -85,39 +85,72 @@ class K2470(RouteTerminalMixin, SourceMeterUnit):
         }[function]
         self.write(f':SENS:FUNC \'{sense_function}\'')
 
-    def get_voltage(self) -> float:
+    # Voltage source
+
+    @property
+    def voltage_level(self) -> float:
         return float(self.query(':SOUR:VOLT:LEV?'))
 
-    def set_voltage(self, level: float) -> None:
+    @voltage_level.setter
+    def voltage_level(self, level: float) -> None:
         self.write(f':SOUR:VOLT:LEV {level:E}')
 
-    def get_voltage_range(self) -> float:
+    @property
+    def voltage_range(self) -> float:
         return float(self.query(':SOUR:VOLT:RANG?'))
 
-    def set_voltage_range(self, level: float) -> None:
+    @voltage_range.setter
+    def voltage_range(self, level: float) -> None:
         self.write(f':SOUR:VOLT:RANG {level:E}')
 
-    def set_voltage_compliance(self, level: float) -> None:
+    @property
+    def voltage_compliance(self) -> float:
+        return float(self.query(':SOUR:CURR:VLIM:LEV?'))
+
+    @voltage_compliance.setter
+    def voltage_compliance(self, level: float) -> None:
         self.write(f':SOUR:CURR:VLIM:LEV {level:.3E}')
 
-    def get_current(self) -> float:
+    @property
+    def voltage_compliance_tripped(self) -> bool:
+        return bool(int(self.query(':SOUR:VOLT:ILIM:LEV:TRIP?')))
+
+    # Current source
+
+    @property
+    def current_level(self) -> float:
         return float(self.query(':SOUR:CURR:LEV?'))
 
-    def set_current(self, level: float) -> None:
+    @current_level.setter
+    def current_level(self, level: float) -> None:
         self.write(f':SOUR:CURR:LEV {level:E}')
 
-    def get_current_range(self) -> float:
+    @property
+    def current_range(self) -> float:
         return float(self.query(':SOUR:CURR:RANG?'))
 
-    def set_current_range(self, level: float) -> None:
+    @current_range.setter
+    def current_range(self, level: float) -> None:
         self.write(f':SOUR:CURR:RANG {level:E}')
 
-    def set_current_compliance(self, level: float) -> None:
+    @property
+    def current_compliance(self, level: float) -> None:
+        return float(self.query(':SOUR:VOLT:ILIM:LEV?'))
+
+    @current_compliance.setter
+    def current_compliance(self, level: float) -> None:
         self.write(f':SOUR:VOLT:ILIM:LEV {level:.3E}')
 
+    @property
+    def current_compliance_tripped(self) -> bool:
+        return bool(int(self.query(':SOUR:CURR:VLIM:LEV:TRIP?')))
+
+    @property
     def compliance_tripped(self) -> bool:
         return bool(int(self.query(':SOUR:CURR:VLIM:LEV:TRIP?'))) or \
             bool(int(self.query(':SOUR:VOLT:ILIM:LEV:TRIP?')))
+
+    # Measurements
 
     def measure_voltage(self) -> float:
         return float(self.query(':MEAS:VOLT?'))

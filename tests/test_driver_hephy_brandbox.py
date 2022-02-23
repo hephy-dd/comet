@@ -46,17 +46,17 @@ class BrandBoxTest(unittest.TestCase):
         driver = BrandBox(Resource(buffer))
 
         buffer.append('')
-        self.assertEqual(driver.closed_channels(), [])
+        self.assertEqual(driver.closed_channels, [])
         self.assertEqual(buffer, [':CLOS:STAT?'])
 
         buffer.clear()
         buffer.append('A1')
-        self.assertEqual(driver.closed_channels(), ['A1'])
+        self.assertEqual(driver.closed_channels, ['A1'])
         self.assertEqual(buffer, [':CLOS:STAT?'])
 
         buffer.clear()
         buffer.append('B1,B2,C2')
-        self.assertEqual(driver.closed_channels(), ['B1', 'B2', 'C2'])
+        self.assertEqual(driver.closed_channels, ['B1', 'B2', 'C2'])
         self.assertEqual(buffer, [':CLOS:STAT?'])
 
         buffer.clear()

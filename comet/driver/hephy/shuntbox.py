@@ -1,12 +1,12 @@
 import re
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from comet.driver.generic import Instrument
 from comet.driver.generic import InstrumentError
 
 __all__ = ['ShuntBox']
 
-ERROR_MESSAGES = {
+ERROR_MESSAGES: Dict[int, str] = {
     99: "Unknown command"
 }
 
@@ -35,6 +35,8 @@ class ShuntBox(Instrument):
         self._error_queue.clear()
         self.write("*CLS")
 
+    # Error queue
+
     def next_error(self) -> Optional[InstrumentError]:
         if self._error_queue:
             return self._error_queue.pop(0)
@@ -55,4 +57,3 @@ class ShuntBox(Instrument):
         error = parse_error(response)
         if error:
             self._error_queue.append(error)
-

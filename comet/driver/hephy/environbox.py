@@ -1,12 +1,12 @@
 import re
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from comet.driver.generic import Instrument
 from comet.driver.generic import InstrumentError
 
 __all__ = ['EnvironBox']
 
-ERROR_MESSAGES = {
+ERROR_MESSAGES: Dict[int, str] = {
     1: "RTC not running",
     2: "RTC read error",
     80: "DAC not found",
@@ -43,13 +43,15 @@ class EnvironBox(Instrument):
         self._error_queue.clear()
         self.write("*CLS")
 
+    # Error queue
+
     def next_error(self) -> Optional[InstrumentError]:
         if self._error_queue:
             return self._error_queue.pop(0)
         return None
 
-    DISCARGE_OFF = False
-    DISCARGE_ON = True
+    DISCARGE_OFF: bool = False
+    DISCARGE_ON: bool = True
 
     def set_discharge(self, state: bool) -> None:
         value = {
@@ -67,8 +69,8 @@ class EnvironBox(Instrument):
     def get_box_lux(self) -> float:
         return float(self.query('GET:LUX ?'))
 
-    BOX_DOOR_CLOSED = False
-    BOX_DOOR_OPEN = True
+    BOX_DOOR_CLOSED: bool = False
+    BOX_DOOR_OPEN: bool = True
 
     def get_box_door_state(self) -> bool:
         return bool(float(self.query('GET:DOOR ?')))
@@ -79,8 +81,8 @@ class EnvironBox(Instrument):
     def get_chuck_block_temperature(self) -> float:
         return float(self.query('GET:PT100_2 ?'))
 
-    BOX_LIGHT_OFF = False
-    BOX_LIGHT_ON = True
+    BOX_LIGHT_OFF: bool = False
+    BOX_LIGHT_ON: bool = True
 
     def get_box_light(self) -> bool:
         value = self.query('GET:LIGHT ?')
@@ -96,8 +98,8 @@ class EnvironBox(Instrument):
         }[state]
         self.write(f'SET:BOX_LIGHT {value}')
 
-    TEST_LED_OFF = False
-    TEST_LED_ON = True
+    TEST_LED_OFF: bool = False
+    TEST_LED_ON: bool = True
 
     def get_test_led(self) -> bool:
         value = self.query('GET:TEST_LED ?')

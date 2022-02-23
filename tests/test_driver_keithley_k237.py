@@ -65,32 +65,32 @@ class K237Test(BaseDriverTest):
     def test_voltage(self):
         for level in (-2.5, 0., +2.5):
             self.resource.buffer = [format(level, '.3E')]
-            self.assertEqual(self.driver.get_voltage(), level)
+            self.assertEqual(self.driver.voltage_level, level)
             self.assertEqual(self.resource.buffer, ['G1,2,0X', 'X'])
 
         for level in (-2.5, 0., +2.5):
             self.resource.buffer = []
-            self.assertEqual(self.driver.set_voltage(level), None)
+            self.driver.voltage_level = level
             self.assertEqual(self.resource.buffer, [f'B{level:.3E},,X'])
 
     def test_current(self):
         for level in (-2.5e-06, 0., +2.5e-06):
             self.resource.buffer = [format(level, '.3E')]
-            self.assertEqual(self.driver.get_current(), level)
+            self.assertEqual(self.driver.current_level, level)
             self.assertEqual(self.resource.buffer, ['G1,2,0X', 'X'])
 
         for level in (-2.5e-06, 0., +2.5e-06):
             self.resource.buffer = []
-            self.assertEqual(self.driver.set_current(level), None)
+            self.driver.current_level = level
             self.assertEqual(self.resource.buffer, [f'B{level:.3E},,X'])
 
     def test_compliance_tripped(self):
         self.resource.buffer = ['OS000']
-        self.assertEqual(self.driver.compliance_tripped(), True)
+        self.assertEqual(self.driver.compliance_tripped, True)
         self.assertEqual(self.resource.buffer, ['G1,0,0X', 'X'])
 
         self.resource.buffer = ['OP000']
-        self.assertEqual(self.driver.compliance_tripped(), False)
+        self.assertEqual(self.driver.compliance_tripped, False)
         self.assertEqual(self.resource.buffer, ['G1,0,0X', 'X'])
 
     def test_measure_voltage(self):

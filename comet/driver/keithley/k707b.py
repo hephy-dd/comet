@@ -28,6 +28,16 @@ class K707B(SwitchingMatrix):
     def clear(self) -> None:
         self.write('*CLS')
 
+    # Beeper
+
+    @property
+    def beeper(self) -> bool:
+        return bool(float(self.tsp_print('beeper.enable')))
+
+    @beeper.setter
+    def beeper(self, value: bool) -> None:
+        self.tsp_assign('beeper.enable', format(value, 'd'))
+
     # Error queue
 
     def next_error(self) -> Optional[InstrumentError]:
@@ -36,9 +46,9 @@ class K707B(SwitchingMatrix):
             return InstrumentError(int(code), message.strip('\"\' '))
         return None
 
-    def set_mute(self, state: bool) -> None:
-        self.tsp_assign('beeper.enable', format(state, 'd'))
+    # Switching matrix
 
+    @property
     def closed_channels(self) -> List[str]:
         channels = self.tsp_print('channel.getclose("allslots")')
         if channels == 'nil':

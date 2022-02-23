@@ -1,5 +1,5 @@
 import re
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from comet.driver.generic import SwitchingMatrix
 from comet.driver.generic import InstrumentError
@@ -7,7 +7,7 @@ from comet.utils import combine_matrix
 
 __all__ = ['BrandBox']
 
-ERROR_MESSAGES = {
+ERROR_MESSAGES: Dict[int, str] = {
     99: "Invalid command"
 }
 
@@ -46,11 +46,16 @@ class BrandBox(SwitchingMatrix):
         self._error_queue.clear()
         self.write('*CLS')
 
+    # Error queue
+
     def next_error(self) -> Optional[InstrumentError]:
         if self._error_queue:
             return self._error_queue.pop(0)
         return None
 
+    # Switching matrix
+
+    @property
     def closed_channels(self) -> List[str]:
         channels = self.query(':CLOS:STAT?')
         return split_channels(channels)

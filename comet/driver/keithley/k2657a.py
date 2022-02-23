@@ -17,9 +17,15 @@ class K2657A(SourceMeterUnit):
     def clear(self) -> None:
         self.write('*CLS')
 
-    def set_mute(self, state: bool) -> None:
-        self.tsp_assign('beeper.enable', format(state, 'd'))
+    # Beeper
 
+    @property
+    def beeper(self) -> bool:
+        return bool(float(self.tsp_print('beeper.enable')))
+
+    @beeper.setter
+    def beeper(self, value: bool) -> None:
+        self.tsp_assign('beeper.enable', format(value, 'd'))
 
     # Error queue
 
@@ -63,52 +69,63 @@ class K2657A(SourceMeterUnit):
         }[function]
         self.tsp_assign('smua.source.func', format(value, 'd'))
 
-    def get_voltage(self) -> float:
+    # Voltage source
+
+    @property
+    def voltage_level(self) -> float:
         return float(self.tsp_print('smua.source.levelv'))
 
-    def set_voltage(self, level: float) -> None:
+    @voltage_level.setter
+    def voltage_level(self, level: float) -> None:
         self.tsp_assign('smua.source.levelv', format(level, 'E'))
 
-    def get_voltage_range(self) -> float:
+    @property
+    def voltage_range(self) -> float:
         return float(self.tsp_print('smua.source.rangev'))
 
-    def set_voltage_range(self, level: float) -> None:
+    @voltage_range.setter
+    def voltage_range(self, level: float) -> None:
         self.tsp_assign('smua.source.rangev', format(level, 'E'))
 
-    # Compliance voltage
-
-    def get_voltage_compliance(self) -> float:
+    @property
+    def voltage_compliance(self) -> float:
         return float(self.tsp_print('smua.source.limitv'))
 
-    def set_voltage_compliance(self, level: float) -> None:
+    @voltage_compliance.setter
+    def voltage_compliance(self, level: float) -> None:
         self.tsp_assign('smua.source.limitv', format(level, 'E'))
 
-    def get_current(self) -> float:
+    # Current source
+
+    @property
+    def current_level(self) -> float:
         return float(self.tsp_print('smua.source.leveli'))
 
-    def set_current(self, level: float) -> None:
+    @current_level.setter
+    def current_level(self, level: float) -> None:
         self.tsp_assign('smua.source.leveli', format(level, 'E'))
 
-    def get_current_range(self) -> float:
+    @property
+    def current_range(self) -> float:
         return float(self.tsp_print('smua.source.rangei'))
 
-    def set_current_range(self, level: float) -> None:
+    @current_range.setter
+    def current_range(self, level: float) -> None:
         self.tsp_assign('smua.source.rangei', format(level, 'E'))
 
-    # Compliance current
-
-    def get_current_compliance(self) -> float:
+    @property
+    def current_compliance(self) -> float:
         return float(self.tsp_print('smua.source.limiti'))
 
-    def set_current_compliance(self, level: float) -> None:
+    @current_compliance.setter
+    def current_compliance(self, level: float) -> None:
         self.tsp_assign('smua.source.limiti', format(level, 'E'))
 
-    # Compliance tripped
-
+    @property
     def compliance_tripped(self) -> bool:
         return {'false': False, 'true': True}[self.tsp_print('smua.source.compliance')]
 
-    # Measure
+    # Measurements
 
     def measure_voltage(self) -> float:
         return float(self.tsp_print('smua.measure.v()'))

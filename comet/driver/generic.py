@@ -3,12 +3,40 @@ from typing import List, Optional, Tuple
 
 from .driver import Driver
 
+__all__ = [
+    'InstrumentError',
+    'BeeperMixin',
+    'ErrorQueueMixin',
+    'RouteTerminalMixin',
+    'Instrument',
+    'SourceMeterUnit',
+    'Electrometer',
+    'LCRMeter',
+    'SwitchingMatrix'
+]
+
 
 class InstrumentError:
 
     def __init__(self, code: int, message: str) -> None:
         self.code = code
         self.message = message
+
+
+class BeeperMixin(ABC):
+
+    BEEPER_ON: bool = True
+    BEEPER_OFF: bool = False
+
+    @property
+    @abstractmethod
+    def beeper(self) -> bool:
+        ...
+
+    @beeper.setter
+    @abstractmethod
+    def beeper(self, value: bool) -> None:
+        ...
 
 
 class ErrorQueueMixin(ABC):
@@ -20,8 +48,8 @@ class ErrorQueueMixin(ABC):
 
 class RouteTerminalMixin(ABC):
 
-    ROUTE_TERMINAL_FRONT = 'front'
-    ROUTE_TERMINAL_REAR = 'rear'
+    ROUTE_TERMINAL_FRONT: str = 'front'
+    ROUTE_TERMINAL_REAR: str = 'rear'
 
     @property
     @abstractmethod
@@ -38,7 +66,7 @@ class Instrument(ErrorQueueMixin, Driver):
 
     @abstractmethod
     def identify(self) -> str:
-        pass
+        ...
 
     @abstractmethod
     def reset(self) -> None:
@@ -48,14 +76,11 @@ class Instrument(ErrorQueueMixin, Driver):
     def clear(self) -> None:
         ...
 
-    def set_mute(self, state: bool) -> None:
-        pass
-
 
 class SourceMeterUnit(Instrument):
 
-    OUTPUT_ON = True
-    OUTPUT_OFF = False
+    OUTPUT_ON: bool = True
+    OUTPUT_OFF: bool = False
 
     @property
     @abstractmethod
@@ -67,8 +92,8 @@ class SourceMeterUnit(Instrument):
     def output(self, state: bool) -> None:
         ...
 
-    FUNCTION_VOLTAGE = 'voltage'
-    FUNCTION_CURRENT = 'current'
+    FUNCTION_VOLTAGE: str = 'voltage'
+    FUNCTION_CURRENT: str = 'current'
 
     @property
     @abstractmethod
@@ -80,49 +105,75 @@ class SourceMeterUnit(Instrument):
     def function(self, function: str) -> None:
         ...
 
-    @abstractmethod
-    def get_voltage(self) -> float:
-        pass
+    # Voltage source
 
+    @property
     @abstractmethod
-    def set_voltage(self, level: float) -> None:
-        pass
+    def voltage_level(self) -> float:
+        ...
 
+    @voltage_level.setter
     @abstractmethod
-    def get_voltage_range(self) -> float:
-        pass
+    def voltage_level(self, level: float) -> None:
+        ...
 
+    @property
     @abstractmethod
-    def set_voltage_range(self, level: float) -> None:
-        pass
+    def voltage_range(self) -> float:
+        ...
 
+    @voltage_range.setter
     @abstractmethod
-    def set_voltage_compliance(self, level: float) -> None:
-        pass
+    def voltage_range(self, level: float) -> None:
+        ...
 
+    @property
     @abstractmethod
-    def get_current(self) -> float:
-        pass
+    def voltage_compliance(self) -> float:
+        ...
 
+    @voltage_compliance.setter
     @abstractmethod
-    def set_current(self, level: float) -> None:
-        pass
+    def voltage_compliance(self, level: float) -> None:
+        ...
 
+    # Current source
+
+    @property
     @abstractmethod
-    def get_current_range(self) -> float:
-        pass
+    def current_level(self) -> float:
+        ...
 
+    @current_level.setter
     @abstractmethod
-    def set_current_range(self, level: float) -> None:
-        pass
+    def current_level(self, level: float) -> None:
+        ...
 
+    @property
     @abstractmethod
-    def set_current_compliance(self, level: float) -> None:
-        pass
+    def current_range(self) -> float:
+        ...
 
+    @current_range.setter
+    @abstractmethod
+    def current_range(self, level: float) -> None:
+        ...
+
+    @property
+    def current_compliance(self) -> float:
+        ...
+
+    @current_compliance.setter
+    @abstractmethod
+    def current_compliance(self, level: float) -> None:
+        ...
+
+    @property
     @abstractmethod
     def compliance_tripped(self) -> bool:
-        pass
+        ...
+
+    # Measurements
 
     @abstractmethod
     def measure_voltage(self) -> float:
@@ -134,6 +185,8 @@ class SourceMeterUnit(Instrument):
 
 
 class Electrometer(Instrument):
+
+    # Measurements
 
     @abstractmethod
     def measure_voltage(self) -> float:
@@ -185,26 +238,27 @@ class LCRMeter(Instrument):
         ...
 
     @abstractmethod
-    def measure(self) -> Tuple[float, float]:
-        pass
+    def measure_pair(self) -> Tuple[float, float]:
+        ...
 
 
 class SwitchingMatrix(Instrument):
 
     CHANNELS: List[str] = []
 
+    @property
     @abstractmethod
     def closed_channels(self) -> List[str]:
-        pass
+        ...
 
     @abstractmethod
     def close_channels(self, channels: List[str]) -> None:
-        pass
+        ...
 
     @abstractmethod
     def open_channels(self, channels: List[str]) -> None:
-        pass
+        ...
 
     @abstractmethod
     def open_all_channels(self) -> None:
-        pass
+        ...
