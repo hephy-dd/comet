@@ -1,6 +1,7 @@
 from typing import Optional
 
 from comet.driver.generic import SourceMeterUnit
+from comet.driver.generic import BeeperMixin
 from comet.driver.generic import RouteTerminalMixin
 from comet.driver.generic import InstrumentError
 
@@ -12,7 +13,7 @@ def parse_error(response: str):
     return int(code), message.strip('\"')
 
 
-class K2400(RouteTerminalMixin, SourceMeterUnit):
+class K2400(BeeperMixin, RouteTerminalMixin, SourceMeterUnit):
 
     def identify(self) -> str:
         return self.query('*IDN?')

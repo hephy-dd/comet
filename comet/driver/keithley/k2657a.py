@@ -1,12 +1,13 @@
 from typing import Optional
 
 from comet.driver.generic import SourceMeterUnit
+from comet.driver.generic import BeeperMixin
 from comet.driver.generic import InstrumentError
 
 __all__ = ['K2657A']
 
 
-class K2657A(SourceMeterUnit):
+class K2657A(BeeperMixin, SourceMeterUnit):
 
     def identify(self) -> str:
         return self.query('*IDN?')
