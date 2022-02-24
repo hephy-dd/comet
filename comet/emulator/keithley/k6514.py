@@ -4,7 +4,7 @@ import time
 from comet.emulator import IEC60488Emulator, message, run
 
 
-class K5614Emulator(IEC60488Emulator):
+class K6514Emulator(IEC60488Emulator):
 
     IDENTITY = "Keithley Inc., Model 5614, 43768438, v1.0 (Emulator)"
 
@@ -112,5 +112,4 @@ class K5614Emulator(IEC60488Emulator):
 
 
 if __name__ == "__main__":
-    run(K5614Emulator())
-
+    run(K6514Emulator())

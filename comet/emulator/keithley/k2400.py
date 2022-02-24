@@ -25,6 +25,7 @@ class K2400Emulator(IEC60488Emulator):
         self.sense_average_tcontrol = 'REP'
         self.sense_average_count = 10
         self.sense_average_state = False
+        self.sense_nplc = 1.0
         self.format_elements = ['VOLT', 'CURR', 'RES', 'TIME', 'STAT']
 
     @message(r'\*RST')
@@ -42,6 +43,7 @@ class K2400Emulator(IEC60488Emulator):
         self.sense_average_tcontrol = 'REP'
         self.sense_average_count = 10
         self.sense_average_state = False
+        self.sense_nplc = 1.0
         self.format_elements = ['VOLT', 'CURR', 'RES', 'TIME', 'STAT']
 
     @message(r'\*CLS')
@@ -228,6 +230,16 @@ class K2400Emulator(IEC60488Emulator):
     @message(r'(?::?SENS)?:AVER(?::STAT)? (OFF|ON|0|1)')
     def set_sense_average_state(self, state):
         self.sense_average_state = {'OFF': False, 'ON': True, '0': False, '1': True}[state]
+
+    # Integration time
+
+    @message(r'(?::?SENS)?:(VOLT|CURR|RES):NPLC\?')
+    def get_sense_nplc(self):
+        return format(self.sense_nplc, 'E')
+
+    @message(r'(?::?SENS)?:(VOLT:CURR|RES):NPLC (.+)')
+    def set_sense_nplc(self, nplc: str):
+        self.sense_nplc = int(nplc)
 
     # Format
 

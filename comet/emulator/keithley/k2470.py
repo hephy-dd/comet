@@ -24,6 +24,7 @@ class K2470Emulator(IEC60488Emulator):
         self.sense_average_tcontrol = {'VOLT': 'REP', 'CURR': 'REP'}
         self.sense_average_count = {'VOLT': 10, 'CURR': 10}
         self.sense_average_state = {'VOLT': False, 'CURR': False}
+        self.sense_nplc = 1.0
 
     @message(r'\*LANG\?')
     def get_lang(self):
@@ -43,6 +44,7 @@ class K2470Emulator(IEC60488Emulator):
         self.sense_average_tcontrol.update({'VOLT': 'REP', 'CURR': 'REP'})
         self.sense_average_count.update({'VOLT': 10, 'CURR': 10})
         self.sense_average_state.update({'VOLT': False, 'CURR': False})
+        self.sense_nplc = 1.0
 
     @message(r'\*CLS')
     def set_cls(self):
@@ -191,6 +193,16 @@ class K2470Emulator(IEC60488Emulator):
     @message(r':?SENS:(VOLT|CURR):AVER:STAT[E]? (OFF|ON|0|1)')
     def set_sense_average_state(self, function: str, state: str):
         self.sense_average_state[function] = {'OFF': False, 'ON': True, '0': False, '1': True}[state]
+
+    # Integration time
+
+    @message(r'(?::?SENS)?:(VOLT|CURR|RES):NPLC\?')
+    def get_sense_nplc(self):
+        return format(self.sense_nplc, 'E')
+
+    @message(r'(?::?SENS)?:(VOLT:CURR|RES):NPLC (.+)')
+    def set_sense_nplc(self, nplc: str):
+        self.sense_nplc = int(nplc)
 
     # Measure
 
