@@ -6,9 +6,7 @@ import threading
 
 from typing import Any, Callable, List, Optional, Type
 
-from .tcpsocket import TCPServer, TCPHandler
-
-__all__ = ['Emulator', 'message', 'run']
+__all__ = ['Emulator', 'message', 'register_emulator', 'emulator_factory']
 
 logger = logging.getLogger(__name__)
 

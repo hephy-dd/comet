@@ -1,3 +1,34 @@
+"""Run instrument emulators as TCP sockets based on a simple `emulators.yaml`
+configuration file.
+
+Example configuration:
+
+```
+version: '1.0'
+emulators:
+  smu:
+    type: keithley.k2410
+    port: 10001
+  lcr:
+    type: keysight.e4980a
+    port: 11002
+```
+
+Executing a configuration filename (default filename is `emulators.yaml`).
+
+```
+python -m comet.emulator [-f emulators.yaml]
+```
+
+Hit Ctrl+C to stop all emulator sockets.
+
+"""
+
+# TODO: how to use custom local emulator classes?
+# smu:
+#   type: file://emulators/k2470.py
+#   port: ...
+
 import argparse
 import logging
 import os
@@ -97,9 +128,11 @@ class Handler:
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-f', '--file', dest='filename', metavar='string', default=os.path.join('emulators.yaml'))
+    parser.add_argument('-f', '--file', dest='filename', metavar='string', default=os.path.join(default_config_filename))
     return parser.parse_args()
 
+
+default_config_filename = 'emulators.yaml'
 
 version_schema = schema.Regex(r'^\d+\.\d+$')
 

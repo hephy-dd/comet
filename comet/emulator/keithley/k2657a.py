@@ -77,7 +77,7 @@ class K2657AEmulator(IEC60488Emulator):
                 '0': 0, '1': 1
             }[enable]
         except KeyError:
-            self.error_queue.append((101, "malformed command"))
+            self.error_queue.append((110, "malformed command"))
 
     # Source output
 
@@ -93,7 +93,7 @@ class K2657AEmulator(IEC60488Emulator):
                 '0': False, '1': True
             }[state]
         except KeyError:
-            self.error_queue.append((101, "malformed command"))
+            self.error_queue.append((111, "malformed command"))
 
     # Source function
 
@@ -109,7 +109,7 @@ class K2657AEmulator(IEC60488Emulator):
                 '1': 'DCVOLTS', 'smua.OUTPUT_DCVOLTS': 'DCVOLTS'
             }[function]
         except KeyError:
-            self.error_queue.append((101, "malformed command"))
+            self.error_queue.append((112, "malformed command"))
 
     # Source levels
 
@@ -122,7 +122,7 @@ class K2657AEmulator(IEC60488Emulator):
         try:
             self.smua_source_level[function] = float(level)
         except ValueError:
-            self.error_queue.append((101, "malformed command"))
+            self.error_queue.append((113, "malformed command"))
 
     # Source ranges
 
@@ -135,7 +135,7 @@ class K2657AEmulator(IEC60488Emulator):
         try:
             self.smua_source_range[function] = float(level)
         except ValueError:
-            self.error_queue.append((101, "malformed command"))
+            self.error_queue.append((114, "malformed command"))
 
     # Source autoranges
 
@@ -151,7 +151,7 @@ class K2657AEmulator(IEC60488Emulator):
                 '1': True, 'smua.AUTORANGE_ON': True
             }[state]
         except KeyError:
-            self.error_queue.append((101, "malformed command"))
+            self.error_queue.append((115, "malformed command"))
 
     # Source voltage limit
 
@@ -164,7 +164,7 @@ class K2657AEmulator(IEC60488Emulator):
         try:
             self.source_protectv = float(level)
         except ValueError:
-            self.error_queue.append((101, "malformed command"))
+            self.error_queue.append((116, "malformed command"))
 
     # Compliance
 
@@ -181,7 +181,7 @@ class K2657AEmulator(IEC60488Emulator):
         try:
             self.smua_source_limit[function] = float(level)
         except ValueError:
-            self.error_queue.append((101, "malformed command"))
+            self.error_queue.append((117, "malformed command"))
 
     @message(tsp_print(r'smua\.measure\.i\(\)'))
     def get_measure_i(self):
@@ -201,7 +201,7 @@ class K2657AEmulator(IEC60488Emulator):
                 '1': 1, 'smua.FILTER_ON': 1
             }[enable]
         except KeyError:
-            self.error_queue.append((101, "malformed command"))
+            self.error_queue.append((118, "malformed command"))
 
     @message(tsp_print(r'smua\.measure\.filter\.count'))
     def get_measure_filter_count(self):
@@ -212,7 +212,7 @@ class K2657AEmulator(IEC60488Emulator):
         try:
             self.smua_measure_filter_count = int(count)
         except KeyError:
-            self.error_queue.append((101, "malformed command"))
+            self.error_queue.append((119, "malformed command"))
 
     @message(tsp_print(r'smua\.measure\.filter\.type'))
     def get_measure_filter_type(self):
@@ -227,8 +227,8 @@ class K2657AEmulator(IEC60488Emulator):
                 '2': 2, 'smua.FILTER_MEDIAN': 2
             }[enable]
         except KeyError:
-            self.error_queue.append((101, "malformed command"))
+            self.error_queue.append((120, "malformed command"))
 
     @message(r'.*')
     def unknown_message(self):
-        self.error_queue.append((101, "malformed command"))
+        self.error_queue.append((100, "malformed command"))
