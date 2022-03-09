@@ -1,9 +1,11 @@
 import random
 import time
 
-from comet.emulator import IEC60488Emulator, message, run
+from comet.emulator import IEC60488Emulator, message
+from comet.emulator import register_emulator
 
 
+@register_emulator('keithley.k2700')
 class K2700Emulator(IEC60488Emulator):
 
     IDENTITY = "Keithley Inc., Model 2700, 43768438, v1.0 (Emulator)"
@@ -58,8 +60,3 @@ class K2700Emulator(IEC60488Emulator):
     @message(r'(.*)')
     def unknown_message(self, request):
         self.error_queue.append((101, "malformed command"))
-
-
-if __name__ == "__main__":
-    run(K2700Emulator())
-

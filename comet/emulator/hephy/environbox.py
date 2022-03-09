@@ -1,7 +1,9 @@
 from comet.emulator import Emulator
-from comet.emulator import message, run
+from comet.emulator import message
+from comet.emulator import register_emulator
 
 
+@register_emulator('hephy.environbox')
 class EnvironBoxEmulator(Emulator):
 
     IDENTITY = 'EnvironBox, v1.0 (Emulator)'
@@ -467,8 +469,3 @@ class EnvironBoxEmulator(Emulator):
     @message(r'.*')
     def unknown_message(self):
         return 'Err999'
-
-
-if __name__ == "__main__":
-    run(EnvironBoxEmulator())
-

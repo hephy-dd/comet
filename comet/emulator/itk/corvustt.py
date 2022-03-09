@@ -1,13 +1,14 @@
-"""Corvus TT Venus-1 emulator."""
+"""Corvus TT (Venus-1) emulator."""
 
-from comet.emulator import Emulator
-from comet.emulator import message, run
+from comet.emulator import Emulator, message
+from comet.emulator import register_emulator
 
-__all__ = ['Venus1Emulator']
+__all__ = ['CorvusTTEmulator']
 
 
-class Venus1Emulator(Emulator):
-    """Corvus TT Venus-1 emulator."""
+@register_emulator('itk.corvustt')
+class CorvusTTEmulator(Emulator):
+    """Corvus TT (Venus-1) emulator."""
 
     identity = "Corvus 0 0 0 0"
     macadr = '00:00:00:00:00:00'
@@ -127,7 +128,3 @@ class Venus1Emulator(Emulator):
     @message(r'(\d) 3 setunit')
     def set_unit_z(self, value):
         self.z_unit = int(value)
-
-
-if __name__ == '__main__':
-    run(Venus1Emulator())

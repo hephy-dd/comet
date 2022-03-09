@@ -1,15 +1,31 @@
 import argparse
+import importlib
 import logging
 import re
 import threading
 
-from typing import Callable, List, Optional, Type
+from typing import Any, Callable, List, Optional, Type
 
 from .tcpsocket import TCPServer, TCPHandler
 
 __all__ = ['Emulator', 'message', 'run']
 
 logger = logging.getLogger(__name__)
+
+emulator_registry = {}
+
+
+def register_emulator(name):
+    def register_wrapper(cls):
+        emulator_registry[name] = cls
+        return cls
+    return register_wrapper
+
+
+def emulator_factory(name):
+    if name not in emulator_registry:
+        importlib.import_module(f'.{name}', 'comet.emulator')
+    return emulator_registry.get(name)
 
 
 def message(route: str) -> Callable:
@@ -22,11 +38,11 @@ def message(route: str) -> Callable:
 class Route:
     """Route wrapper class for message routes."""
 
-    def __init__(self, route, method):
-        self.route = route
-        self.method = method
+    def __init__(self, route: str, method: Callable) -> None:
+        self.route: str = route
+        self.method: Callable = method
 
-    def __call__(self, *args, **kwargs):
+    def __call__(self, *args, **kwargs) -> Any:
         return self.method(*args, **kwargs)
 
 
@@ -56,45 +72,3 @@ class Emulator:
                     return format(response)
                 return response
         return None
-
-
-def create_handler(emulator: Emulator, termination: str, delay: float) -> Type[TCPHandler]:
-    handler = TCPHandler
-    handler.message_handler = [emulator]
-    handler.read_termination = termination
-    handler.write_termination = termination
-    handler.request_delay = delay
-    return handler
-
-
-def parse_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--hostname', default='localhost')
-    parser.add_argument('-p', '--port', type=int, default=10000)
-    parser.add_argument('-t', '--termination', choices=['\\n', '\\r', '\\r\\n'], default='\\r\\n')
-    parser.add_argument('--delay', type=float, default=0.025)
-    return parser.parse_args()
-
-
-def run(emulator):
-    args = parse_args()
-
-    logging.basicConfig(level=logging.INFO)
-
-    termination = args.termination.replace('\\n', '\n').replace('\\r', '\r')
-
-    handler = create_handler(emulator, termination, args.delay)
-    server = TCPServer((args.hostname, args.port), handler)
-
-    def serve_forever(server):
-        with server:
-            server.serve_forever()
-
-    thread = threading.Thread(target=serve_forever, args=[server], daemon=True)
-    thread.start()
-
-    try:
-        threading.Event().wait()
-    finally:
-        server.shutdown()
-        thread.join()

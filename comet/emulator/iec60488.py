@@ -1,7 +1,7 @@
 import random
 
 from comet.emulator import Emulator
-from comet.emulator import message, run
+from comet.emulator import message
 
 __all__ = ['IEC60488Emulator']
 
@@ -53,7 +53,3 @@ class IEC60488Emulator(Emulator):
     @message(r'\*WAI')
     def set_wai(self):
         pass
-
-
-if __name__ == '__main__':
-    run(IEC60488Emulator())

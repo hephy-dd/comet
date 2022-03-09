@@ -5,7 +5,8 @@ import random
 import time
 
 from comet.emulator import Emulator
-from comet.emulator import message, run
+from comet.emulator import message
+from comet.emulator import register_emulator
 
 __all__ = ['ITCEmulator']
 
@@ -17,6 +18,7 @@ def fake_analog_channel(channel, minimum, maximum):
     return f'{channel} {actual:05.1f} {target:05.1f}'
 
 
+@register_emulator('cts.itc')
 class ITCEmulator(Emulator):
 
     IDENTITY = "ITS Climate Chamber, v1.0 (Emulator)"
@@ -117,7 +119,3 @@ class ITCEmulator(Emulator):
     def set_p(self, program):
         self.program = int(program)
         return f'P{self.program:03d}'
-
-
-if __name__ == '__main__':
-    run(ITCEmulator())

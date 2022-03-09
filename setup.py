@@ -14,7 +14,9 @@ setup(
         'pyserial==3.5.*',
         'pyusb==1.2.*',
         'numpy==1.19.*',
-        'pint==0.17.*'
+        'pint==0.17.*',
+        'schema==0.7.*',
+        'pyyaml==6.0.*'
     ],
     tests_require=[],
     package_data={},

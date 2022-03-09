@@ -1,6 +1,3 @@
-from comet.emulator import Emulator
-from comet.emulator import message, run
-
 __all__ = ['tsp_print']
 
 

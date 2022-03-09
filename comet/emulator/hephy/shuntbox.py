@@ -4,7 +4,9 @@ import random
 import time
 
 from comet.emulator import Emulator
-from comet.emulator import message, run
+from comet.emulator import message
+from comet.emulator import register_emulator
+
 
 __all__ = ['ShuntBoxEmulator']
 
@@ -15,6 +17,7 @@ def uptime():
     return int(round(time.time() - start_time))
 
 
+@register_emulator('hephy.shuntbox')
 class ShuntBoxEmulator(Emulator):
 
     IDENTITY = 'ShuntBox, v1.0 (Emulator)'
@@ -60,7 +63,3 @@ class ShuntBoxEmulator(Emulator):
     @message(r'.*')
     def unknown_message(self):
         return 'Err99'
-
-
-if __name__ == "__main__":
-    run(ShuntBoxEmulator())
