@@ -1,6 +1,8 @@
 include README.md
 include LICENSE
 include requirements.txt
+include pyproject.toml
+include tox.ini
 
 include docs/_config.yml
 recursive-include docs/ *.md
