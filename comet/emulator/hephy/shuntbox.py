@@ -4,7 +4,7 @@ import random
 import time
 
 from comet.emulator import Emulator
-from comet.emulator import message
+from comet.emulator import message, run
 from comet.emulator import register_emulator
 
 
@@ -63,3 +63,7 @@ class ShuntBoxEmulator(Emulator):
     @message(r'.*')
     def unknown_message(self):
         return 'Err99'
+
+
+if __name__ == '__main__':
+    run(ShuntBoxEmulator())

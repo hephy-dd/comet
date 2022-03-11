@@ -24,14 +24,8 @@ Hit Ctrl+C to stop all emulator sockets.
 
 """
 
-# TODO: how to use custom local emulator classes?
-# smu:
-#   type: file://emulators/k2470.py
-#   port: ...
-
 import argparse
 import logging
-import os
 import socketserver
 import threading
 import time
@@ -40,99 +34,12 @@ import schema
 import yaml
 
 from .emulator import emulator_factory
-
-logger = logging.getLogger(__package__)
-
-
-class TCPRequestHandler(socketserver.BaseRequestHandler):
-
-    termination: str = '\r\n'
-
-    delay: float = 0.1
-
-    def read_messages(self):
-        data = str(self.request.recv(4096), 'ascii')
-        if not data:
-            return None
-        self.server.logger.info("recv %s", bytes(data, 'ascii'))
-        return [line for line in data.split(self.termination) if line]
-
-    def send_messages(self, response):
-        if isinstance(response, (list, tuple)):
-            response = self.termination.join(format(line) for line in response)
-        data = bytes(f'{response}{self.termination}', 'ascii')
-        self.server.logger.info("send %s", data)
-        self.request.sendall(data)
-
-    def apply_delay(self):
-        time.sleep(self.delay)
-
-    def handle(self):
-        while True:
-            messages = self.read_messages()
-            if not messages:
-                break
-            if self.server.is_shutdown:
-                break
-            for message in messages:
-                self.apply_delay()
-                response = self.server.handler(message)
-                if response is not None:
-                    self.send_messages(response)
-
-
-class TCPServer(socketserver.TCPServer):
-
-    allow_reuse_address = True
-
-    def __init__(self, address, handler):
-        super().__init__(address, TCPRequestHandler)
-        self.handler = handler
-        self.shutdown_event = threading.Event()
-        self.logger = logger.getChild(self.handler.name)
-
-    @property
-    def is_shutdown(self) -> bool:
-        return self.shutdown_event.is_set()
-
-    def shutdown(self):
-        self.shutdown_event.set()
-        super().shutdown()
-
-
-class Thread(threading.Thread):
-
-    def __init__(self, address, handler):
-        super().__init__()
-        self.server = TCPServer(address, handler)
-        self.shutdown_request = threading.Event()
-
-    def shutdown(self):
-        self.shutdown_request.set()
-        self.server.shutdown()
-
-    def run(self):
-        with self.server as server:
-            server.serve_forever()
-
-
-class Handler:
-
-    def __init__(self, name, context):
-        self.name = name
-        self.context = context
-
-    def __call__(self, data):
-        return self.context(data)
-
-
-def parse_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-f', '--file', dest='filename', metavar='string', default=os.path.join(default_config_filename))
-    return parser.parse_args()
-
+from .tcpserver import TCPServer, TCPServerThread, TCPServerContext
 
 default_config_filename = 'emulators.yaml'
+default_hostname: str  = ''
+default_termination: str = '\r\n'
+default_request_delay: float = 0.1
 
 version_schema = schema.Regex(r'^\d+\.\d+$')
 
@@ -142,17 +49,35 @@ config_schema = schema.Schema({
         str: {
             'type': str,
             schema.Optional('hostname'): str,
-            'port': int
+            'port': int,
+            schema.Optional('termination'): str,
+            schema.Optional('request_delay'): float,
         }
     }
 })
 
 
-def load_config(filename):
+def load_config(filename: str) -> dict:
     with open(filename) as fp:
         config = yaml.safe_load(fp)
-    config_schema.validate(config)
+    # Set defaults
+    for params in config.get('emulators', {}).values():
+        params.setdefault('hostname', default_hostname)
+        params.setdefault('termination', default_termination)
+        params.setdefault('request_delay', default_request_delay)
+    # Validate config
+    validate_config(config)
     return config
+
+
+def validate_config(config: dict) -> None:
+    config_schema.validate(config)
+
+
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-f', '--file', dest='filename', metavar='string', default=default_config_filename)
+    return parser.parse_args()
 
 
 def event_loop() -> None:
@@ -173,20 +98,26 @@ def main() -> int:
 
     for name, params in config.get('emulators', {}).items():
         type_ = params.get('type')
-        hostname = params.get('hostname', '')
+        hostname = params.get('hostname')
         port = params.get('port')
-        handler = Handler(name, emulator_factory(type_)())
-        address = ('', port)
-        threads.append(Thread(address, handler))
+        termination = params.get('termination')
+        request_delay = params.get('request_delay')
+        address = hostname, port
+        emulator = emulator_factory(type_)()
+        context = TCPServerContext(f'[{name}]'', emulator, termination, request_delay)
+        server = TCPServer(address, context)
+        threads.append(TCPServerThread(server))
 
     for thread in threads:
-        thread.server.logger.info("starting %s:%s", *thread.server.server_address)
+        hostname, port = thread.server.server_address
+        thread.server.context.logger.info("starting... %s:%s", hostname, port)
         thread.start()
 
     event_loop()
 
     for thread in threads:
-        thread.server.logger.info("stopping %s:%s", *thread.server.server_address)
+        hostname, port = thread.server.server_address
+        thread.server.context.logger.info("stopping... %s:%s", hostname, port)
         thread.shutdown()
 
     for thread in threads:

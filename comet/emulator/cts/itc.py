@@ -5,7 +5,7 @@ import random
 import time
 
 from comet.emulator import Emulator
-from comet.emulator import message
+from comet.emulator import message, run
 from comet.emulator import register_emulator
 
 __all__ = ['ITCEmulator']
@@ -119,3 +119,7 @@ class ITCEmulator(Emulator):
     def set_p(self, program):
         self.program = int(program)
         return f'P{self.program:03d}'
+
+
+if __name__ == '__main__':
+    run(ITCEmulator())

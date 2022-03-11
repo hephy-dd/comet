@@ -1,7 +1,7 @@
 import random
 import time
 
-from comet.emulator import IEC60488Emulator, message
+from comet.emulator import IEC60488Emulator, message, run
 from comet.emulator import register_emulator
 
 
@@ -93,3 +93,7 @@ class E4980AEmulator(IEC60488Emulator):
     @message(r':?BIAS:STAT\s+(0|1|ON|OFF)')
     def set_bias_state(self, value):
         self.bias_state = {'0': False, '1': True, 'OFF': False, 'ON': True}[value]
+
+
+if __name__ == '__main__':
+    run(E4980AEmulator())

@@ -1,7 +1,7 @@
 import random
 import time
 
-from comet.emulator import IEC60488Emulator, message
+from comet.emulator import IEC60488Emulator, message, run
 from comet.emulator import register_emulator
 
 
@@ -111,3 +111,7 @@ class K6514Emulator(IEC60488Emulator):
     @message(r'(.*)')
     def unknown_message(self, request):
         self.error_queue.append((101, "malformed command"))
+
+
+if __name__ == '__main__':
+    run(K6514Emulator())

@@ -6,7 +6,9 @@ import threading
 
 from typing import Any, Callable, List, Optional, Type
 
-__all__ = ['Emulator', 'message', 'register_emulator', 'emulator_factory']
+from .tcpserver import TCPServer, TCPServerContext
+
+__all__ = ['Emulator', 'message', 'register_emulator', 'emulator_factory', 'run']
 
 logger = logging.getLogger(__name__)
 
@@ -70,3 +72,37 @@ class Emulator:
                     return format(response)
                 return response
         return None
+
+
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--hostname', default='')
+    parser.add_argument('-p', '--port', type=int, default=10000)
+    parser.add_argument('-t', '--termination', default='\r\n')
+    parser.add_argument('-d', '--request_delay', type=float, default=0.1)
+    return parser.parse_args()
+
+
+def run(emulator) -> int:
+    """Convenience emulator runner using TCP server."""
+    args = parse_args()
+
+    logging.basicConfig(level=logging.INFO)
+
+    context = TCPServerContext(__package__, emulator, args.termination, args.request_delay)
+
+    address = args.hostname, args.port
+    server = TCPServer(address, context)
+
+    hostname, port = server.server_address
+
+    context.logger.info("starting... %s:%s", hostname, port)
+
+    try:
+        with server:
+            while True:
+                server.handle_request()
+    except KeyboardInterrupt:
+        ...
+
+    context.logger.info("stopping... %s:%s", hostname, port)

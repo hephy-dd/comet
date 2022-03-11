@@ -1,7 +1,7 @@
 from typing import Set
 
 from comet.emulator import Emulator
-from comet.emulator import message
+from comet.emulator import message, run
 from comet.emulator import register_emulator
 
 
@@ -183,3 +183,7 @@ class BrandBoxEmulator(Emulator):
 
     def has_channel(self, channel):
         return channel in self.CHANNELS
+
+
+if __name__ == '__main__':
+    run(BrandBoxEmulator())

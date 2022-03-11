@@ -1,5 +1,5 @@
 from comet.emulator import Emulator
-from comet.emulator import message
+from comet.emulator import message, run
 from comet.emulator import register_emulator
 
 
@@ -469,3 +469,7 @@ class EnvironBoxEmulator(Emulator):
     @message(r'.*')
     def unknown_message(self):
         return 'Err999'
+
+
+if __name__ == '__main__':
+    run(EnvironBoxEmulator())

@@ -1,6 +1,6 @@
 """Corvus TT (Venus-1) emulator."""
 
-from comet.emulator import Emulator, message
+from comet.emulator import Emulator, message, run
 from comet.emulator import register_emulator
 
 __all__ = ['CorvusTTEmulator']
@@ -128,3 +128,7 @@ class CorvusTTEmulator(Emulator):
     @message(r'(\d) 3 setunit')
     def set_unit_z(self, value):
         self.z_unit = int(value)
+
+
+if __name__ == '__main__':
+    run(CorvusTTEmulator())

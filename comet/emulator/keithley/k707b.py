@@ -1,6 +1,6 @@
 from typing import Set
 
-from comet.emulator import IEC60488Emulator, message
+from comet.emulator import IEC60488Emulator, message, run
 from comet.emulator.utils import tsp_print
 from comet.emulator import register_emulator
 from comet.utils import combine_matrix
@@ -64,3 +64,7 @@ class K707BEmulator(IEC60488Emulator):
     @message(r'^(.*)$')
     def unknown_message(self, v ):
         self.error_queue.append((101, "malformed command"))
+
+
+if __name__ == '__main__':
+    run(K707BEmulator())
