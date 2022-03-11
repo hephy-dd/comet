@@ -104,7 +104,7 @@ def main() -> int:
         request_delay = params.get('request_delay')
         address = hostname, port
         emulator = emulator_factory(type_)()
-        context = TCPServerContext(f'[{name}]'', emulator, termination, request_delay)
+        context = TCPServerContext(f'[{name}]', emulator, termination, request_delay)
         server = TCPServer(address, context)
         threads.append(TCPServerThread(server))
 
