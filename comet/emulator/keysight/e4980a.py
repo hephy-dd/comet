@@ -2,10 +2,8 @@ import random
 import time
 
 from comet.emulator import IEC60488Emulator, message, run
-from comet.emulator import register_emulator
 
 
-@register_emulator('keysight.e4980a')
 class E4980AEmulator(IEC60488Emulator):
 
     IDENTITY = "Keysight Inc., Model E4980A, v1.0 (Emulator)"

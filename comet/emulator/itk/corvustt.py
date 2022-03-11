@@ -1,12 +1,10 @@
 """Corvus TT (Venus-1) emulator."""
 
 from comet.emulator import Emulator, message, run
-from comet.emulator import register_emulator
 
 __all__ = ['CorvusTTEmulator']
 
 
-@register_emulator('itk.corvustt')
 class CorvusTTEmulator(Emulator):
     """Corvus TT (Venus-1) emulator."""
 

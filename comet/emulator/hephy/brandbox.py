@@ -2,7 +2,6 @@ from typing import Set
 
 from comet.emulator import Emulator
 from comet.emulator import message, run
-from comet.emulator import register_emulator
 
 
 def split_channels(channels: str) -> set:
@@ -17,7 +16,6 @@ def format_state(state: bool) -> str:
     return 'ON' if state else 'OFF'
 
 
-@register_emulator('hephy.brandbox')
 class BrandBoxEmulator(Emulator):
 
     CHANNELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2']

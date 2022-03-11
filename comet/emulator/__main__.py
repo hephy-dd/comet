@@ -7,11 +7,15 @@ Example configuration:
 version: '1.0'
 emulators:
   smu:
-    type: keithley.k2410
+    module: keithley.k2410
     port: 10001
   lcr:
-    type: keysight.e4980a
+    module: keysight.e4980a
     port: 11002
+  # User specific emulator
+  my_instr:
+    module: local_project.my_instr_emulator
+    port: 12001
 ```
 
 Executing a configuration filename (default filename is `emulators.yaml`).
@@ -47,7 +51,7 @@ config_schema = schema.Schema({
     'version': version_schema,
     'emulators': {
         str: {
-            'type': str,
+            'module': str,
             schema.Optional('hostname'): str,
             'port': int,
             schema.Optional('termination'): str,
@@ -97,14 +101,14 @@ def main() -> int:
     threads = []
 
     for name, params in config.get('emulators', {}).items():
-        type_ = params.get('type')
+        module = params.get('module')
         hostname = params.get('hostname')
         port = params.get('port')
         termination = params.get('termination')
         request_delay = params.get('request_delay')
         address = hostname, port
-        emulator = emulator_factory(type_)()
-        context = TCPServerContext(f'[{name}]', emulator, termination, request_delay)
+        emulator = emulator_factory(module)()
+        context = TCPServerContext(name, emulator, termination, request_delay)
         server = TCPServer(address, context)
         threads.append(TCPServerThread(server))
 

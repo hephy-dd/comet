@@ -1,9 +1,7 @@
 from comet.emulator import Emulator
 from comet.emulator import message, run
-from comet.emulator import register_emulator
 
 
-@register_emulator('hephy.environbox')
 class EnvironBoxEmulator(Emulator):
 
     IDENTITY = 'EnvironBox, v1.0 (Emulator)'

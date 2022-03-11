@@ -2,11 +2,9 @@ from typing import Set
 
 from comet.emulator import IEC60488Emulator, message, run
 from comet.emulator.utils import tsp_print
-from comet.emulator import register_emulator
 from comet.utils import combine_matrix
 
 
-@register_emulator('keithley.k707b')
 class K707BEmulator(IEC60488Emulator):
 
     IDENTITY = "Keithley Inc., Model 707B, 43768438, v1.0 (Emulator)"

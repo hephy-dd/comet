@@ -1,9 +1,7 @@
 import random
 from comet.emulator import IEC60488Emulator, message, run
-from comet.emulator import register_emulator
 
 
-@register_emulator('keithley.k2400')
 class K2400Emulator(IEC60488Emulator):
 
     IDENTITY = "Keithley Inc., Model 2400, 43768438, v1.0 (Emulator)"
