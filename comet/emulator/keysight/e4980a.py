@@ -20,7 +20,7 @@ class E4980AEmulator(IEC60488Emulator):
         self.bias_voltage_level: float = 0.
         self.bias_state: bool = False
 
-    @message(r':SYST(?:EM)?:ERR(?:OR)?(?::NEXT)?\?')
+    @message(r':?SYST:ERR(?::NEXT)?\?')
     def get_system_error(self) -> str:
         return '+0, "no error"'
 

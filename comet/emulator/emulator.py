@@ -24,12 +24,20 @@ def emulator_factory(module_name: str) -> type:
             module = importlib.import_module(module_name)
         except ModuleNotFoundError:
             # If does not exist, try to load from comet.emulator package
-            module = importlib.import_module(f'.{module_name}', 'comet.emulator')
+            module_name = f'comet.emulator.{module_name}'
+            module = importlib.import_module(module_name)
+        # Iterate over all module class members (local and imported).
         cls_members = inspect.getmembers(module, inspect.isclass)
         for member_name, cls in cls_members:
             if issubclass(cls, Emulator) and cls is not Emulator:
-                emulator_registry[module_name] = cls
-    return emulator_registry.get(module_name)
+                # Make sure class is from module, not an imported one.
+                if module_name == cls.__module__:
+                    emulator_registry[module_name] = cls
+                    break
+    cls = emulator_registry.get(module_name)
+    if cls is None:
+        raise RuntimeError(f"Unable to locate emulator module: {module_name}")
+    return cls
 
 
 def message(route: str) -> Callable:
