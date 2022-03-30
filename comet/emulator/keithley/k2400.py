@@ -239,7 +239,7 @@ class K2400Emulator(IEC60488Emulator):
 
     @message(r'(?::?SENS)?:(?:VOLT|CURR|RES):NPLC (.+)')
     def set_sense_nplc(self, nplc: str):
-        self.sense_nplc = round(float(nplc))
+        self.sense_nplc = round(float(nplc), 2)
 
     # Format
 
