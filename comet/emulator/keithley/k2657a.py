@@ -21,6 +21,7 @@ class K2657AEmulator(IEC60488Emulator):
         self.smua_measure_filter_enable = 0
         self.smua_measure_filter_count = 1
         self.smua_measure_filter_type = 1
+        self.smua_measure_nplc = 1.0
         self.source_protectv = 0.
 
     @message(r'reset\(\)')
@@ -36,6 +37,7 @@ class K2657AEmulator(IEC60488Emulator):
         self.smua_measure_filter_enable = 0
         self.smua_measure_filter_count = 1
         self.smua_measure_filter_type = 1
+        self.smua_measure_nplc = 1.0
         self.source_protectv = 0.
 
     @message(r'status.reset\(\)')
@@ -224,6 +226,19 @@ class K2657AEmulator(IEC60488Emulator):
                 '1': 1, 'smua.FILTER_REPEAT_AVG': 1,
                 '2': 2, 'smua.FILTER_MEDIAN': 2
             }[enable]
+        except KeyError:
+            self.error_queue.append((120, "malformed command"))
+
+    # Integration time
+
+    @message(tsp_print(r'smua\.measure\.nplc'))
+    def get_measure_nplc(self):
+        return format(self.smua_measure_nplc, 'E')
+
+    @message(tsp_assign(r'smua\.measure\.nplc'))
+    def set_measure_nplc(self, nplc: str):
+        try:
+            self.smua_measure_nplc = round(float(nplc), 3)
         except KeyError:
             self.error_queue.append((120, "malformed command"))
 
