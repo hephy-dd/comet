@@ -201,7 +201,7 @@ class K2470Emulator(IEC60488Emulator):
     def get_sense_nplc(self):
         return format(self.sense_nplc, 'E')
 
-    @message(r'(?::?SENS)?:(?:VOLT:CURR|RES):NPLC (.+)')
+    @message(r'(?::?SENS)?:(?:VOLT|CURR|RES):NPLC (.+)')
     def set_sense_nplc(self, nplc: str):
         self.sense_nplc = round(float(nplc), 2)
 
