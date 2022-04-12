@@ -32,8 +32,8 @@ class K2657A(BeeperMixin, SourceMeterUnit):
 
     def next_error(self) -> Optional[InstrumentError]:
         code, message = self.tsp_print('errorqueue.next()').split('\t')[:2]
-        if int(code):
-            return InstrumentError(int(code), message.strip('\"\' '))
+        if int(float(code)):
+            return InstrumentError(int(float(code)), message.strip('\"\' '))
         return None
 
     # Source meter unit
