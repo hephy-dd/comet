@@ -16,6 +16,9 @@ class K6514Emulator(IEC60488Emulator):
         self.sense_average_tcontrol = 'REP'
         self.sense_average_count = 10
         self.sense_average_state = 0
+        self.sense_current_range = 2.1e-4
+        self.sense_current_range_auto = 1
+        self.sense_nplc = 5.
 
     @message(r'\*RST')
     def set_rst(self):
@@ -25,6 +28,9 @@ class K6514Emulator(IEC60488Emulator):
         self.sense_average_tcontrol = 'REP'
         self.sense_average_count = 10
         self.sense_average_state = 0
+        self.sense_current_range = 2.1e-4
+        self.sense_current_range_auto = 1
+        self.sense_nplc = 5.
 
     @message(r'\*CLS')
     def set_cls(self):
@@ -60,7 +66,7 @@ class K6514Emulator(IEC60488Emulator):
 
     @message(r':?READ\?')
     def get_read(self):
-        time.sleep(random.uniform(.5, 1.0))
+        time.sleep(random.uniform(.25, 1.0))
         vdc = random.uniform(.00025, .001)
         return format(vdc, 'E')
 
@@ -72,8 +78,8 @@ class K6514Emulator(IEC60488Emulator):
     def get_zero_check(self):
         return {False: '0', True: '1'}[self.zero_check]
 
-    @message(r':?SENS:FUNC [\'\"](VOLT|CURR)(?:\:DC)?[\'\"]')
-    def set_sense_function(self, value):
+    @message(r':?SENS:FUNC \'(VOLT|CURR|RES|CHAR)(?:\:DC)?\'')
+    def set_sense_function(self, value: str):
         self.sense_function = value
 
     @message(r':?SENS:FUNC\?')
@@ -105,6 +111,48 @@ class K6514Emulator(IEC60488Emulator):
     @message(r'(?::?SENS)?:AVER(?::STAT)? (OFF|ON|0|1)')
     def set_sense_average_state(self, state: str):
         self.sense_average_state = {'OFF': 0, 'ON': 1, '0': 0, '1': 1}[state]
+
+    # Current range
+
+    @message(r'(?::?SENS)?:CURR:RANG\?')
+    def get_sense_current_range(self):
+        return format(self.sense_current_range, 'E')
+
+    @message(r'(?::?SENS)?:CURR:RANG(?::UPP)?\s+(.+)')
+    def set_sense_current_range(self, value: str):
+        try:
+            self.sense_current_range = float(value)
+        except Exception:
+            self.error_queue.append((102, "invalid header"))
+
+    @message(r'(?::?SENS)?:CURR:RANG:AUTO\?')
+    def get_sense_current_range_auto(self):
+        return self.sense_current_range_auto
+
+    @message(r'(?::?SENS)?:CURR:RANG:AUTO\s+(OFF|ON|0|1)')
+    def set_sense_current_range_auto(self, state: str):
+        self.sense_current_range_auto = {'OFF': 0, 'ON': 1, '0': 0, '1': 1}[state]
+
+    @message(r'(?::?SENS)?:CURR:RANG:AUTO:ULIM\s+(.+)')
+    def set_sense_current_range_auto_ulimit(self, value: str):
+        pass  # TODO
+
+    @message(r'(?::?SENS)?:CURR:RANG:AUTO:LLIM\s+(.+)')
+    def set_sense_current_range_auto_llimit(self, value: str):
+        pass  # TODO
+
+    # NPLC (coupled commands)
+
+    @message(r'(?::?SENS)?:(:?CURR|VOLT|RES|CHAR):NPLC\?')
+    def get_sense_nplc(self):
+        return self.sense_nplc
+
+    @message(r'(?::?SENS)?:(:?CURR|VOLT|RES|CHAR):NPLC\s+(.+)')
+    def set_sense_nplc(self, mode: str, value: str):
+        try:
+            self.sense_nplc = max(0.01, min(10.0, float(value)))
+        except Exception:
+            self.error_queue.append((102, "invalid header"))
 
     @message(r'(.*)')
     def unknown_message(self, request):

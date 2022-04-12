@@ -12,6 +12,7 @@ class K6517BEmulator(IEC60488Emulator):
         super().__init__()
         self.error_queue = []
         self.zero_check = False
+        self.sense_function = 'VOLT'
         self.sense_average_tcontrol = {'VOLT': 'REP', 'CURR': 'REP'}
         self.sense_average_count = {'VOLT': 10, 'CURR': 10}
         self.sense_average_state = {'VOLT': False, 'CURR': False}
@@ -20,6 +21,7 @@ class K6517BEmulator(IEC60488Emulator):
     def set_reset(self):
         self.error_queue.clear()
         self.zero_check = False
+        self.sense_function = 'VOLT'
         self.sense_average_tcontrol.update({'VOLT': 'REP', 'CURR': 'REP'})
         self.sense_average_count.update({'VOLT': 10, 'CURR': 10})
         self.sense_average_state.update({'VOLT': False, 'CURR': False})
@@ -39,6 +41,14 @@ class K6517BEmulator(IEC60488Emulator):
             return f'{code}, "{message}"'
         return '0, "no error"'
 
+    @message(r':?FORM:ELEM (READ)')
+    def set_format_elements(self, value):
+        pass
+
+    @message(r':?FORM:ELEM\?')
+    def get_format_elements(self):
+        return "READ"
+
     @message(r'\*ESR\?')
     def get_esr(self):
         return format(random.randint(0, 1))
@@ -55,9 +65,13 @@ class K6517BEmulator(IEC60488Emulator):
     def set_system_zerocheck(self, value):
         self.zero_check = {'OFF': False, 'ON': True}[value]
 
+    @message(r':?SENS:FUNC \'(VOLT|CURR|RES|CHAR)(?:\:DC)?\'')
+    def set_sense_function(self, value: str):
+        self.sense_function = value
+
     @message(r':?SENS:FUNC\?')
     def get_sense_function(self):
-        return '"CURR:DC"'
+        return f"\"{self.sense_function}:DC\""
 
     @message(r':?INIT')
     def set_init(self):
@@ -72,6 +86,18 @@ class K6517BEmulator(IEC60488Emulator):
     def get_fetch(self):
         time.sleep(.25)
         return format(random.uniform(0.000001, 0.0001))
+
+    @message(r':?MEAS:CURR\?')
+    def get_measure_current(self):
+        time.sleep(random.uniform(.25, 1.0))
+        vdc = random.uniform(.000025, .0001)
+        return format(vdc, 'E')
+
+    @message(r':?MEAS:VOLT\?')
+    def get_measure_voltage(self):
+        time.sleep(random.uniform(.25, 1.0))
+        vdc = random.uniform(10., 100.)
+        return format(vdc, 'E')
 
     # Average
 
@@ -98,6 +124,48 @@ class K6517BEmulator(IEC60488Emulator):
     @message(r':?SENS:(VOLT|CURR):AVER:STAT[E]? (OFF|ON|0|1)')
     def set_sense_average_state(self, function: str, state: str):
         self.sense_average_state[function] = {'OFF': 0, 'ON': 1, '0': 0, '1': 1}[state]
+
+    # Current range
+
+    @message(r'(?::?SENS)?:CURR:RANG\?')
+    def get_sense_current_range(self):
+        return format(self.sense_current_range, 'E')
+
+    @message(r'(?::?SENS)?:CURR:RANG(?::UPP)?\s+(.+)')
+    def set_sense_current_range(self, value: str):
+        try:
+            self.sense_current_range = float(value)
+        except Exception:
+            self.error_queue.append((102, "invalid header"))
+
+    @message(r'(?::?SENS)?:CURR:RANG:AUTO\?')
+    def get_sense_current_range_auto(self):
+        return self.sense_current_range_auto
+
+    @message(r'(?::?SENS)?:CURR:RANG:AUTO\s+(OFF|ON|0|1)')
+    def set_sense_current_range_auto(self, state: str):
+        self.sense_current_range_auto = {'OFF': 0, 'ON': 1, '0': 0, '1': 1}[state]
+
+    @message(r'(?::?SENS)?:CURR:RANG:AUTO:ULIM\s+(.+)')
+    def set_sense_current_range_auto_ulimit(self, value: str):
+        pass  # TODO
+
+    @message(r'(?::?SENS)?:CURR:RANG:AUTO:LLIM\s+(.+)')
+    def set_sense_current_range_auto_llimit(self, value: str):
+        pass  # TODO
+
+    # NPLC (coupled commands)
+
+    @message(r'(?::?SENS)?:(:?CURR|VOLT|RES|CHAR):NPLC\?')
+    def get_sense_nplc(self):
+        return self.sense_nplc
+
+    @message(r'(?::?SENS)?:(:?CURR|VOLT|RES|CHAR):NPLC\s+(.+)')
+    def set_sense_nplc(self, mode: str, value: str):
+        try:
+            self.sense_nplc = max(0.01, min(10.0, float(value)))
+        except Exception:
+            self.error_queue.append((102, "invalid header"))
 
     @message(r'(.*)')
     def unknown_message(self, request):
