@@ -98,6 +98,40 @@ class EnvironBox(Instrument):
         }[state]
         self.write(f'SET:BOX_LIGHT {value}')
 
+    MICROSCOPE_LIGHT_OFF: bool = False
+    MICROSCOPE_LIGHT_ON: bool = True
+
+    def get_microscope_light(self) -> bool:
+        value = self.get_data().get("power_microscope_light")
+        return {
+            '0': self.BOX_LIGHT_OFF,
+            '1': self.BOX_LIGHT_ON
+        }[value]
+
+    def set_microscope_light(self, state: bool) -> None:
+        value = {
+            self.BOX_LIGHT_OFF: 'OFF',
+            self.BOX_LIGHT_ON: 'ON'
+        }[state]
+        self.write(f'SET:MICROSCOPE_LIGHT {value}')
+
+    PROBECARD_LIGHT_OFF: bool = False
+    PROBECARD_LIGHT_ON: bool = True
+
+    def get_probecard_light(self) -> bool:
+        value = self.get_data().get("power_probecard_light")
+        return {
+            '0': self.BOX_LIGHT_OFF,
+            '1': self.BOX_LIGHT_ON
+        }[value]
+
+    def set_probecard_light(self, state: bool) -> None:
+        value = {
+            self.BOX_LIGHT_OFF: 'OFF',
+            self.BOX_LIGHT_ON: 'ON'
+        }[state]
+        self.write(f'SET:PROBCARD_LIGHT {value}')
+
     TEST_LED_OFF: bool = False
     TEST_LED_ON: bool = True
 
@@ -117,9 +151,13 @@ class EnvironBox(Instrument):
 
     def get_data(self):
         values = self.query('GET:PC_DATA ?').split(',')
+        relay_status = int(values[23])
         return {
             'box_humidity': float(values[1]),
             'box_temperature': float(values[2]),
+            'power_box_light': bool(relay_status >> 1),
+            'power_probecard_light': bool(relay_status >> 2),
+            'power_microscope_light': bool(relay_status >> 6),
             'box_light': bool(int(values[24])),
             'box_door': bool(int(values[25])),
             'discharge_time': float(values[31]),
