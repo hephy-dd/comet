@@ -14,6 +14,7 @@ class K2470Emulator(IEC60488Emulator):
         super().__init__()
         self.language = 'SCPI'
         self.error_queue = []
+        self.route_terminals = 'FRON'
         self.output_state = False
         self.source_function_mode = 'VOLT'
         self.source_level = {'VOLT': 0., 'CURR': 0.}
@@ -34,6 +35,7 @@ class K2470Emulator(IEC60488Emulator):
     @message(r'\*RST')
     def set_rst(self):
         self.error_queue.clear()
+        self.route_terminals = 'FRON'
         self.output_state = False
         self.source_function_mode = 'VOLT'
         self.source_level.update({'VOLT': 0., 'CURR': 0.})
@@ -57,6 +59,16 @@ class K2470Emulator(IEC60488Emulator):
             code, message = self.error_queue.pop(0)
             return f'{code}, "{message}"'
         return '0, "no error"'
+
+    # Route terminal
+
+    @message(r':?ROUT(?:e)?:TERM(?:inal)?\?')
+    def get_route_terminals(self):
+        return self.route_terminals
+
+    @message(r':?ROUT(?:e)?:TERM(?:inal)? (FRON|REAR)')
+    def set_route_terminals(self, terminal):
+        self.route_terminals = terminal
 
     # Output state
 
