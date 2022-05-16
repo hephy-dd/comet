@@ -62,11 +62,11 @@ class K2470Emulator(IEC60488Emulator):
 
     # Route terminal
 
-    @message(r':?ROUT(?:e)?:TERM(?:inal)?\?')
+    @message(r':?ROUT:TERM\?')
     def get_route_terminals(self):
         return self.route_terminals
 
-    @message(r':?ROUT(?:e)?:TERM(?:inal)? (FRON|REAR)')
+    @message(r':?ROUT:TERM (FRON|REAR)')
     def set_route_terminals(self, terminal):
         self.route_terminals = terminal
 
