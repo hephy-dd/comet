@@ -9,7 +9,7 @@ class UtilsTest(unittest.TestCase):
         self.assertEqual(utils.to_unit(42, "mV"), 42.)
         self.assertEqual(utils.to_unit("42V", "V"), 42.)
         self.assertEqual(utils.to_unit("42mV", "V"), .042)
-        self.assertEqual(utils.to_unit("42 V", "mV"), 420.)
+        self.assertEqual(utils.to_unit("42 V", "mV"), 42e3)
 
     def test_auto_scale(self):
         self.assertEqual(utils.auto_scale(1024), (1e3, 'k', 'kilo'))
