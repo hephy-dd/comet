@@ -6,6 +6,7 @@ from pint import UnitRegistry
 
 __all__ = [
     'ureg',
+    'to_unit',
     'auto_scale',
     'combine_matrix',
     'inverse_square',
@@ -14,6 +15,12 @@ __all__ = [
 ]
 
 ureg = UnitRegistry()
+
+
+def to_unit(value, unit):
+    if isinstance(value, str):
+        return ureg(value).to(unit).m
+    return (ureg(unit) * value).to(unit).m
 
 
 def auto_scale(value):
