@@ -1,9 +1,13 @@
+from typing import Any, Dict, Type
+
 from .utils import to_unit
 
 __all__ = ["inspect_parameters", "Parameter", "ParameterBase"]
 
+ParameterBaseType = Type["ParameterBase"]
+ParameterValues = Dict[str, Any]
 
-def inspect_parameters(cls):
+def inspect_parameters(cls: ParameterBaseType) -> Dict[str, "Parameter"]:
     """Retrun dictionary of assigned class parameters."""
     parameters = {}
     for mro_cls in cls.__mro__:
@@ -14,10 +18,21 @@ def inspect_parameters(cls):
     return parameters
 
 
+def validate_parameters(cls: ParameterBaseType, values: ParameterValues) -> None:
+    """Validates a dictionary containing parameter values."""
+    for key, parameter in inspect_parameters(cls).items():
+        if parameter.required:
+            if not key in values:
+                raise KeyError(f"missing required parameter: {repr(key)}")
+        if key in values:
+            parameter.validate(values.get(key))
+
+
 class Parameter:
     """Class parameter specification."""
 
-    def __init__(self, default=None, *, type=None, minimum=None, maximum=None, choice=None, unit=None, constraint=None):
+    def __init__(self, default=None, *, type=None, minimum=None, maximum=None,
+                 choice=None, unit=None, constraint=None):
         self.type = type
         self.minimum = minimum
         self.maximum = maximum
@@ -35,27 +50,33 @@ class Parameter:
     def validate(self, value):
         if self.choice is not None:
             if value not in self.choice:
-                raise ValueError(f"not allowed: {repr(value)}, musst be one of: {repr(self.choice)}")
+                raise ValueError(f"value not allowed: {repr(value)}, musst be one of: {repr(self.choice)}")
         if self.unit is not None:
             value = to_unit(value, self.unit)
         if self.type is not None:
             value = self.type(value)
         if self.minimum is not None:
-            if value < self.minimum:
-                raise ValueError(f"out of bounds: {repr(value)}")
+            minimum = self.minimum
+            if self.unit is not None:
+                minimum = to_unit(minimum, self.unit)
+            if value < minimum:
+                raise ValueError(f"value out of bounds: {repr(value)}")
         if self.maximum is not None:
-            if value > self.maximum:
-                raise ValueError(f"out of bounds: {repr(value)}")
+            maximum = self.maximum
+            if self.unit is not None:
+                maximum = to_unit(maximum, self.unit)
+            if value > maximum:
+                raise ValueError(f"value out of bounds: {repr(value)}")
         if self.constraint is not None:
             if not self.constraint(self, value):
-                raise ValueError(f"failed constraint check: {repr(value)}")
+                raise ValueError(f"failed value constraint check: {repr(value)}")
         return value
 
 
 class ParameterBase:
     """Base class for parameters."""
 
-    def __init__(self, values: dict = None) -> None:
+    def __init__(self, values: ParameterValues = None) -> None:
         self.__values = {}
         self.update_parameters(values or {})
 
@@ -72,14 +93,14 @@ class ParameterBase:
         super().__setattr__(name, value)
 
     @property
-    def parameters(self) -> dict:
+    def parameters(self) -> ParameterValues:
         """Retrun dictionary containing all parameter values."""
         values = {}
         for key, value in inspect_parameters(type(self)).items():
             values[key] = getattr(self, key)
         return values
 
-    def update_parameters(self, values: dict) -> None:
+    def update_parameters(self, values: ParameterValues) -> None:
         """Update parameter values using a dictionary."""
         parameters = inspect_parameters(type(self))
 
