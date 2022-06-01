@@ -17,7 +17,11 @@ __all__ = [
 ureg = UnitRegistry()
 
 
-def to_unit(value, unit):
+def to_unit(value: Union[float, str, ureg.Quantity], unit: str) -> float:
+    """Convert value or string representation with or without unit to another
+    unit."""
+    if isinstance(value, ureg.Quantity):
+        return value.to(unit).m
     if isinstance(value, str):
         return ureg(value).to(unit).m
     return (ureg(unit) * value).to(unit).m
