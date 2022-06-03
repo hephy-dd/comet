@@ -12,6 +12,7 @@ class K6514Emulator(IEC60488Emulator):
         super().__init__()
         self.error_queue = []
         self.zero_check = False
+        self.zero_correction = False
         self.sense_function = 'VOLT'
         self.sense_average_tcontrol = 'REP'
         self.sense_average_count = 10
@@ -24,6 +25,7 @@ class K6514Emulator(IEC60488Emulator):
     def set_rst(self):
         self.error_queue.clear()
         self.zero_check = False
+        self.zero_correction = False
         self.sense_function = 'VOLT'
         self.sense_average_tcontrol = 'REP'
         self.sense_average_count = 10
@@ -61,14 +63,20 @@ class K6514Emulator(IEC60488Emulator):
 
     @message(r':?FETC[H]?\?')
     def get_fetch(self):
-        vdc = random.uniform(.00025, .001)
-        return format(vdc, 'E')
+        # TODO
+        curr_min = float(self.options.get("curr.min", 2.5e-10))
+        curr_max = float(self.options.get("curr.min", 2.5e-9))
+        value = random.uniform(curr_min, curr_max)
+        return format(value, 'E')
 
     @message(r':?READ\?')
     def get_read(self):
         time.sleep(random.uniform(.25, 1.0))
-        vdc = random.uniform(.00025, .001)
-        return format(vdc, 'E')
+        # TODO
+        curr_min = float(self.options.get("curr.min", 2.5e-10))
+        curr_max = float(self.options.get("curr.min", 2.5e-9))
+        value = random.uniform(curr_min, curr_max)
+        return format(value, 'E')
 
     @message(r':?SYST:ZCH\s+(0|1|ON|OFF)')
     def set_zero_check(self, value):
@@ -77,6 +85,14 @@ class K6514Emulator(IEC60488Emulator):
     @message(r':?SYST:ZCH\?')
     def get_zero_check(self):
         return {False: '0', True: '1'}[self.zero_check]
+
+    @message(r':?SYST:ZCOR\s+(0|1|ON|OFF)')
+    def set_zero_correction(self, value):
+        self.zero_correction = {'0': False, '1': True, 'OFF': False, 'ON': True}[value]
+
+    @message(r':?SYST:ZCOR\?')
+    def get_zero_correction(self):
+        return {False: '0', True: '1'}[self.zero_correction]
 
     @message(r':?SENS:FUNC \'(VOLT|CURR|RES|CHAR)(?:\:DC)?\'')
     def set_sense_function(self, value: str):

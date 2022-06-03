@@ -56,6 +56,9 @@ config_schema = schema.Schema({
             'port': int,
             schema.Optional('termination'): str,
             schema.Optional('request_delay'): float,
+            schema.Optional('options'): {
+                str: object
+            },
         }
     }
 })
@@ -69,16 +72,15 @@ def load_config(filename: str) -> dict:
         params.setdefault('hostname', default_hostname)
         params.setdefault('termination', default_termination)
         params.setdefault('request_delay', default_request_delay)
-    # Validate config
-    validate_config(config)
-    return config
+        params.setdefault('options', {})
+    return validate_config(config)
 
 
-def validate_config(config: dict) -> None:
-    config_schema.validate(config)
+def validate_config(config: dict) -> dict:
+    return config_schema.validate(config)
 
 
-def parse_args():
+def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument('-f', '--file', dest='filename', metavar='string', default=default_config_filename)
     return parser.parse_args()
@@ -91,7 +93,7 @@ def event_loop() -> None:
         ...
 
 
-def main() -> int:
+def main() -> None:
     args = parse_args()
 
     logging.basicConfig(level=logging.INFO)
@@ -106,8 +108,10 @@ def main() -> int:
         port = params.get('port')
         termination = params.get('termination')
         request_delay = params.get('request_delay')
+        options = params.get('options', {})
         address = hostname, port
         emulator = emulator_factory(module)()
+        emulator.options.update(options)
         context = TCPServerContext(name, emulator, termination, request_delay)
         server = TCPServer(address, context)
         threads.append(TCPServerThread(server))
@@ -126,8 +130,6 @@ def main() -> int:
 
     for thread in threads:
         thread.join()
-
-    return 0
 
 
 if __name__ == '__main__':

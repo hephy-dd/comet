@@ -73,6 +73,8 @@ def get_routes(cls: type) -> List[Route]:
 
 class Emulator:
 
+    options = {}
+
     def __call__(self, message: str) -> Union[None, str, list]:
         logging.debug("handle message: %s", message)
         for route in get_routes(type(self)):
@@ -104,6 +106,8 @@ def parse_args():
 def run(emulator) -> int:
     """Convenience emulator runner using TCP server."""
     args = parse_args()
+
+    assert isinstance(emulator, Emulator), "emulator must inherit from class Emulator"
 
     logging.basicConfig(level=logging.INFO)
 

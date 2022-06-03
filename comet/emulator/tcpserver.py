@@ -44,46 +44,46 @@ class TCPServer(socketserver.TCPServer):
 
     allow_reuse_address = True
 
-    def __init__(self, address, context):
+    def __init__(self, address, context) -> None:
         super().__init__(address, TCPRequestHandler)
         self.context = context
-        self.shutdown_event = threading.Event()
+        self._shutdown_event = threading.Event()
 
     @property
     def is_shutdown(self) -> bool:
-        return self.shutdown_event.is_set()
+        return self._shutdown_event.is_set()
 
-    def shutdown(self):
-        self.shutdown_event.set()
+    def shutdown(self) -> None:
+        self._shutdown_event.set()
         super().shutdown()
 
 
 class TCPServerThread(threading.Thread):
 
-    def __init__(self, server):
+    def __init__(self, server: object) -> None:
         super().__init__()
-        self.server = server
-        self.shutdown_request = threading.Event()
+        self.server: object = server
+        self._shutdown_request = threading.Event()
 
-    def shutdown(self):
-        self.shutdown_request.set()
+    def shutdown(self) -> None:
+        self._shutdown_request.set()
         self.server.shutdown()
 
-    def run(self):
+    def run(self) -> None:
         with self.server as server:
             server.serve_forever()
 
 
 class TCPServerContext:
 
-    def __init__(self, name, emulator, termination, request_delay):
-        self.name = name
-        self.emulator = emulator
-        self.termination = termination
-        self.request_delay = request_delay
+    def __init__(self, name: str, emulator: object, termination: str, request_delay: float) -> None:
+        self.name: str = name
+        self.emulator: object = emulator
+        self.termination: str = termination
+        self.request_delay: float = request_delay
         self.logger = logging.getLogger(name)
 
-    def __call__(self, request):
+    def __call__(self, request) -> str:
         response = self.emulator(request)
         time.sleep(self.request_delay)
         return response

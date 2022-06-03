@@ -12,6 +12,7 @@ class E4980AEmulator(IEC60488Emulator):
 
     def __init__(self) -> None:
         super().__init__()
+        self.function_impedance_type: str = 'CPD'
         self.correction_open_state: int = 0
         self.correction_use: int = 0
         self.correction_method: str = 'SING'
@@ -20,9 +21,29 @@ class E4980AEmulator(IEC60488Emulator):
         self.bias_voltage_level: float = 0.
         self.bias_state: bool = False
 
+    @message(r'\*RST')
+    def set_rst(self):
+        self.function_impedance_type = 'CPD'
+        self.correction_open_state = 0
+        self.correction_use = 0
+        self.correction_method = 'SING'
+        self.correction_channel = 0
+        self.correction_length = 4
+        self.bias_voltage_level = 0.
+        self.bias_state = False
+
     @message(r':?SYST:ERR(?::NEXT)?\?')
     def get_system_error(self) -> str:
         return '+0, "no error"'
+
+    @message(r':?FUNC:IMP:TYPE\?')
+    def get_function_impedance_type(self) -> str:
+        return self.function_impedance_type
+
+    @message(r':?FUNC:IMP:TYPE\s+(CPD|CPRP|CSRS|LSRS)$')
+    def set_function_impedance_type(self, type) -> None:
+        # TODO
+        self.function_impedance_type = type
 
     @message(r':?CORR:OPEN:STAT\?')
     def get_correction_open_state(self) -> str:
@@ -66,7 +87,14 @@ class E4980AEmulator(IEC60488Emulator):
 
     @message(r':?FETC[H]?(?:(?::IMP)?:FORM)?\?')
     def get_fetch(self):
-        return '{:E},{:E},{:+d}'.format(random.random(), random.random(), 0)
+        # TODO
+        cp_min = float(self.options.get("cp.min", 2.5e-10))
+        cp_max = float(self.options.get("cp.max", 2.5e-9))
+        rp_min = float(self.options.get("rp.min", 100))
+        rp_max = float(self.options.get("rp.max", 120))
+        prim = random.uniform(cp_min, cp_max)
+        sec = random.uniform(rp_min, rp_max)
+        return '{:E},{:E},{:+d}'.format(prim, sec, 0)
 
     @message(r':?BIAS:POL:CURR(\::LEV)?\?')
     def get_bias_polarity_current_level(self):

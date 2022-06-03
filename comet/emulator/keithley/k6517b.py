@@ -12,6 +12,7 @@ class K6517BEmulator(IEC60488Emulator):
         super().__init__()
         self.error_queue = []
         self.zero_check = False
+        self.zero_correction = False
         self.sense_function = 'VOLT'
         self.sense_average_tcontrol = {'VOLT': 'REP', 'CURR': 'REP'}
         self.sense_average_count = {'VOLT': 10, 'CURR': 10}
@@ -21,6 +22,7 @@ class K6517BEmulator(IEC60488Emulator):
     def set_reset(self):
         self.error_queue.clear()
         self.zero_check = False
+        self.zero_correction = False
         self.sense_function = 'VOLT'
         self.sense_average_tcontrol.update({'VOLT': 'REP', 'CURR': 'REP'})
         self.sense_average_count.update({'VOLT': 10, 'CURR': 10})
@@ -65,6 +67,14 @@ class K6517BEmulator(IEC60488Emulator):
     def set_system_zerocheck(self, value):
         self.zero_check = {'OFF': False, 'ON': True}[value]
 
+    @message(r':?SYST:ZCOR(?:STAT)?\s+(0|1|ON|OFF)')
+    def set_zero_correction(self, value):
+        self.zero_correction = {'0': False, '1': True, 'OFF': False, 'ON': True}[value]
+
+    @message(r':?SYST:ZCOR(?:STAT)\?')
+    def get_zero_correction(self):
+        return {False: '0', True: '1'}[self.zero_correction]
+
     @message(r':?SENS:FUNC \'(VOLT|CURR|RES|CHAR)(?:\:DC)?\'')
     def set_sense_function(self, value: str):
         self.sense_function = value
@@ -80,12 +90,17 @@ class K6517BEmulator(IEC60488Emulator):
     @message(r':?READ\?')
     def get_read(self):
         time.sleep(.25)
-        return format(random.uniform(0.000001, 0.0001))
+        curr_min = float(self.options.get("curr.min", 2.5e-10))
+        curr_max = float(self.options.get("curr.min", 2.5e-9))
+        value = random.uniform(curr_min, curr_max)
+        return format(value, 'E')
 
     @message(r':?FETC[H]?\?')
     def get_fetch(self):
-        time.sleep(.25)
-        return format(random.uniform(0.000001, 0.0001))
+        curr_min = float(self.options.get("curr.min", 2.5e-10))
+        curr_max = float(self.options.get("curr.min", 2.5e-9))
+        value = random.uniform(curr_min, curr_max)
+        return format(value, 'E')
 
     @message(r':?MEAS:CURR\?')
     def get_measure_current(self):
