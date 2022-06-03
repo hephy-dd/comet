@@ -15,19 +15,19 @@ class TANGOEmulator(Emulator):
 
     # Controller informations
 
-    @message(r'version')
+    @message(r'\??version')
     def get_version(self):
         return type(self).version
 
-    @message(r'nversion')
+    @message(r'\??nversion')
     def get_nversion(self):
         return type(self).version
 
-    @message(r'identity')
+    @message(r'\??identity')
     def get_identity(self):
         return 'TANGO-EMULATOR 0 0 0 0'
 
-    @message(r'tango')
+    @message(r'\??tango')
     def get_tango(self):
         return [type(self).version_string, type(self).tango_serial_number]
 
