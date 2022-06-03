@@ -1,8 +1,9 @@
 # COMET
 
-Control and Measurement Toolkit (COMET)
+**Control and Measurement Toolkit (COMET)**
 
-Providing generic instrument drivers and instrument emulators. Inspired by
+Providing generic instrument drivers, instrument emulators for testing and and
+utilities for instrumentation applications. Inspired by
 [QCoDeS](https://github.com/QCoDeS/Qcodes),
 [Lantz](https://github.com/LabPy/lantz),
 [Slave](https://github.com/p3trus/slave),
@@ -114,7 +115,8 @@ for voltage in LinearRange(-10, +10, 0.25):
 
 ### Parameter
 
-Bind typed and bounded parameters to classes inheriting from class `ParameterBase`.
+Bind typed and bounded parameters to classes inheriting from class
+`ParameterBase`.
 
 ```python
 from comet.parameter import ParameterBase, Parameter
@@ -150,7 +152,8 @@ measurement.write_output = False
 
 ### Utils
 
-Use [pint](https://pint.readthedocs.io/en/stable/) unit registry to convert between units.
+Use [pint](https://pint.readthedocs.io/en/stable/) unit registry to convert
+between units.
 
 ```python
 from comet.utils import ureg, to_unit
@@ -169,7 +172,9 @@ print(to_unit(2.5, "pA"))
 
 ## Emulators
 
-To emulate one or more instruments using TCP sockets create a `emulators.yaml` configuration file in your project directory specifying emulator module and port.
+To emulate one or more instruments using TCP sockets create a `emulators.yaml`
+configuration file in your project directory specifying emulator module and
+port.
 
 ```yaml
 version: '1.0'
