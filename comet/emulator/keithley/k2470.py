@@ -221,11 +221,15 @@ class K2470Emulator(IEC60488Emulator):
 
     @message(r':?MEAS:VOLT\?')
     def get_measure_voltage(self):
-        return format(random.uniform(0, 1), 'E')
+        volt_min = float(self.options.get("curr.min", 0))
+        volt_max = float(self.options.get("curr.max", 10))
+        return format(random.uniform(volt_min, volt_max), 'E')
 
     @message(r':?MEAS:CURR\?')
     def get_measure_current(self):
-        return format(random.uniform(0, 1) / 1e3, 'E')
+        curr_min = float(self.options.get("curr.min", 1e6))
+        curr_max = float(self.options.get("curr.max", 1e7))
+        return format(random.uniform(curr_min, curr_max), 'E')
 
     # TSP
 

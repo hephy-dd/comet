@@ -260,11 +260,15 @@ class K2400Emulator(IEC60488Emulator):
 
     @message(r':?READ\?')
     def get_read(self):
-        return format(random.uniform(0.00004, 0.0004), 'E')
+        curr_min = float(self.options.get("curr.min", 1e6))
+        curr_max = float(self.options.get("curr.max", 1e7))
+        return format(random.uniform(curr_min, curr_max), 'E')
 
     @message(r':?FETC[H]?\?')
     def get_read2(self):
-        return format(11.42, 'E')
+        curr_min = float(self.options.get("curr.min", 1e6))
+        curr_max = float(self.options.get("curr.max", 1e7))
+        return format(random.uniform(curr_min, curr_max), 'E')
 
     @message(r'(.*)')
     def unknown_message(self, request):
