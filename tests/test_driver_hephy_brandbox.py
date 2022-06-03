@@ -2,6 +2,7 @@ import unittest
 
 from comet.driver.hephy import BrandBox
 
+
 class Resource:
 
     def __init__(self, buffer):

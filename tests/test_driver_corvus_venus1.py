@@ -4,6 +4,7 @@ from comet.driver.corvus import Venus1
 
 from .test_driver import BaseDriverTest
 
+
 class Venus1Test(BaseDriverTest):
 
     driver_cls = Venus1

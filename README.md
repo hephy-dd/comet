@@ -70,6 +70,26 @@ See [comet/driver](comet/driver) for available instrument drivers.
 
 ## Helpers
 
+### Estimate
+
+Estimate remaining time for loop operations using class `Estimate`.
+
+Call method `advance` to proceed to the next iteration and update average and
+remaining time calculation.
+
+```python
+from comet.estimate import Estimate
+
+e = Estimate(42)  # start stopwatch
+for i in range(42 + 1):
+    ...
+    e.advance()  # stop time since last step
+    print("passed:", e.passed)
+    print("remaining time:", e.remaining)
+    print("elapsed time:", e.elapsed)
+    print("average time:", e.average)
+```
+
 ### Filters
 
 Test if standard deviation / mean < threshold using function `std_mean_filter`.
@@ -88,10 +108,8 @@ Voltage ramps using `LinearRange` generator class.
 ```python
 from comet.functions import LinearRange
 
-...
-
 for voltage in LinearRange(-10, +10, 0.25):
-    smu.voltage_level = voltage
+    ...
 ```
 
 ### Parameter
