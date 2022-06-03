@@ -78,5 +78,5 @@ class K707B(SwitchingMatrix):
     def tsp_print(self, expression: str) -> str:
         return self.query(f'print({expression})')
 
-    def tsp_assign(self, expression: str, value: str) -> str:
-        return self.write(f'{expression} = {value}')
+    def tsp_assign(self, expression: str, value: str) -> None:
+        self.write(f'{expression} = {value}')

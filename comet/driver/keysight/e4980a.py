@@ -94,7 +94,7 @@ class E4980A(LCRMeter):
         self.write(f':APER {apterture}')
 
     @property
-    def correction_length(self, meters: int) -> None:
+    def correction_length(self) -> int:
         return int(float(self.query(':CORR:LENG?')))
 
     @correction_length.setter

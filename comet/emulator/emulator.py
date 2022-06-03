@@ -5,7 +5,7 @@ import logging
 import re
 import threading
 
-from typing import Any, Callable, List, Optional, Type
+from typing import Any, Callable, List, Optional, Type, Union
 
 from .tcpserver import TCPServer, TCPServerContext
 
@@ -73,7 +73,7 @@ def get_routes(cls: type) -> List[Route]:
 
 class Emulator:
 
-    def __call__(self, message: str) -> Optional[str]:
+    def __call__(self, message: str) -> Union[None, str, list]:
         logging.debug("handle message: %s", message)
         for route in get_routes(type(self)):
             match = re.match(route.route, message)
@@ -83,9 +83,9 @@ class Emulator:
                 if response is not None:
                     # If result is list or tuple make sure items are strings
                     if isinstance(response, list):
-                        return list([format(r) for r in response])
+                        return [format(r) for r in response]
                     if isinstance(response, tuple):
-                        return tuple([format(r) for r in response])
+                        return [format(r) for r in response]
                     # Else make sure result is string
                     return format(response)
                 return response

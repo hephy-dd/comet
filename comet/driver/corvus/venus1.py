@@ -199,8 +199,8 @@ class Axis(Driver):
         >>> instr.x.sw
         (0, 0)
         """
-        values = self.resource.query(f'{self._index} getsw').split()
-        return int(values[0]), int(values[1])
+        cal, rm = self.resource.query(f'{self._index} getsw').split()
+        return int(cal), int(rm)
 
     # TODO sw
 
@@ -244,7 +244,8 @@ class Axis(Driver):
         >>> instr.x.nlimit
         (0.0, 12.0)
         """
-        return tuple(map(float, self.resource.query(f'{self._index} getnlimit').split()))
+        lower, upper = self.resource.query(f'{self._index} getnlimit').split()
+        return float(lower), float(upper)
 
     # TODO org()
 
@@ -432,7 +433,7 @@ class Venus1(Driver):
         return f'{model} {version} {serialno}'
 
     @property
-    def pitch(self) -> Tuple[float]:
+    def pitch(self) -> Tuple[float, ...]:
         """Returns tuple containing pitches.
 
         >>> instr.pitch
@@ -465,7 +466,7 @@ class Venus1(Driver):
         self.resource.write(f'{value:d} setdim')
 
     @property
-    def unit(self) -> Tuple[int]:
+    def unit(self) -> Tuple[int, ...]:
         """Returns tuple containing units.
         0: Microstep
         1: μm
@@ -482,7 +483,7 @@ class Venus1(Driver):
         return tuple(map(int, values))
 
     @property
-    def umotmin(self) -> Tuple[int]:
+    def umotmin(self) -> Tuple[int, ...]:
         """Returns tuple containing minimum motor voltages in [mV].
 
         >>> instr.umotmin
@@ -496,7 +497,7 @@ class Venus1(Driver):
         return tuple(map(int, values))
 
     @property
-    def umotgrad(self) -> Tuple[int]:
+    def umotgrad(self) -> Tuple[int, ...]:
         """Returns tuple containing motor phase current/torque.
 
         >>> instr.umotgrad
@@ -510,7 +511,7 @@ class Venus1(Driver):
         return tuple(map(int, values))
 
     @property
-    def polepairs(self) -> Tuple[int]:
+    def polepairs(self) -> Tuple[int, ...]:
         """Returns tuple containing step motor pole pairs.
 
         >>> instr.polepairs
@@ -552,7 +553,7 @@ class Venus1(Driver):
         self.resource.write(f'{value:d} setpowerup')
 
     @property
-    def phaseares(self) -> Tuple[int, int, int]:
+    def phaseares(self) -> Tuple[int, ...]:
         """Returns tuple containing phase A resolution.
 
         >>> instr.phaseares
@@ -565,7 +566,7 @@ class Venus1(Driver):
         values.append(self.resource.read())
         return tuple(map(int, values))
 
-    def mode(self, value: int) -> None:
+    def _mode(self, value: int) -> None:
         """Set command mode.
 
         0: HOST_MODE
@@ -579,7 +580,7 @@ class Venus1(Driver):
         # buffer by reading querying instrument identity.
         self.resource.query('identify')
 
-    mode = property(None, mode)
+    mode = property(None, _mode)
 
     @property
     def ipadr(self) -> str:
@@ -727,7 +728,7 @@ class Venus1(Driver):
     rm = rangemeasure
 
     @property
-    def sw(self) -> Tuple[int, int, int, int, int, int]:
+    def sw(self) -> Tuple[int, ...]:
         """Returns tuple containing limit switch modes for calibration and
         rangemeasure (0: closing, 1: opening, 2: ignore).
 
@@ -767,8 +768,8 @@ class Venus1(Driver):
             values[1][1],
             values[2][1],
         ]
-        limits = ' '.join([format(limit, '.6f') for limit in limits])
-        self.resource.write(f'{limits} setlimit')
+        value = ' '.join([format(limit, '.6f') for limit in limits])
+        self.resource.write(f'{value} setlimit')
 
     # TODO orgsw
 
@@ -782,7 +783,7 @@ class Venus1(Driver):
         self.resource.write('abort')
 
     @property
-    def mp(self) -> Tuple[int]:
+    def mp(self) -> Tuple[int, ...]:
         """Returns states of axes motors (0: currentless, 1: under current).
 
         >>> instr.mp
@@ -792,7 +793,7 @@ class Venus1(Driver):
         return tuple(map(int, values))
 
     @property
-    def pos(self) -> Tuple[float, float, float]:
+    def pos(self) -> Tuple[float, ...]:
         """Returns tuple containing axes position.
 
         >>> instr.pos
@@ -811,7 +812,7 @@ class Venus1(Driver):
         self.resource.write(f'{x:.6f} {y:.6f} {z:.6f} setpos')
 
     @property
-    def pdisplay(self) -> Tuple[Tuple[int, int]]:
+    def pdisplay(self) -> Tuple[Tuple[int, ...], ...]:
         """Returns format of position display for host and terminal mode.
 
         >>> instr.pdisplay

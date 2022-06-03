@@ -134,7 +134,7 @@ class K2470(RouteTerminalMixin, SourceMeterUnit):
         self.write(f':SOUR:CURR:RANG {level:E}')
 
     @property
-    def current_compliance(self, level: float) -> None:
+    def current_compliance(self) -> float:
         return float(self.query(':SOUR:VOLT:ILIM:LEV?'))
 
     @current_compliance.setter

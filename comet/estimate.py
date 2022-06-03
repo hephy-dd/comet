@@ -19,7 +19,7 @@ class Estimate:
 
     def __init__(self, count: int) -> None:
         self._count: int = count
-        self._deltas: List[datetime] = []
+        self._deltas: List[timedelta] = []
         self._start: datetime = datetime.now()
         self._prev: datetime = datetime.now()
 
@@ -44,15 +44,15 @@ class Estimate:
         return len(self._deltas)
 
     @property
-    def average(self) -> datetime:
+    def average(self) -> timedelta:
         return sum(self._deltas, timedelta(0)) / max(1, len(self._deltas))
 
     @property
-    def elapsed(self) -> datetime:
+    def elapsed(self) -> timedelta:
         return datetime.now() - self._start
 
     @property
-    def remaining(self) -> datetime:
+    def remaining(self) -> timedelta:
         return max(timedelta(0), (self.average * self.count) - self.elapsed)
 
     @property

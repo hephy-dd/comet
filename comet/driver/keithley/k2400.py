@@ -148,7 +148,7 @@ class K2400(BeeperMixin, RouteTerminalMixin, SourceMeterUnit):
         self.write(f':SOUR:CURR:RANG {level:E}')
 
     @property
-    def current_compliance(self, level: float) -> None:
+    def current_compliance(self) -> float:
         return float(self.query(':SENS:CURR:PROT:LEV?'))
 
     @current_compliance.setter

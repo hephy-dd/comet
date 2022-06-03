@@ -77,7 +77,7 @@ class ParameterBase:
     """Base class for parameters."""
 
     def __init__(self, values: ParameterValues = None) -> None:
-        self.__values = {}
+        self.__values: Dict[str, Any] = {}
         self.update_parameters(values or {})
 
     def __getattribute__(self, name):
