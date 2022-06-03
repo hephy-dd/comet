@@ -2,6 +2,7 @@ import unittest
 
 from comet import utils
 
+
 class UtilsTest(unittest.TestCase):
 
     def test_to_unit(self):
