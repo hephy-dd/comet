@@ -56,9 +56,7 @@ config_schema = schema.Schema({
             'port': int,
             schema.Optional('termination'): str,
             schema.Optional('request_delay'): float,
-            schema.Optional('options'): {
-                str: object
-            },
+            schema.Optional('options'): dict
         }
     }
 })
