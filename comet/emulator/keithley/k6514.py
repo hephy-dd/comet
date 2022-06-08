@@ -61,22 +61,25 @@ class K6514Emulator(IEC60488Emulator):
     def set_init(self):
         time.sleep(random.uniform(.5, 1.0))
 
+    def _reading(self):
+        if self.sense_function == 'CURR':
+            curr_min = float(self.options.get("curr.min", 2.5e-10))
+            curr_max = float(self.options.get("curr.max", 2.5e-9))
+            return random.uniform(curr_min, curr_max)
+        elif self.sense_function == 'VOLT':
+            volt_min = float(self.options.get("volt.min", -5))
+            volt_max = float(self.options.get("volt.max", +5))
+            return random.uniform(volt_min, volt_max)
+        return 0
+
     @message(r':?FETC[H]?\?')
     def get_fetch(self):
-        # TODO
-        curr_min = float(self.options.get("curr.min", 2.5e-10))
-        curr_max = float(self.options.get("curr.min", 2.5e-9))
-        value = random.uniform(curr_min, curr_max)
-        return format(value, 'E')
+        return format(self._reading(), 'E')
 
     @message(r':?READ\?')
     def get_read(self):
         time.sleep(random.uniform(.25, 1.0))
-        # TODO
-        curr_min = float(self.options.get("curr.min", 2.5e-10))
-        curr_max = float(self.options.get("curr.min", 2.5e-9))
-        value = random.uniform(curr_min, curr_max)
-        return format(value, 'E')
+        return format(self._reading(), 'E')
 
     @message(r':?SYST:ZCH\s+(0|1|ON|OFF)')
     def set_zero_check(self, value):
