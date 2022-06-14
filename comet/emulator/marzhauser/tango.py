@@ -34,7 +34,7 @@ class TANGOEmulator(Emulator):
         value = self.position.get(axis)
         return f"{value:.3f}"
 
-    @message(r'^moa (x|y|z) (\w+)$')
+    @message(r'^moa (x|y|z) ([^\s]+)')
     def set_move_absolute_xyz(self, axis, value):
         self.position[axis] = float(value)
         return "@@@-."
@@ -51,7 +51,7 @@ class TANGOEmulator(Emulator):
         value = self.velocity.get(axis)
         return f"{value:.3f}"
 
-    @message(r'!vel (x|y|z) (\w+)')
+    @message(r'^!vel (x|y|z) ([^\s]+)')
     def set_vel_xyz(self, axis, value):
         self.velocity[axis]= float(value)
         return "@@@-."
