@@ -185,7 +185,13 @@ class K2657AEmulator(IEC60488Emulator):
 
     @message(tsp_print(r'smua\.measure\.i\(\)'))
     def get_measure_i(self):
-        return format(random.random() / 2200., 'E')
+        curr_min = float(self.options.get("curr.min", 1e6))
+        curr_max = float(self.options.get("curr.max", 1e7))
+        return format(random.uniform(curr_min, curr_max), 'E')
+
+    @message(tsp_print(r'smua\.measure\.v\(\)'))
+    def get_measure_v(self):
+        return format(self.smua_source_level + random.uniform(-.25, +.25), 'E')
 
     # Average
 

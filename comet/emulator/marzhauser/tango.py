@@ -7,29 +7,54 @@ __all__ = ['TANGOEmulator']
 class TANGOEmulator(Emulator):
     """TANGO emulator."""
 
-    version = '3.61'
+    version_string = 'TANGO-MINI3-EMULATOR, Version 1.00, Mar 11 2022, 13:51:01'
 
-    version_string = 'TANGO-EMULATOR, Version 1.00, Mar 11 2022, 13:51:01'
-
-    tango_serial_number = '123456789'
+    def __init__(self):
+        super().__init__()
+        self.position = {"x": 0.0, "y": 0.0, "z": 0.0}
+        self.velocity = {"x": 10.0, "y": 10.0, "z": 10.0}
 
     # Controller informations
 
     @message(r'\??version')
     def get_version(self):
-        return type(self).version
+        return type(self).version_string
 
-    @message(r'\??nversion')
-    def get_nversion(self):
-        return type(self).version
+    # Positioning
 
-    @message(r'\??identity')
-    def get_identity(self):
-        return 'TANGO-EMULATOR 0 0 0 0'
+    @message(r'\?pos')
+    def get_pos(self):
+        x = self.position.get("x")
+        y = self.position.get("y")
+        z = self.position.get("z")
+        return f"{x:.3f} {y:.3f} {z:.3f}"
 
-    @message(r'\??tango')
-    def get_tango(self):
-        return [type(self).version_string, type(self).tango_serial_number]
+    @message(r'\?pos (x|y|z)')
+    def get_pos_xyz(self, axis):
+        value = self.position.get(axis)
+        return f"{value:.3f}"
+
+    @message(r'^moa (x|y|z) (\w+)$')
+    def set_move_absolute_xyz(self, axis, value):
+        self.position[axis] = float(value)
+        return "@@@-."
+
+    @message(r'\?vel')
+    def get_vel(self):
+        x = self.velocity.get("x")
+        y = self.velocity.get("y")
+        z = self.velocity.get("z")
+        return f"{x:.3f} {y:.3f} {z:.3f}"
+
+    @message(r'\?vel (x|y|z)')
+    def get_vel_xyz(self, axis):
+        value = self.velocity.get(axis)
+        return f"{value:.3f}"
+
+    @message(r'!vel (x|y|z) (\w+)')
+    def set_vel_xyz(self, axis, value):
+        self.velocity[axis]= float(value)
+        return "@@@-."
 
     # System configuration
 
