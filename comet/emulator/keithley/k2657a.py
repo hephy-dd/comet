@@ -191,7 +191,7 @@ class K2657AEmulator(IEC60488Emulator):
 
     @message(tsp_print(r'smua\.measure\.v\(\)'))
     def get_measure_v(self):
-        return format(self.smua_source_level + random.uniform(-.25, +.25), 'E')
+        return format(self.smua_source_level.get('v', 0) + random.uniform(-.25, +.25), 'E')
 
     # Average
 
