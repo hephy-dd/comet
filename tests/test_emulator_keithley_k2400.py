@@ -81,7 +81,7 @@ class K2400EmulatorTest(unittest.TestCase):
 
     def test_sense_voltage_protection_tripped(self):
         for command in (f':VOLT:PROT:TRIP', f':SENS:VOLT:PROT:TRIP', f'SENS:VOLT:PROT:TRIP'):
-            self.assertEqual(self.emulator(f'{command}?'), format(False, 'E'))
+            self.assertEqual(self.emulator(f'{command}?'), format(False, 'd'))
 
     def test_sense_current_protection_level(self):
         for command in (f':CURR:PROT', f':SENS:CURR:PROT', f'SENS:CURR:PROT:LEV', f':SENS:CURR:PROT:LEV'):
@@ -93,7 +93,7 @@ class K2400EmulatorTest(unittest.TestCase):
 
     def test_sense_current_protection_tripped(self):
         for command in (f':CURR:PROT:TRIP', f':SENS:CURR:PROT:TRIP', f'SENS:CURR:PROT:TRIP', ):
-            self.assertEqual(self.emulator(f'{command}?'), format(False, 'E'))
+            self.assertEqual(self.emulator(f'{command}?'), format(False, 'd'))
 
     def test_sense_function(self):
         for command in (f':FUNC', f':FUNC:ON', f'SENS:FUNC:ON', f':SENS:FUNC:ON'):

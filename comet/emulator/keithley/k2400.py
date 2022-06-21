@@ -175,7 +175,7 @@ class K2400Emulator(IEC60488Emulator):
 
     @message(r'(?::?SENS)?:VOLT:PROT:TRIP\?')
     def get_sense_voltage_protection_tripped(self):
-        return format(False, 'E')  # TODO
+        return format(False, 'd')  # TODO
 
     @message(r'(?::?SENS)?:CURR:PROT(?::LEV)?\?')
     def get_sense_current_protection_level(self):
@@ -190,7 +190,7 @@ class K2400Emulator(IEC60488Emulator):
 
     @message(r'(?::?SENS)?:CURR:PROT:TRIP\?')
     def get_sense_current_protection_tripped(self):
-        return format(False, 'E')  # TODO
+        return format(False, 'd')  # TODO
 
     # Sense function
 
