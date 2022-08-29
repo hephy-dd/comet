@@ -2,12 +2,12 @@ from comet import functions
 
 
 def assert_linear_range(begin, end, step, ref):
-    l = []
+    values = []
     for value in functions.LinearRange(begin, end, step):
-        l.append(value)
-        if len(l) > len(ref):
+        values.append(value)
+        if len(values) > len(ref):
             break
-    assert l == ref
+    assert values == ref
 
 
 class TestFunctions:
@@ -24,7 +24,7 @@ class TestFunctions:
         assert_linear_range(-1, -1, 0, [])
 
         assert_linear_range(0, 0, 1, [])
-        assert_linear_range(0, 1, 2, [])
+        assert_linear_range(0, 1, 2, [0, 1])
         assert_linear_range(0, 1, 1, [0, 1])
         assert_linear_range(1, 0, 1, [1, 0]) # auto step
         assert_linear_range(1, 1, 1, [])
@@ -79,14 +79,30 @@ class TestFunctions:
         assert_linear_range(2.5, -2.5, 2.5, [2.5, 0, -2.5])  # auto step
         assert_linear_range(2.5, -2.5, -2.5, [2.5, 0, -2.5])
 
-        assert_linear_range(0, 1e-5, 2e-6, [0, 2e-6, 4e-6, 6e-6, 8e-6, 1e-5])
-        assert_linear_range(1e-5, 0, 2e-6, [1e-5, 8e-6, 6e-6, 4e-6, 2e-6, 0])
-
         assert_linear_range(0, 1.001e-15, 2e-16, [0, 2e-16, 4e-16, 6e-16, 8e-16, 1e-15, 1.001e-15])  # jump
         assert_linear_range(1e-15, 0, -2e-16, [1e-15, 8e-16, 6e-16, 4e-16, 2e-16, 0])  # auto step
+        assert_linear_range(0, 1, 0.1, [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
 
-        assert_linear_range(0, 1, .3, [0, .3, .6, .9, 1.])
-        assert_linear_range(1, 0, -.3, [1, .7, .4, .1, 0])
+        assert_linear_range(-2.5e-12, 2.5e-12, -2.5e-12, [-2.5e-12, 0, 2.5e-12])  # auto step
+        assert_linear_range(-2.5e-12, 2.5e-12, 2.5e-12, [-2.5e-12, 0, 2.5e-12])
+        assert_linear_range(2.5e-12, -2.5e-12, 2.5e-12, [2.5e-12, 0, -2.5e-12])  # auto step
+        assert_linear_range(2.5e-12, -2.5e-12, -2.5e-12, [2.5e-12, 0, -2.5e-12])
 
-        assert_linear_range(0, .7, .2, [0, .2, .4, .6, .7])
-        assert_linear_range(.7, 0, -.2, [.7, .5, .3, .1, 0])
+        assert_linear_range(-2.5e+12, 2.5e+12, -2.5e+12, [-2.5e+12, 0, 2.5e+12])  # auto step
+        assert_linear_range(-2.5e+12, 2.5e+12, 2.5e+12, [-2.5e+12, 0, 2.5e+12])
+        assert_linear_range(2.5e+12, -2.5e+12, 2.5e+12, [2.5e+12, 0, -2.5e+12])  # auto step
+        assert_linear_range(2.5e+12, -2.5e+12, -2.5e+12, [2.5e+12, 0, -2.5e+12])
+
+        assert_linear_range(-2.5e-24, 2.5e-24, -2.5e-24, [-2.5e-24, 0, 2.5e-24])  # auto step
+        assert_linear_range(-2.5e-24, 2.5e-24, 2.5e-24, [-2.5e-24, 0, 2.5e-24])
+        assert_linear_range(2.5e-24, -2.5e-24, 2.5e-24, [2.5e-24, 0, -2.5e-24])  # auto step
+        assert_linear_range(2.5e-24, -2.5e-24, -2.5e-24, [2.5e-24, 0, -2.5e-24])
+
+        assert_linear_range(-2.5e+24, 2.5e+24, -2.5e+24, [-2.5e+24, 0, 2.5e+24])  # auto step
+        assert_linear_range(-2.5e+24, 2.5e+24, 2.5e+24, [-2.5e+24, 0, 2.5e+24])
+        assert_linear_range(2.5e+24, -2.5e+24, 2.5e+24, [2.5e+24, 0, -2.5e+24])  # auto step
+        assert_linear_range(2.5e+24, -2.5e+24, -2.5e+24, [2.5e+24, 0, -2.5e+24])
+
+        assert_linear_range(0, 0, 5, [])
+        assert_linear_range(0, 1, 5, [0, 1])  # limited step
+        assert_linear_range(1, 0, 5, [1, 0])  # limited step
