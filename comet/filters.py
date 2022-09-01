@@ -2,7 +2,7 @@ from typing import Iterable
 
 import numpy as np
 
-__all__ = ['std_mean_filter']
+__all__ = ["std_mean_filter"]
 
 
 def std_mean_filter(values: Iterable[float], threshold: float) -> bool:

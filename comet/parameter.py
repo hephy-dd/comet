@@ -7,6 +7,7 @@ __all__ = ["inspect_parameters", "Parameter", "ParameterBase"]
 ParameterBaseType = Type["ParameterBase"]
 ParameterValues = Dict[str, Any]
 
+
 def inspect_parameters(cls: ParameterBaseType) -> Dict[str, "Parameter"]:
     """Retrun dictionary of assigned class parameters."""
     parameters = {}
@@ -23,7 +24,7 @@ def validate_parameters(cls: ParameterBaseType, values: ParameterValues) -> None
     for key, parameter in inspect_parameters(cls).items():
         if parameter.required:
             if not key in values:
-                raise KeyError(f"missing required parameter: {repr(key)}")
+                raise KeyError(f"missing required parameter: {key!r}")
         if key in values:
             parameter.validate(values.get(key))
 
@@ -50,7 +51,7 @@ class Parameter:
     def validate(self, value):
         if self.choice is not None:
             if value not in self.choice:
-                raise ValueError(f"value not allowed: {repr(value)}, musst be one of: {repr(self.choice)}")
+                raise ValueError(f"value not allowed: {value!r}, musst be one of: {self.choice!r}")
         if self.unit is not None:
             value = to_unit(value, self.unit)
         if self.type is not None:
@@ -60,16 +61,16 @@ class Parameter:
             if self.unit is not None:
                 minimum = to_unit(minimum, self.unit)
             if value < minimum:
-                raise ValueError(f"value out of bounds: {repr(value)}")
+                raise ValueError(f"value out of bounds: {value!r}")
         if self.maximum is not None:
             maximum = self.maximum
             if self.unit is not None:
                 maximum = to_unit(maximum, self.unit)
             if value > maximum:
-                raise ValueError(f"value out of bounds: {repr(value)}")
+                raise ValueError(f"value out of bounds: {value!r}")
         if self.constraint is not None:
             if not self.constraint(self, value):
-                raise ValueError(f"failed value constraint check: {repr(value)}")
+                raise ValueError(f"failed value constraint check: {value!r}")
         return value
 
 
@@ -89,7 +90,7 @@ class ParameterBase:
 
     def __setattr__(self, name, value):
         if name in inspect_parameters(type(self)):
-            raise AttributeError(f"can't set parameter: {repr(name)}")
+            raise AttributeError(f"can't set parameter: {name!r}")
         super().__setattr__(name, value)
 
     @property
@@ -108,13 +109,13 @@ class ParameterBase:
         required_keys = [key for key, value in parameters.items() if value.required]
         for key in required_keys:
             if key not in self.__values and key not in values:
-                raise KeyError(f"missing required parameter: {repr(key)}")
+                raise KeyError(f"missing required parameter: {key!r}")
 
         # Collect new parameter values
         validated_values = {}
         for key, value in values.items():
             parameter = parameters.get(key)
             if parameter is None:
-                raise KeyError(f"no such parameter: {repr(key)}")
+                raise KeyError(f"no such parameter: {key!r}")
             validated_values[key] = parameter.validate(value)
         self.__values.update(validated_values)

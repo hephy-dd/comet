@@ -4,23 +4,27 @@ from typing import List, Optional, Tuple
 from .driver import Driver
 
 __all__ = [
-    'InstrumentError',
-    'BeeperMixin',
-    'ErrorQueueMixin',
-    'RouteTerminalMixin',
-    'Instrument',
-    'SourceMeterUnit',
-    'Electrometer',
-    'LCRMeter',
-    'SwitchingMatrix'
+    "InstrumentError",
+    "BeeperMixin",
+    "ErrorQueueMixin",
+    "RouteTerminalMixin",
+    "Instrument",
+    "SourceMeterUnit",
+    "Electrometer",
+    "LCRMeter",
+    "SwitchingMatrix",
 ]
 
 
 class InstrumentError:
 
     def __init__(self, code: int, message: str) -> None:
-        self.code = code
-        self.message = message
+        self.code: int = code
+        self.message: str = message
+
+    def __repr__(self) -> str:
+        cls_name = type(self).__name__
+        return f"{cls_name}({self.code}, {self.message!r})"
 
 
 class BeeperMixin(ABC):
@@ -48,8 +52,8 @@ class ErrorQueueMixin(ABC):
 
 class RouteTerminalMixin(ABC):
 
-    ROUTE_TERMINAL_FRONT: str = 'front'
-    ROUTE_TERMINAL_REAR: str = 'rear'
+    ROUTE_TERMINAL_FRONT: str = "front"
+    ROUTE_TERMINAL_REAR: str = "rear"
 
     @property
     @abstractmethod
@@ -92,8 +96,8 @@ class SourceMeterUnit(Instrument):
     def output(self, state: bool) -> None:
         ...
 
-    FUNCTION_VOLTAGE: str = 'voltage'
-    FUNCTION_CURRENT: str = 'current'
+    FUNCTION_VOLTAGE: str = "voltage"
+    FUNCTION_CURRENT: str = "current"
 
     @property
     @abstractmethod
