@@ -11,8 +11,8 @@ class EnvironBoxEmulator(Emulator):
 
     def __init__(self):
         super().__init__()
-        self.sensor_address = 40
-        self.discharge = 'OFF'
+        self.sensor_address: int = 40
+        self.discharge: str = 'OFF'
 
         self.laser_sensor = False
         self.box_light = False
@@ -29,7 +29,7 @@ class EnvironBoxEmulator(Emulator):
         self.door_open = False
         self.laser_enabled = False
 
-        self.test_led = False
+        self.test_led: bool = False
         self.pt100_1_enabled = True
         self.pt100_1 = 22.5
         self.pt100_2_enabled = True
@@ -82,6 +82,7 @@ class EnvironBoxEmulator(Emulator):
         pc_data[23] = self.power_relay_states()
         pc_data[24] = int(self.box_light)
         pc_data[25] = int(self.door_open)
+        pc_data[30] = int(self.test_led)
         pc_data[32] = self.box_lux
         pc_data[33] = self.pt100_1
         pc_data[34] = self.pt100_2
@@ -104,12 +105,12 @@ class EnvironBoxEmulator(Emulator):
         return self.SUCCESS
 
     @message(r'SET:TEST_LED (ON|OFF)')
-    def set_test_led(self, value):
+    def set_test_led(self, value) -> str:
         self.test_led = value == 'ON'
         return self.SUCCESS
 
     @message(r'GET:TEST_LED \?')
-    def get_test_led(self):
+    def get_test_led(self) -> str:
         return {True: '1', False: '0'}[self.test_led]
 
     @message(r'SET:DISCHARGE (AUTO|ON|OFF)')
