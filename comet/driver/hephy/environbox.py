@@ -1,5 +1,5 @@
 import re
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from comet.driver.generic import Instrument
 from comet.driver.generic import InstrumentError
@@ -26,6 +26,28 @@ def parse_error(response: str) -> Optional[InstrumentError]:
         message = ERROR_MESSAGES.get(code, "")
         return InstrumentError(code, message)
     return None
+
+
+def parse_pc_data(response: str) -> Dict[str, Any]:
+    values = response.split(",")
+    relay_status = int(values[23])
+    return {
+        "box_humidity": float(values[1]),
+        "box_temperature": float(values[2]),
+        "power_microscope_ctrl": bool((relay_status >> 0) & 1),
+        "power_box_light": bool((relay_status >> 1) & 1),
+        "power_probecard_light": bool((relay_status >> 2) & 1),
+        "power_laser_sensor": bool((relay_status >> 3) & 1),
+        "power_probecard_camera": bool((relay_status >> 4) & 1),
+        "power_microscope_camera": bool((relay_status >> 5) & 1),
+        "power_microscope_light": bool((relay_status >> 6) & 1),
+        "box_light": bool(int(values[24])),
+        "box_door": bool(int(values[25])),
+        "discharge_time": float(values[31]),
+        "box_lux": float(values[32]),
+        "pt100_1": float(values[33]),
+        "pt100_2": float(values[34]),
+    }
 
 
 class EnvironBox(Instrument):
@@ -150,32 +172,7 @@ class EnvironBox(Instrument):
         self.write(f'SET:TEST_LED {value}')
 
     def get_data(self):
-        values = self.query('GET:PC_DATA ?').split(',')
-        relay_status = int(values[23])
-        return {
-            'n_sensors': int(values[0]),
-            'box_humidity': float(values[1]),
-            'box_temperature': float(values[2]),
-            'box_dewpoint': float(values[3]),
-            'pid_status': bool(int(values[4])),
-            'pid_setpoint': float(values[5]),
-            'control_mode': values[13].strip(),
-            'power_microscope_control': bool(relay_status >> 0 & 0x1),
-            'power_box_light': bool(relay_status >> 1 & 0x1),
-            'power_probecard_light': bool(relay_status >> 2 & 0x1),
-            'power_laser_sensor': bool(relay_status >> 3 & 0x1),
-            'power_probecard_camera': bool(relay_status >> 4 & 0x1),
-            'power_microscope_camera': bool(relay_status >> 5 & 0x1),
-            'power_microscope_light': bool(relay_status >> 6 & 0x1),
-            'box_light': bool(int(values[24])),
-            'box_door': bool(int(values[25])),
-            'safety_alert': bool(int(values[26])),
-            'test_led': bool(int(values[30])),
-            'discharge_time': float(values[31]),
-            'box_lux': float(values[32]),
-            'pt100_1': float(values[33]),
-            'pt100_2': float(values[34]),
-        }
+        return parse_pc_data(self.query('GET:PC_DATA ?'))
 
     # Helper
 
