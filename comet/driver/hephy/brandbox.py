@@ -69,7 +69,7 @@ class BrandBox(SwitchingMatrix):
         self.write(f':OPEN {channel_list}')
 
     def open_all_channels(self) -> None:
-        channel_list = join_channels(self.CHANNELS)
+        channel_list = join_channels(type(self).CHANNELS)
         self.write(f':OPEN {channel_list}')
 
     # Helper

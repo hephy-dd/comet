@@ -43,7 +43,7 @@ class K2700Emulator(IEC60488Emulator):
 
     @message(r':?INIT')
     def set_init(self):
-        pass
+        ...
 
     @message(r':?READ\?')
     def get_read(self):

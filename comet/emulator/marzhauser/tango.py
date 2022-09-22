@@ -4,6 +4,7 @@ from comet.emulator import Emulator, message, run
 
 __all__ = ['TANGOEmulator']
 
+
 class TANGOEmulator(Emulator):
     """TANGO emulator."""
 
@@ -69,7 +70,6 @@ class TANGOEmulator(Emulator):
     @message(r'reset')
     def action_reset(self):
         ...
-
 
 
 if __name__ == '__main__':

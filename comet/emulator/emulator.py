@@ -4,19 +4,18 @@ import inspect
 import logging
 import re
 import threading
-
-from typing import Any, Callable, List, Optional, Type, Union
+from typing import Any, Callable, Dict, List, Optional, Type, Union
 
 from .tcpserver import TCPServer, TCPServerContext
 
-__all__ = ['Emulator', 'message', 'emulator_factory', 'run']
+__all__ = ["Emulator", "message", "emulator_factory", "run"]
 
 logger = logging.getLogger(__name__)
 
-emulator_registry = {}
+emulator_registry: Dict[str, Type] = {}
 
 
-def emulator_factory(module_name: str) -> type:
+def emulator_factory(module_name: str) -> Type:
     """Returns emulator class from module specifed by `name`."""
     if module_name not in emulator_registry:
         try:
@@ -24,7 +23,7 @@ def emulator_factory(module_name: str) -> type:
             module = importlib.import_module(module_name)
         except ModuleNotFoundError:
             # If does not exist, try to load from comet.emulator package
-            module_name = f'comet.emulator.{module_name}'
+            module_name = f"comet.emulator.{module_name}"
             module = importlib.import_module(module_name)
         # Iterate over all module class members (local and imported).
         cls_members = inspect.getmembers(module, inspect.isclass)
@@ -42,8 +41,10 @@ def emulator_factory(module_name: str) -> type:
 
 def message(route: str) -> Callable:
     """Method decorator for emulator message routing."""
+
     def message(method):
         return Route(route, method)
+
     return message
 
 
@@ -73,7 +74,8 @@ def get_routes(cls: type) -> List[Route]:
 
 class Emulator:
 
-    options = {}
+    def __init__(self) -> None:
+        self.options: Dict[str, Any] = {}
 
     def __call__(self, message: str) -> Union[None, str, list]:
         logging.debug("handle message: %s", message)
@@ -94,26 +96,27 @@ class Emulator:
         return None
 
 
-def parse_args():
+def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument('--hostname', default='')
-    parser.add_argument('-p', '--port', type=int, default=10000)
-    parser.add_argument('-t', '--termination', default='\r\n')
-    parser.add_argument('-d', '--request_delay', type=float, default=0.1)
+    parser.add_argument("--hostname", default="")
+    parser.add_argument("-p", "--port", type=int, default=10000)
+    parser.add_argument("-t", "--termination", default="\r\n")
+    parser.add_argument("-d", "--request_delay", type=float, default=0.1)
     return parser.parse_args()
 
 
-def run(emulator) -> int:
+def run(emulator: Emulator) -> int:
     """Convenience emulator runner using TCP server."""
     args = parse_args()
 
-    assert isinstance(emulator, Emulator), "emulator must inherit from class Emulator"
+    if not isinstance(emulator, Emulator):
+        raise TypeError("Emulator must inherit from class 'Emulator'")
 
     logging.basicConfig(level=logging.INFO)
 
-    # Relable way of getting full module name as it can be `__main__` if source
+    # Reliable way of getting full module name as it can be `__main__` if source
     # module is the entry point.
-    name = inspect.getmodule(emulator.__class__).__spec__.name
+    name = inspect.getmodule(emulator.__class__).__spec__.name  # type: ignore
 
     context = TCPServerContext(name, emulator, args.termination, args.request_delay)
 

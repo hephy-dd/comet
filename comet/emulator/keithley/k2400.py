@@ -256,7 +256,7 @@ class K2400Emulator(IEC60488Emulator):
 
     @message(r':?INIT(?:iate)?')
     def set_initiate(self):
-        pass
+        ...
 
     @message(r':?READ\?')
     def get_read(self):
@@ -265,7 +265,7 @@ class K2400Emulator(IEC60488Emulator):
         return format(random.uniform(curr_min, curr_max), 'E')
 
     @message(r':?FETC[H]?\?')
-    def get_read2(self):
+    def get_fetch(self):
         curr_min = float(self.options.get("curr.min", 1e6))
         curr_max = float(self.options.get("curr.max", 1e7))
         return format(random.uniform(curr_min, curr_max), 'E')

@@ -10,7 +10,7 @@ class Resource:
         self.buffer = []
 
     def clear(self):
-        pass  # VISA bus clear
+        ...  # VISA bus clear
 
     def read(self):
         return self.buffer.pop(0)
@@ -34,4 +34,4 @@ class BaseDriverTest(unittest.TestCase):
 
 class DriverTest(unittest.TestCase):
 
-    pass
+    ...

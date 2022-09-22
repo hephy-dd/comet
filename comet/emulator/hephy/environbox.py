@@ -2,68 +2,107 @@ import random
 
 from comet.emulator import Emulator
 from comet.emulator import message, run
+from comet.utils import t_dew
+
+
+def format_error(code: int) -> str:
+    return f"Err{abs(code):d}"
 
 
 class EnvironBoxEmulator(Emulator):
 
-    IDENTITY = 'EnvironBox, v1.0 (Emulator)'
-    SUCCESS = 'OK'
+    IDENTITY = "EnvironBox, v1.0 (Emulator)"
+    SUCCESS = "OK"
     PC_DATA_SIZE = 39
     SENSOR_ADRESSES = [40, 41, 42, 43, 44, 45]
 
     def __init__(self):
         super().__init__()
         self.sensor_address: int = 40
-        self.discharge: str = 'OFF'
+        self.discharge: str = "OFF"
+        self.sensor_nbr: int = 3
 
-        self.laser_sensor = False
-        self.box_light = False
-        self.microscope_control = False
-        self.microscope_light = False
-        self.microscope_camera = False
-        self.probecard_light = False
-        self.probecard_camera = False
-        self.discharge_time = 1000
+        self.laser_sensor: bool = False
+        self.box_light: bool = False
+        self.microscope_control: bool = False
+        self.microscope_light: bool = False
+        self.microscope_camera: bool = False
+        self.probecard_light: bool = False
+        self.probecard_camera: bool = False
+        self.discharge_time: bool = 1000
 
-        self.box_temperature: float = 24.0
-        self.box_humidity: float = 40.0
         self.door_open: bool = False
         self.laser_enabled: bool = False
+        self.safety_alert: bool = False
 
         self.test_led: bool = False
-        self.pt100_1_enabled = True
-        self.pt100_1: float = 22.5
-        self.pt100_2_enabled = True
-        self.pt100_2: float = float('nan')
-        self.pid_control = False
-        self.pid_control_mode = 'HUM'
-        self.setpoints = {'HUM': 30, 'DEW': 30}
-        self.pid_kp = 0.25
-        self.pid_ki = 0.01
-        self.pid_kd = 1.23
-        self.pid_kp2 = 22.4
-        self.pid_ki2 = 1.25
-        self.pid_kd2 = 3.56
-        self.pid_min = 10
-        self.pid_max = 560
-        self.pid_sample_time = 100
-        self.pid_drop_mode = 'M'
-        self.pid_threshold = 0
-        self.parameter_set = 1
-        self.parameter_threshold = 25.5
-        self.dac = 25
+        self.pt100_1_enabled: bool = True
+        self.pt100_2_enabled: bool = False
+        self.pid_control: bool = False
+        self.pid_control_mode = "HUM"
+        self.pid_setpoints = {"HUM": 30, "DEW": 30}
+        self.pid_kp: float = 0.25
+        self.pid_ki: float = 0.01
+        self.pid_kd: float = 1.23
+        self.pid_kp2: float = 22.4
+        self.pid_ki2: float = 1.25
+        self.pid_kd2: float = 3.56
+        self.pid_min: int = 10
+        self.pid_max: int = 560
+        self.pid_sample_time: int = 100
+        self.pid_drop_mode: str = "M"
+        self.pid_threshold: int = 0
+        self.parameter_set: int = 1
+        self.parameter_threshold: float = 25.5
+        self.dac: int = 25
 
         # self.env_ii_pcb = False
         # self.factory_default = False
         # self.clear_log = False
 
     @property
+    def box_temperature(self) -> float:
+        minimum = float(self.options.get("box_temperature.min", 24.0))
+        maximum = float(self.options.get("box_temperature.max", 24.5))
+        return round(random.uniform(minimum, maximum), 1)
+
+    @property
+    def box_humidity(self) -> float:
+        minimum = float(self.options.get("box_humidity.min", 40.0))
+        maximum = float(self.options.get("box_humidity.max", 40.5))
+        return round(random.uniform(minimum, maximum), 1)
+
+    @property
     def box_dewpoint(self) -> float:
-        return round(random.uniform(11.0, 11.1), 1)
+        return round(t_dew(self.box_temperature, self.box_humidity), 1)
+
+    @property
+    def pid_setpoint(self) -> int:
+        return self.pid_setpoints[self.pid_control_mode]
+
+    @pid_setpoint.setter
+    def pid_setpoint(self, value: int) -> None:
+        self.pid_setpoints[self.pid_control_mode] = value
+
+    @property
+    def pt100_1(self) -> float:
+        if self.pt100_1_enabled:
+            minimum = float(self.options.get("pt100_1.min", 21.0))
+            maximum = float(self.options.get("pt100_1.max", 21.5))
+            return round(random.uniform(minimum, maximum), 1)
+        return float("nan")
+
+    @property
+    def pt100_2(self) -> float:
+        if self.pt100_2_enabled:
+            minimum = float(self.options.get("pt100_2.min", 22.0))
+            maximum = float(self.options.get("pt100_2.max", 22.5))
+            return round(random.uniform(minimum, maximum), 1)
+        return float("nan")
 
     @property
     def box_lux(self) -> float:
-        lux: float = 0.
+        lux: float = 0.0
         if self.box_light:
             lux += random.uniform(0.40, 0.42)
         if self.probecard_light:
@@ -91,315 +130,315 @@ class EnvironBoxEmulator(Emulator):
         return power_relay_states
 
     def create_pc_data(self):
-        pc_data = [0] * self.PC_DATA_SIZE
-        pc_data[1] = format(self.box_humidity, '.2f')
-        pc_data[2] = format(self.box_temperature, '.2f')
-        pc_data[3] = format(self.box_dewpoint, '.2f')
-        pc_data[4] = int(self.pid_control)
-        pc_data[23] = self.power_relay_states()
-        pc_data[24] = int(self.box_light)
-        pc_data[25] = int(self.door_open)
-        pc_data[30] = int(self.test_led)
-        pc_data[32] = format(self.box_lux, '.1f')
-        pc_data[33] = self.pt100_1
-        pc_data[34] = self.pt100_2
+        pc_data = ["0"] * type(self).PC_DATA_SIZE
+        pc_data[0] = format(self.sensor_nbr, "d")
+        pc_data[1] = format(self.box_humidity, ".1F")
+        pc_data[2] = format(self.box_temperature, ".1F")
+        pc_data[3] = format(self.box_dewpoint, ".1F")
+        pc_data[4] = format(self.pid_control, "d")
+        pc_data[5] = format(self.pid_setpoint, "d")
+        pc_data[8] = format(self.pid_kp, ".2F")
+        pc_data[9] = format(self.pid_ki, ".2F")
+        pc_data[10] = format(self.pid_kd, ".2F")
+        pc_data[13] = format(self.pid_control_mode)
+        pc_data[14] = format(self.pid_kp2, ".2F")
+        pc_data[15] = format(self.pid_ki2, ".2F")
+        pc_data[16] = format(self.pid_kd2, ".2F")
+        pc_data[23] = format(self.power_relay_states(), "d")
+        pc_data[24] = format(self.box_light, "d")
+        pc_data[25] = format(self.door_open, "d")
+        pc_data[26] = format(self.safety_alert, "d")
+        pc_data[30] = format(self.test_led, "d")
+        pc_data[31] = format(self.discharge_time, "d")
+        pc_data[32] = format(self.box_lux, ".1F")
+        pc_data[33] = format(self.pt100_1, ".1F")
+        pc_data[34] = format(self.pt100_2, ".1F")
+        pc_data[36] = format(self.pid_sample_time, "d")
+        pc_data[36] = format(self.pid_drop_mode)
+        pc_data[37] = format(self.pt100_1_enabled, "d")
+        pc_data[38] = format(self.pt100_2_enabled, "d")
         return pc_data
 
-    @message(r'\*IDN\?')
+    @message(r"\*IDN\?")
     def get_idn(self):
-        return self.IDENTITY
+        return type(self).IDENTITY
 
-    # @message(r'\*RST')
+    # @message(r"\*RST")
     # def set_idn(self):
     #     return self.SUCCESS
 
-    @message(r'SET:NEW_ADDR (\d+)')
+    @message(r"SET:NEW_ADDR (\d+)")
     def set_new_addr(self, address):
         value = int(address)
-        if value not in self.SENSOR_ADRESSES:
-            return 'Err14'
+        if value not in type(self).SENSOR_ADRESSES:
+            return format_error(14)
         self.sensor_address = value
         return self.SUCCESS
 
-    @message(r'SET:TEST_LED (ON|OFF)')
+    @message(r"SET:TEST_LED (ON|OFF)")
     def set_test_led(self, value) -> str:
-        self.test_led = value == 'ON'
+        self.test_led = value == "ON"
         return self.SUCCESS
 
-    @message(r'GET:TEST_LED \?')
+    @message(r"GET:TEST_LED \?")
     def get_test_led(self) -> str:
-        return {True: '1', False: '0'}[self.test_led]
+        return {True: "1", False: "0"}[self.test_led]
 
-    @message(r'SET:DISCHARGE (AUTO|ON|OFF)')
+    @message(r"SET:DISCHARGE (AUTO|ON|OFF)")
     def set_discharge(self, state):
         self.discharge = state
         return self.SUCCESS
 
-    @message(r'SET:DISCHARGE_TIME (\d+)')
+    @message(r"SET:DISCHARGE_TIME (\d+)")
     def set_discharge_time(self, seconds):
         seconds = int(seconds)
         if 0 <= seconds <= 9999:
-             self.discharge_time = seconds
-             return self.SUCCESS
-        return 'Err44'
+            self.discharge_time = seconds
+            return self.SUCCESS
+        return format_error(44)
 
-    @message(r'GET:DISCHARGE_TIME \?')
+    @message(r"GET:DISCHARGE_TIME \?")
     def get_discharge_time(self):
         return format(self.discharge_time)
 
-    @message(r'SET:PT100_1 (ON|OFF)')
+    @message(r"SET:PT100_1 (ON|OFF)")
     def set_pt100_1(self, value):
-        self.pt100_1_enabled = value == 'ON'
+        self.pt100_1_enabled = value == "ON"
         return self.SUCCESS
 
-    @message(r'GET:PT100_1 \?')
+    @message(r"GET:PT100_1 \?")
     def get_pt100_1(self):
-        return format(self.pt100_1, '.1f')
+        return format(self.pt100_1, ".1f")
 
-    @message(r'SET:PT100_2 (ON|OFF)')
+    @message(r"SET:PT100_2 (ON|OFF)")
     def set_pt100_2(self, value):
-        self.pt100_2_enabled = value == 'ON'
+        self.pt100_2_enabled = value == "ON"
         return self.SUCCESS
 
-    @message(r'GET:PT100_2 \?')
+    @message(r"GET:PT100_2 \?")
     def get_pt100_2(self):
-        return format(self.pt100_2, '.1f')
+        return format(self.pt100_2, ".1f")
 
-    @message(r'SET:CTRL (ON|OFF)')
+    @message(r"SET:CTRL (ON|OFF)")
     def set_ctrl(self, value):
-        self.pid_control = value == 'ON'
+        self.pid_control = value == "ON"
         return self.SUCCESS
 
-    @message(r'GET:CTRL \?')
+    @message(r"GET:CTRL \?")
     def get_ctrl(self):
-        return '1' if self.pid_control else '0'
+        return "1" if self.pid_control else "0"
 
-    @message(r'SET:CTRL_MODE (HUM|DEW)')
+    @message(r"SET:CTRL_MODE (HUM|DEW)")
     def set_ctrl_mode(self, mode):
         self.pid_control_mode = mode
         return self.SUCCESS
 
-    @message(r'SET:SETPOINT (\d+)')
+    @message(r"SET:SETPOINT (\d+)")
     def set_setpoint(self, setpoint):
-        setpoint = float(setpoint)
-        if self.pid_control_mode == 'HUM':
-            self.setpoints['HUM'] = setpoint
-        elif self.pid_control_mode == 'DEW':
-            self.setpoints['DEW'] = setpoint
+        self.pid_setpoint = int(setpoint)
         return self.SUCCESS
 
-    @message(r'GET:SETPOINT \?')
+    @message(r"GET:SETPOINT \?")
     def get_setpoint(self):
-        if self.pid_control_mode == 'HUM':
-            return format(self.setpoints['HUM'], '.2f')
-        elif self.pid_control_mode == 'DEW':
-            return format(self.setpoints['HUM'], '.2f')
-        return '0'
+        return self.pid_setpoint
 
-    @message(r'SET:PID_KP (.+)')
+    @message(r"SET:PID_KP (.+)")
     def set_pid_kp(self, value):
         try:
-            value = float(value)
+            self.pid_kp = float(value)
         except Exception:
-            return 'Err31'
-        self.pid_kp = value
+            return format_error(31)
         return self.SUCCESS
 
-    @message(r'GET:PID_KP \?')
+    @message(r"GET:PID_KP \?")
     def get_pid_kp(self):
-        return format(self.pid_kp, '.2f')
+        return format(self.pid_kp, ".2f")
 
-    @message(r'SET:PID_KI (.+)')
+    @message(r"SET:PID_KI (.+)")
     def set_pid_ki(self, value):
         try:
-            value = float(value)
+            self.pid_ki = float(value)
         except Exception:
-            return 'Err32'
-        self.pid_ki = value
+            return format_error(32)
         return self.SUCCESS
 
-    @message(r'GET:PID_KI \?')
+    @message(r"GET:PID_KI \?")
     def get_pid_ki(self):
-        return format(self.pid_ki, '.2f')
+        return format(self.pid_ki, ".2f")
 
-    @message(r'SET:PID_KD (.+)')
+    @message(r"SET:PID_KD (.+)")
     def set_pid_kd(self, value):
         try:
-            value = float(value)
+            self.pid_kd = float(value)
         except Exception:
-            return 'Err33'
-        self.pid_kd = value
+            return format_error(33)
         return self.SUCCESS
 
-    @message(r'GET:PID_KD \?')
+    @message(r"GET:PID_KD \?")
     def get_pid_kd(self):
-        return format(self.pid_kd, '.2f')
+        return format(self.pid_kd, ".2f")
 
-    @message(r'SET:PID_KP2 (.+)')
+    @message(r"SET:PID_KP2 (.+)")
     def set_pid_kp2(self, value):
         try:
-            value = float(value)
+            self.pid_kp2 = float(value)
         except Exception:
-            return 'Err34'
-        self.pid_kp2 = value
+            return format_error(34)
         return self.SUCCESS
 
-    @message(r'GET:PID_KP2 \?')
+    @message(r"GET:PID_KP2 \?")
     def get_pid_kp2(self):
-        return format(self.pid_kp2, '.2f')
+        return format(self.pid_kp2, ".2f")
 
-    @message(r'SET:PID_KI2 (.+)')
+    @message(r"SET:PID_KI2 (.+)")
     def set_pid_ki2(self, value):
         try:
-            value = float(value)
+            self.pid_ki2 = float(value)
         except Exception:
-            return 'Err35'
-        self.pid_ki2 = value
+            return format_error(35)
         return self.SUCCESS
 
-    @message(r'GET:PID_KI2 \?')
+    @message(r"GET:PID_KI2 \?")
     def get_pid_ki2(self):
-        return format(self.pid_ki2, '.2f')
+        return format(self.pid_ki2, ".2f")
 
-    @message(r'SET:PID_KD2 (.+)')
+    @message(r"SET:PID_KD2 (.+)")
     def set_pid_kd2(self, value):
         try:
-            value = float(value)
+            self.pid_kd2 = float(value)
         except Exception:
-            return 'Err36'
-        self.pid_kd2 = value
+            return format_error(36)
         return self.SUCCESS
 
-    @message(r'GET:PID_KD2 (.+)')
+    @message(r"GET:PID_KD2 (.+)")
     def get_pid_kd2(self):
-        return format(self.pid_kd2, '.2f')
+        return format(self.pid_kd2, ".2f")
 
-    @message(r'SET:PID_MIN (\d+)')
+    @message(r"SET:PID_MIN (\d+)")
     def set_pid_min(self, value):
         self.pid_min = int(value)
         return self.SUCCESS
 
-    @message(r'GET:PID_MIN \?')
+    @message(r"GET:PID_MIN \?")
     def get_pid_min(self):
-        return format(self.pid_min, 'd')
+        return format(self.pid_min, "d")
 
-    @message(r'SET:PID_MAX (\d+)')
+    @message(r"SET:PID_MAX (\d+)")
     def set_pid_max(self, value):
         self.pid_max = int(value)
         return self.SUCCESS
 
-    @message(r'GET:PID_MAX \?')
+    @message(r"GET:PID_MAX \?")
     def get_pid_max(self):
-        return format(self.pid_max, 'd')
+        return format(self.pid_max, "d")
 
-    @message(r'SET:PID_SAMPLE_TIME (\d+)')
+    @message(r"SET:PID_SAMPLE_TIME (\d+)")
     def set_pid_sample_time(self, value):
         self.pid_sample_time = int(value)
         return self.SUCCESS
 
-    @message(r'GET:PID_SAMPLE_TIME \?')
+    @message(r"GET:PID_SAMPLE_TIME \?")
     def get_pid_sample_time(self):
-        return format(self.pid_sample_time, 'd')
+        return format(self.pid_sample_time, "d")
 
-    @message(r'SET:PID_PROP_MODE (M|E)')
+    @message(r"SET:PID_PROP_MODE (M|E)")
     def set_pid_drop_mode(self, mode):
         self.pid_drop_mode = mode
         return self.SUCCESS
 
-    @message(r'GET:PID_PROP_MODE \?')
+    @message(r"GET:PID_PROP_MODE \?")
     def get_pid_drop_mode(self):
         return self.pid_drop_mode
 
-    @message(r'SET:PID_THRESHOLD (\d+)')
+    @message(r"SET:PID_THRESHOLD (\d+)")
     def set_pid_threshold(self, value):
         self.pid_threshold = int(value)
         return self.SUCCESS
 
-    @message(r'GET:PID_THRESHOLD \?')
+    @message(r"GET:PID_THRESHOLD \?")
     def get_pid_threshold(self):
-        return format(self.pid_threshold, 'd')
+        return format(self.pid_threshold, "d")
 
-    @message(r'SET:PARAMETER_SET (1|2)')
+    @message(r"SET:PARAMETER_SET (1|2)")
     def set_parameter_set(self, value):
         self.parameter_set = int(value)
         return self.SUCCESS
 
-    @message(r'GET:PARAMETER_SET \?')
+    @message(r"GET:PARAMETER_SET \?")
     def get_parameter_set(self):
-        return format(self.parameter_set, 'd')
+        return format(self.parameter_set, "d")
 
-    @message(r'SET:PARA_THRESHOLD (.+)')
+    @message(r"SET:PARA_THRESHOLD (.+)")
     def set_parameter_threshold(self, value):
         try:
-            value = float(value)
+            self.parameter_threshold = float(value)
         except Exception:
-            return 'Err38'
-        self.parameter_threshold = int(value)
+            return format_error(38)
         return self.SUCCESS
 
-    @message(r'SET:DAC (\d+)')
+    @message(r"SET:DAC (\d+)")
     def set_dac(self, value):
         self.dac = int(value)
         return self.SUCCESS
 
-    @message(r'SET:MICROSCOPE_CTRL (ON|OFF)')
+    @message(r"SET:MICROSCOPE_CTRL (ON|OFF)")
     def set_microscope_control(self, value):
-        self.microscope_control = value == 'ON'
+        self.microscope_control = value == "ON"
         return self.SUCCESS
 
-    @message(r'GET:MICROSCOPE_CTRL \?')
+    @message(r"GET:MICROSCOPE_CTRL \?")
     def get_microscope_control(self):
         return format(int(self.microscope_control))
 
-    @message(r'SET:MICROSCOPE_LIGHT (ON|OFF)')
+    @message(r"SET:MICROSCOPE_LIGHT (ON|OFF)")
     def set_microscope_light(self, value):
-        self.microscope_light = value == 'ON'
+        self.microscope_light = value == "ON"
         return self.SUCCESS
 
-    @message(r'GET:MICROSCOPE_LIGHT \?')
+    @message(r"GET:MICROSCOPE_LIGHT \?")
     def get_microscope_light(self):
         return format(int(self.microscope_light))
 
-    @message(r'SET:MICROSCOPE_CAM (ON|OFF)')
+    @message(r"SET:MICROSCOPE_CAM (ON|OFF)")
     def set_microscope_camera(self, value):
-        self.microscope_camera = value == 'ON'
+        self.microscope_camera = value == "ON"
         return self.SUCCESS
 
-    @message(r'GET:MICROSCOPE_CAM \?')
+    @message(r"GET:MICROSCOPE_CAM \?")
     def get_microscope_camera(self):
         return format(int(self.microscope_camera))
 
-    @message(r'SET:PROBCARD_LIGHT (ON|OFF)')
+    @message(r"SET:PROBCARD_LIGHT (ON|OFF)")
     def set_probecard_light(self, value):
-        self.probecard_light = value == 'ON'
+        self.probecard_light = value == "ON"
         return self.SUCCESS
 
-    @message(r'GET:PROBCARD_LIGHT \?')
+    @message(r"GET:PROBCARD_LIGHT \?")
     def get_probecard_light(self):
         return format(int(self.probecard_light))
 
-    @message(r'SET:PROBCARD_CAM (ON|OFF)')
+    @message(r"SET:PROBCARD_CAM (ON|OFF)")
     def set_probecard_camera(self, value):
-        self.probecard_camera = value == 'ON'
+        self.probecard_camera = value == "ON"
         return self.SUCCESS
 
-    @message(r'GET:PROBCARD_CAM \?')
+    @message(r"GET:PROBCARD_CAM \?")
     def get_probecard_camera(self):
         return format(int(self.probecard_camera))
 
-    @message(r'SET:LASER_SENSOR (ON|OFF)')
+    @message(r"SET:LASER_SENSOR (ON|OFF)")
     def set_laser_sensor(self, value):
-        self.laser_sensor = value == 'ON'
+        self.laser_sensor = value == "ON"
         return self.SUCCESS
 
-    @message(r'SET:BOX_LIGHT (ON|OFF)')
+    @message(r"SET:BOX_LIGHT (ON|OFF)")
     def set_box_light(self, value):
-        self.box_light = value == 'ON'
+        self.box_light = value == "ON"
         return self.SUCCESS
 
-    @message(r'GET:LIGHT \?')
+    @message(r"GET:LIGHT \?")
     def get_box_light(self):
-        return format(self.box_light, 'd')
+        return format(self.box_light, "d")
 
     # @message(r'SET:ENV_II_PCB (YES|NO)')
     # def set_env_ii_pcb(self, value):
@@ -436,56 +475,56 @@ class EnvironBoxEmulator(Emulator):
     # def get_chip_nbr(self):
     #     return 'TODO'
 
-    @message(r'GET:TEMP \?')
+    @message(r"GET:TEMP \?")
     def get_temp(self):
-        return format(self.box_temperature, '.1f')
+        return format(self.box_temperature, ".1f")
 
-    @message(r'GET:HUM \?')
+    @message(r"GET:HUM \?")
     def get_hum(self):
-        return format(self.box_humidity, '.1f')
+        return format(self.box_humidity, ".1f")
 
-    @message(r'GET:LUX \?')
+    @message(r"GET:LUX \?")
     def get_lux(self):
-        return format(self.box_lux, '.0f')
+        return format(self.box_lux, ".0f")
 
-    @message(r'GET:VALVE_ON \?')
+    @message(r"GET:VALVE_ON \?")
     def get_valve_on(self):
-        return '0'
+        return "0"
 
-    @message(r'GET:DOOR \?')
+    @message(r"GET:DOOR \?")
     def get_door(self):
         return format(int(self.door_open))
 
-    @message(r'GET:LASER \?')
+    @message(r"GET:LASER \?")
     def get_laser(self):
         return format(int(self.laser_enabled))
 
-    @message(r'GET:PC_DATA \?')
+    @message(r"GET:PC_DATA \?")
     def get_pc_data(self):
-        return ','.join(map(format, self.create_pc_data()))
+        return ",".join(map(format, self.create_pc_data()))
 
-    @message(r'GET:RELAY_STATUS \?')
+    @message(r"GET:RELAY_STATUS \?")
     def get_relay_status(self):
         return format(self.power_relay_states())
 
-    @message(r'GET:ENV \?')
+    @message(r"GET:ENV \?")
     def get_env(self):
         values = [
-            format(self.box_temperature, '.1f'),
-            format(self.box_humidity, '.1f'),
-            format(self.box_light, 'd'),
-            format(self.pt100_1, '.1f')
+            format(self.box_temperature, ".1f"),
+            format(self.box_humidity, ".1f"),
+            format(self.box_light, "d"),
+            format(self.pt100_1, ".1f"),
         ]
-        return ','.join(values)
+        return ",".join(values)
 
-    @message(r'GET:VERSION \?')
+    @message(r"GET:VERSION \?")
     def get_version(self):
-        return 'V2.0'
+        return "V2.0"
 
-    @message(r'.*')
+    @message(r".*")
     def unknown_message(self):
-        return 'Err999'
+        return format_error(999)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     run(EnvironBoxEmulator())

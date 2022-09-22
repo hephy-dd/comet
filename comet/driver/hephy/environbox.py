@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from comet.driver.generic import Instrument
 from comet.driver.generic import InstrumentError
 
-__all__ = ['EnvironBox']
+__all__ = ["EnvironBox"]
 
 ERROR_MESSAGES: Dict[int, str] = {
     1: "RTC not running",
@@ -15,7 +15,7 @@ ERROR_MESSAGES: Dict[int, str] = {
     100: "General SET command error",
     199: "GET command parameter not found",
     200: "General GET command error",
-    999: "Unknown command"
+    999: "Unknown command",
 }
 
 
@@ -24,7 +24,7 @@ def test_bit(value: int, index: int) -> bool:
 
 
 def parse_error(response: str) -> Optional[InstrumentError]:
-    m = re.match(r'^err(\d+)', response.lower())
+    m = re.match(r"^err(\d+)", response.lower())
     if m:
         code = int(m.group(1))
         message = ERROR_MESSAGES.get(code, "")
@@ -36,9 +36,29 @@ def parse_pc_data(response: str) -> Dict[str, Any]:
     values = response.split(",")
     relay_status = int(values[23])
     return {
+        "sensor_count": int(values[0]),
         "box_humidity": float(values[1]),
         "box_temperature": float(values[2]),
         "box_dewpoint": float(values[3]),
+        "pid_status": bool(int(values[4])),
+        "pid_setpoint": float(values[5]),
+        "pid_input": float(values[6]),
+        "pid_output": float(values[7]),
+        "pid_kp_1": float(values[8]),
+        "pid_ki_1": float(values[9]),
+        "pid_kd_1": float(values[10]),
+        "pid_min": int(values[11]),
+        "pid_max": int(values[12]),
+        "pid_control_mode": values[13],
+        "pid_kp_2": float(values[14]),
+        "pid_ki_2": float(values[15]),
+        "pid_kd_2": float(values[16]),
+        "parameter_set": int(values[17]),
+        "parameter_threshold": float(values[18]),
+        "hum_flow_dir": int(values[19]),
+        "pid_threshold": float(values[20]),
+        "vac_valve_current": float(values[21]),
+        "vac_valve_count": int(values[22]),
         "power_microscope_ctrl": test_bit(relay_status, 0),
         "power_box_light": test_bit(relay_status, 1),
         "power_probecard_light": test_bit(relay_status, 2),
@@ -48,10 +68,19 @@ def parse_pc_data(response: str) -> Dict[str, Any]:
         "power_microscope_light": test_bit(relay_status, 6),
         "box_light": bool(int(values[24])),
         "box_door": bool(int(values[25])),
+        "safety_alert": bool(int(values[26])),
+        "stepper_motor_control": bool(int(values[27])),
+        "air_flow_sensor": bool(int(values[28])),
+        "vac_flow_sensor": bool(int(values[29])),
+        "test_led": bool(int(values[30])),
         "discharge_time": float(values[31]),
         "box_lux": float(values[32]),
         "pt100_1": float(values[33]),
         "pt100_2": float(values[34]),
+        "pid_sample_time": float(values[35]),
+        "pid_drop_mode": values[36],
+        "pt100_1_enabled": bool(int(values[37])),
+        "pt100_2_enabled": bool(int(values[38])),
     }
 
 
@@ -60,11 +89,11 @@ class EnvironBox(Instrument):
     _error_queue: List[InstrumentError] = []
 
     def identify(self) -> str:
-        return self.query('*IDN?')
+        return self.query("*IDN?")
 
     def reset(self) -> None:
         self._error_queue.clear()
-        self.write('*RST')
+        self.write("*RST")
 
     def clear(self) -> None:
         self._error_queue.clear()
@@ -81,103 +110,76 @@ class EnvironBox(Instrument):
     DISCARGE_ON: bool = True
 
     def set_discharge(self, state: bool) -> None:
-        value = {
-            self.DISCARGE_OFF: 'OFF',
-            self.DISCARGE_ON: 'ON'
-        }[state]
-        self.write(f'SET:DISCHARGE {value}')
+        value = {self.DISCARGE_OFF: "OFF", self.DISCARGE_ON: "ON"}[state]
+        self.write(f"SET:DISCHARGE {value}")
 
     def get_box_humidity(self) -> float:
-        return float(self.query('GET:HUM ?'))
+        return float(self.query("GET:HUM ?"))
 
     def get_box_temperature(self) -> float:
-        return float(self.query('GET:TEMP ?'))
+        return float(self.query("GET:TEMP ?"))
 
     def get_box_lux(self) -> float:
-        return float(self.query('GET:LUX ?'))
+        return float(self.query("GET:LUX ?"))
 
     BOX_DOOR_CLOSED: bool = False
     BOX_DOOR_OPEN: bool = True
 
     def get_box_door_state(self) -> bool:
-        return bool(float(self.query('GET:DOOR ?')))
+        return bool(float(self.query("GET:DOOR ?")))
 
     def get_chuck_temperature(self) -> float:
-        return float(self.query('GET:PT100_1 ?'))
+        return float(self.query("GET:PT100_1 ?"))
 
     def get_chuck_block_temperature(self) -> float:
-        return float(self.query('GET:PT100_2 ?'))
+        return float(self.query("GET:PT100_2 ?"))
 
     BOX_LIGHT_OFF: bool = False
     BOX_LIGHT_ON: bool = True
 
     def get_box_light(self) -> bool:
-        value = self.query('GET:LIGHT ?')
-        return {
-            '0': self.BOX_LIGHT_OFF,
-            '1': self.BOX_LIGHT_ON
-        }[value]
+        value = self.query("GET:LIGHT ?")
+        return {"0": self.BOX_LIGHT_OFF, "1": self.BOX_LIGHT_ON}[value]
 
     def set_box_light(self, state: bool) -> None:
-        value = {
-            self.BOX_LIGHT_OFF: 'OFF',
-            self.BOX_LIGHT_ON: 'ON'
-        }[state]
-        self.write(f'SET:BOX_LIGHT {value}')
+        value = {self.BOX_LIGHT_OFF: "OFF", self.BOX_LIGHT_ON: "ON"}[state]
+        self.write(f"SET:BOX_LIGHT {value}")
 
     MICROSCOPE_LIGHT_OFF: bool = False
     MICROSCOPE_LIGHT_ON: bool = True
 
     def get_microscope_light(self) -> bool:
         value = self.get_data().get("power_microscope_light")
-        return {
-            '0': self.BOX_LIGHT_OFF,
-            '1': self.BOX_LIGHT_ON
-        }[value]
+        return {"0": self.BOX_LIGHT_OFF, "1": self.BOX_LIGHT_ON}[value]
 
     def set_microscope_light(self, state: bool) -> None:
-        value = {
-            self.BOX_LIGHT_OFF: 'OFF',
-            self.BOX_LIGHT_ON: 'ON'
-        }[state]
-        self.write(f'SET:MICROSCOPE_LIGHT {value}')
+        value = {self.BOX_LIGHT_OFF: "OFF", self.BOX_LIGHT_ON: "ON"}[state]
+        self.write(f"SET:MICROSCOPE_LIGHT {value}")
 
     PROBECARD_LIGHT_OFF: bool = False
     PROBECARD_LIGHT_ON: bool = True
 
     def get_probecard_light(self) -> bool:
         value = self.get_data().get("power_probecard_light")
-        return {
-            '0': self.BOX_LIGHT_OFF,
-            '1': self.BOX_LIGHT_ON
-        }[value]
+        return {"0": self.BOX_LIGHT_OFF, "1": self.BOX_LIGHT_ON}[value]
 
     def set_probecard_light(self, state: bool) -> None:
-        value = {
-            self.BOX_LIGHT_OFF: 'OFF',
-            self.BOX_LIGHT_ON: 'ON'
-        }[state]
-        self.write(f'SET:PROBCARD_LIGHT {value}')
+        value = {self.BOX_LIGHT_OFF: "OFF", self.BOX_LIGHT_ON: "ON"}[state]
+        self.write(f"SET:PROBCARD_LIGHT {value}")
 
     TEST_LED_OFF: bool = False
     TEST_LED_ON: bool = True
 
     def get_test_led(self) -> bool:
-        value = self.query('GET:TEST_LED ?')
-        return {
-            '0': self.TEST_LED_OFF,
-            '1': self.TEST_LED_ON
-        }[value]
+        value = self.query("GET:TEST_LED ?")
+        return {"0": self.TEST_LED_OFF, "1": self.TEST_LED_ON}[value]
 
     def set_test_led(self, state: bool) -> None:
-        value = {
-            self.TEST_LED_OFF: 'OFF',
-            self.TEST_LED_ON: 'ON'
-        }[state]
-        self.write(f'SET:TEST_LED {value}')
+        value = {self.TEST_LED_OFF: "OFF", self.TEST_LED_ON: "ON"}[state]
+        self.write(f"SET:TEST_LED {value}")
 
     def get_data(self):
-        return parse_pc_data(self.query('GET:PC_DATA ?'))
+        return parse_pc_data(self.query("GET:PC_DATA ?"))
 
     # Helper
 
@@ -186,7 +188,7 @@ class EnvironBox(Instrument):
         error = parse_error(response)
         if error:
             self._error_queue.append(error)
-            return ''
+            return ""
         return response
 
     def write(self, message: str) -> None:

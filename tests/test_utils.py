@@ -39,6 +39,12 @@ class TestUtils:
         assert utils.inverse_square(2) == .25
         assert utils.inverse_square(8) == .015625
 
+    def test_t_dew(self):
+        assert round(utils.t_dew(0, 50), 3) == -9.157
+        assert round(utils.t_dew(20, 70), 3) == 14.364
+        assert round(utils.t_dew(24, 40), 3) == 9.577
+        assert round(utils.t_dew(60, 50), 3) == 45.766
+
     def test_make_iso(self):
         assert re.match(r"^1970-01-01T0\d-00-00$", utils.make_iso(0))  # timezone
         assert re.match(r"^2015-02-09T0\d-39-49$", utils.make_iso(1423456789.8))  # timezone

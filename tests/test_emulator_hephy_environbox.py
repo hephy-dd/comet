@@ -8,6 +8,14 @@ class EnvironBoxEmulatorTest(unittest.TestCase):
 
     def setUp(self):
         self.emulator = EnvironBoxEmulator()
+        self.emulator.options.update({
+            "box_temperature.min": 24.0,
+            "box_temperature.max": 24.0,
+            "box_humidity.min": 40.0,
+            "box_humidity.max": 40.0,
+            "pt100_1.min": 21.5,
+            "pt100_1.max": 21.5,
+        })
 
     def test_basic(self):
         self.assertEqual(self.emulator('*IDN?'), 'EnvironBox, v1.0 (Emulator)')
@@ -45,7 +53,7 @@ class EnvironBoxEmulatorTest(unittest.TestCase):
         self.assertEqual(self.emulator('SET:PT100_2 ON'), 'OK')
 
     def test_get_pt100(self):
-        self.assertEqual(self.emulator('GET:PT100_1 ?'), '22.5')
+        self.assertEqual(self.emulator('GET:PT100_1 ?'), '21.5')
         self.assertEqual(self.emulator('GET:PT100_2 ?'), 'nan')
 
     def test_microscope_ctrl(self):
@@ -104,7 +112,7 @@ class EnvironBoxEmulatorTest(unittest.TestCase):
         self.assertEqual(self.emulator('GET:RELAY_STATUS ?'), '0')
 
     def test_env(self):
-        self.assertEqual(self.emulator('GET:ENV ?'), '24.0,40.0,0,22.5')
+        self.assertEqual(self.emulator('GET:ENV ?'), '24.0,40.0,0,21.5')
 
     def test_version(self):
         self.assertEqual(self.emulator('GET:VERSION ?'), 'V2.0')

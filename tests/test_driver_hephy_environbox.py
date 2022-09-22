@@ -116,10 +116,31 @@ class BrandBoxTest(unittest.TestCase):
         self.assertEqual(buffer.pop(0), 'SET:BOX_LIGHT OFF')
 
     def test_parse_pc_data(self):
-        response = "0,1.23,2.34,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,85,1,0,0,0,0,0,0,3.45,0.21,0.23,0.34,0,0,0,0"
+        response = "2,1.23,2.34,11.1,0,0,0,0,0,0,0,0,0,HUM,0,0,0,0,0,0,0,0,0,85,1,0,0,0,0,0,0,3.45,0.21,0.23,0.34,0,M,1,0"
         data = parse_pc_data(response)
+        assert data["sensor_count"] == 2
         assert data["box_humidity"] == 1.23
         assert data["box_temperature"] == 2.34
+        assert data["box_dewpoint"] == 11.1
+        assert data["pid_status"] == False
+        assert data["pid_setpoint"] == 0.
+        assert data["pid_input"] == 0.
+        assert data["pid_output"] == 0.
+        assert data["pid_kp_1"] == 0.
+        assert data["pid_ki_1"] == 0.
+        assert data["pid_kd_1"] == 0.
+        assert data["pid_min"] == 0
+        assert data["pid_max"] == 0
+        assert data["pid_control_mode"] == "HUM"
+        assert data["pid_kp_2"] == 0.
+        assert data["pid_ki_2"] == 0.
+        assert data["pid_kd_2"] == 0.
+        assert data["parameter_set"] == 0
+        assert data["parameter_threshold"] == 0.
+        assert data["hum_flow_dir"] == 0
+        assert data["pid_threshold"] == 0.
+        assert data["vac_valve_current"] == 0.
+        assert data["vac_valve_count"] == 0
         assert data["power_microscope_ctrl"] == True
         assert data["power_box_light"] == False
         assert data["power_probecard_light"] == True
@@ -129,7 +150,16 @@ class BrandBoxTest(unittest.TestCase):
         assert data["power_microscope_light"] == True
         assert data["box_light"] == True
         assert data["box_door"] == False
+        assert data["safety_alert"] == False
+        assert data["stepper_motor_control"] == False
+        assert data["air_flow_sensor"] == False
+        assert data["vac_flow_sensor"] == False
+        assert data["test_led"] == False
         assert data["discharge_time"] == 3.45
         assert data["box_lux"] == 0.21
         assert data["pt100_1"] == 0.23
         assert data["pt100_2"] == 0.34
+        assert data["pid_sample_time"] == 0.
+        assert data["pid_drop_mode"] == "M"
+        assert data["pt100_1_enabled"] == True
+        assert data["pt100_2_enabled"] == False

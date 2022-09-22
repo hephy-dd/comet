@@ -1,6 +1,6 @@
 # COMET
 
-**Control and Measurement Toolkit (COMET)**
+**Control and Measurement Toolkit**
 
 Providing generic instrument drivers, instrument emulators for testing and and
 utilities for instrumentation applications. Inspired by
@@ -15,7 +15,7 @@ utilities for instrumentation applications. Inspired by
 Install from GitHub using pip
 
 ```bash
-pip install git+https://github.com/hephy-dd/comet.git@1.0.x
+pip install git+https://github.com/hephy-dd/comet.git@1.0.dev0
 ```
 
 ## Drivers

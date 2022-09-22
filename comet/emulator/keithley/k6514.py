@@ -51,7 +51,7 @@ class K6514Emulator(IEC60488Emulator):
 
     @message(r':?FORM:ELEM (READ)')
     def set_format_elements(self, value):
-        pass
+        ...
 
     @message(r':?FORM:ELEM\?')
     def get_format_elements(self):
@@ -154,11 +154,11 @@ class K6514Emulator(IEC60488Emulator):
 
     @message(r'(?::?SENS)?:CURR:RANG:AUTO:ULIM\s+(.+)')
     def set_sense_current_range_auto_ulimit(self, value: str):
-        pass  # TODO
+        ...  # TODO
 
     @message(r'(?::?SENS)?:CURR:RANG:AUTO:LLIM\s+(.+)')
     def set_sense_current_range_auto_llimit(self, value: str):
-        pass  # TODO
+        ...  # TODO
 
     # NPLC (coupled commands)
 

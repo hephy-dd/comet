@@ -32,12 +32,12 @@ class BeeperMixin(ABC):
     BEEPER_ON: bool = True
     BEEPER_OFF: bool = False
 
-    @property
+    @property  # type: ignore
     @abstractmethod
     def beeper(self) -> bool:
         ...
 
-    @beeper.setter
+    @beeper.setter  # type: ignore
     @abstractmethod
     def beeper(self, value: bool) -> None:
         ...
@@ -55,12 +55,12 @@ class RouteTerminalMixin(ABC):
     ROUTE_TERMINAL_FRONT: str = "front"
     ROUTE_TERMINAL_REAR: str = "rear"
 
-    @property
+    @property  # type: ignore
     @abstractmethod
     def route_terminal(self) -> str:
         ...
 
-    @route_terminal.setter
+    @route_terminal.setter  # type: ignore
     @abstractmethod
     def route_terminal(self, route_terminal: str) -> None:
         ...
@@ -86,12 +86,12 @@ class SourceMeterUnit(Instrument):
     OUTPUT_ON: bool = True
     OUTPUT_OFF: bool = False
 
-    @property
+    @property  # type: ignore
     @abstractmethod
     def output(self) -> bool:
         ...
 
-    @output.setter
+    @output.setter  # type: ignore
     @abstractmethod
     def output(self, state: bool) -> None:
         ...
@@ -99,75 +99,75 @@ class SourceMeterUnit(Instrument):
     FUNCTION_VOLTAGE: str = "voltage"
     FUNCTION_CURRENT: str = "current"
 
-    @property
+    @property  # type: ignore
     @abstractmethod
     def function(self) -> str:
         ...
 
-    @function.setter
+    @function.setter  # type: ignore
     @abstractmethod
     def function(self, function: str) -> None:
         ...
 
     # Voltage source
 
-    @property
+    @property  # type: ignore
     @abstractmethod
     def voltage_level(self) -> float:
         ...
 
-    @voltage_level.setter
+    @voltage_level.setter  # type: ignore
     @abstractmethod
     def voltage_level(self, level: float) -> None:
         ...
 
-    @property
+    @property  # type: ignore
     @abstractmethod
     def voltage_range(self) -> float:
         ...
 
-    @voltage_range.setter
+    @voltage_range.setter  # type: ignore
     @abstractmethod
     def voltage_range(self, level: float) -> None:
         ...
 
-    @property
+    @property  # type: ignore
     @abstractmethod
     def voltage_compliance(self) -> float:
         ...
 
-    @voltage_compliance.setter
+    @voltage_compliance.setter  # type: ignore
     @abstractmethod
     def voltage_compliance(self, level: float) -> None:
         ...
 
     # Current source
 
-    @property
+    @property  # type: ignore
     @abstractmethod
     def current_level(self) -> float:
         ...
 
-    @current_level.setter
+    @current_level.setter  # type: ignore
     @abstractmethod
     def current_level(self, level: float) -> None:
         ...
 
-    @property
+    @property  # type: ignore
     @abstractmethod
     def current_range(self) -> float:
         ...
 
-    @current_range.setter
+    @current_range.setter  # type: ignore
     @abstractmethod
     def current_range(self, level: float) -> None:
         ...
 
-    @property
+    @property  # type: ignore
     def current_compliance(self) -> float:
         ...
 
-    @current_compliance.setter
+    @current_compliance.setter  # type: ignore
     @abstractmethod
     def current_compliance(self, level: float) -> None:
         ...
@@ -211,32 +211,32 @@ class Electrometer(Instrument):
 
 class LCRMeter(Instrument):
 
-    @property
+    @property  # type: ignore
     @abstractmethod
     def function(self) -> str:
         ...
 
-    @function.setter
+    @function.setter  # type: ignore
     @abstractmethod
     def function(self, function: str) -> None:
         ...
 
-    @property
+    @property  # type: ignore
     @abstractmethod
     def amplitude(self) -> float:
         ...
 
-    @amplitude.setter
+    @amplitude.setter  # type: ignore
     @abstractmethod
     def amplitude(self, level: float) -> None:
         ...
 
-    @property
+    @property  # type: ignore
     @abstractmethod
     def frequency(self) -> float:
         ...
 
-    @frequency.setter
+    @frequency.setter  # type: ignore
     @abstractmethod
     def frequency(self, frequency: float) -> None:
         ...

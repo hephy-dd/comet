@@ -1,8 +1,9 @@
 import datetime
 import re
-from typing import Iterable, List, Union
+from math import log
+from typing import Iterable, List, Tuple, Union
 
-from pint import UnitRegistry
+from pint import UnitRegistry, Quantity
 
 __all__ = [
     "ureg",
@@ -10,6 +11,7 @@ __all__ = [
     "auto_scale",
     "combine_matrix",
     "inverse_square",
+    "t_dew",
     "make_iso",
     "safe_filename",
 ]
@@ -17,18 +19,18 @@ __all__ = [
 ureg = UnitRegistry()
 
 
-def to_unit(value: Union[float, str, ureg.Quantity], unit: str) -> float:
+def to_unit(value: Union[float, str, Quantity], unit: str) -> float:
     """Convert value or string representation with or without unit to another
     unit."""
-    if isinstance(value, ureg.Quantity):
+    if isinstance(value, Quantity):
         return value.to(unit).m
     if isinstance(value, str):
         return ureg(value).to(unit).m
     return (ureg(unit) * value).to(unit).m
 
 
-def auto_scale(value):
-    scales = (
+def auto_scale(value: float) -> Tuple[float, str, str]:
+    scales = [
         (1e24, "Y", "yotta"),
         (1e21, "Z", "zetta"),
         (1e18, "E", "exa"),
@@ -46,7 +48,7 @@ def auto_scale(value):
         (1e-18, "a", "atto"),
         (1e-21, "z", "zepto"),
         (1e-24, "y", "yocto"),
-    )
+    ]
     for scale, prefix, name in scales:
         if abs(value) >= scale:
             return scale, prefix, name
@@ -63,6 +65,16 @@ def combine_matrix(a: Iterable, b: Iterable, *args: Iterable) -> List[str]:
 def inverse_square(value: float) -> float:
     """Return 1/x^2 for value."""
     return 1.0 / value**2
+
+
+def t_dew(t: float, rh: float) -> float:
+    """Calculating dew point.
+    See https://en.wikipedia.org/wiki/Dew_point
+    """
+    a: float = 17.27
+    b: float = 237.3
+    m: float = log(rh / 100.) + ((a * t) / (b + t))
+    return (b * m) / (a - m)
 
 
 def make_iso(dt: Union[float, datetime.datetime] = None) -> str:

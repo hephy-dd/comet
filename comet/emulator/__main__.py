@@ -40,25 +40,25 @@ import yaml
 from .emulator import emulator_factory
 from .tcpserver import TCPServer, TCPServerThread, TCPServerContext
 
-default_config_filename = 'emulators.yaml'
-default_hostname: str  = ''
-default_termination: str = '\r\n'
+default_config_filename = "emulators.yaml"
+default_hostname: str = ""
+default_termination: str = "\r\n"
 default_request_delay: float = 0.1
 
-version_schema = schema.Regex(r'^\d+\.\d+$')
+version_schema = schema.Regex(r"^\d+\.\d+$")
 
 config_schema = schema.Schema({
-    'version': version_schema,
-    'emulators': {
+    "version": version_schema,
+    "emulators": {
         str: {
-            'module': str,
-            schema.Optional('hostname'): str,
-            'port': int,
-            schema.Optional('termination'): str,
-            schema.Optional('request_delay'): float,
-            schema.Optional('options'): dict
+            "module": str,
+            schema.Optional("hostname"): str,
+            "port": int,
+            schema.Optional("termination"): str,
+            schema.Optional("request_delay"): float,
+            schema.Optional("options"): dict,
         }
-    }
+    },
 })
 
 
@@ -66,11 +66,11 @@ def load_config(filename: str) -> dict:
     with open(filename) as fp:
         config = yaml.safe_load(fp)
     # Set defaults
-    for params in config.get('emulators', {}).values():
-        params.setdefault('hostname', default_hostname)
-        params.setdefault('termination', default_termination)
-        params.setdefault('request_delay', default_request_delay)
-        params.setdefault('options', {})
+    for params in config.get("emulators", {}).values():
+        params.setdefault("hostname", default_hostname)
+        params.setdefault("termination", default_termination)
+        params.setdefault("request_delay", default_request_delay)
+        params.setdefault("options", {})
     return validate_config(config)
 
 
@@ -80,7 +80,13 @@ def validate_config(config: dict) -> dict:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument('-f', '--file', dest='filename', metavar='string', default=default_config_filename)
+    parser.add_argument(
+        "-f",
+        "--file",
+        dest="filename",
+        metavar="string",
+        default=default_config_filename,
+    )
     return parser.parse_args()
 
 
@@ -100,13 +106,13 @@ def main() -> None:
 
     threads = []
 
-    for name, params in config.get('emulators', {}).items():
-        module = params.get('module')
-        hostname = params.get('hostname')
-        port = params.get('port')
-        termination = params.get('termination')
-        request_delay = params.get('request_delay')
-        options = params.get('options', {})
+    for name, params in config.get("emulators", {}).items():
+        module = params.get("module")
+        hostname = params.get("hostname")
+        port = params.get("port")
+        termination = params.get("termination")
+        request_delay = params.get("request_delay")
+        options = params.get("options", {})
         address = hostname, port
         emulator = emulator_factory(module)()
         emulator.options.update(options)
@@ -130,5 +136,5 @@ def main() -> None:
         thread.join()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

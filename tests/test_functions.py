@@ -12,6 +12,10 @@ def assert_linear_range(begin, end, step, ref):
 
 class TestFunctions:
 
+    def test_linear_range_step(self):
+        r = functions.LinearRange(0, 2, -1)
+        assert r.step == +1
+
     def test_linear_range(self):
         assert_linear_range(0, 0, 0, [])
         assert_linear_range(0, 1, 0, [])
