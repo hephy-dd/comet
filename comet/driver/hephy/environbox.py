@@ -19,6 +19,10 @@ ERROR_MESSAGES: Dict[int, str] = {
 }
 
 
+def test_bit(value: int, index: int) -> bool:
+    return bool((value >> index) & 1)
+
+
 def parse_error(response: str) -> Optional[InstrumentError]:
     m = re.match(r'^err(\d+)', response.lower())
     if m:
@@ -34,13 +38,14 @@ def parse_pc_data(response: str) -> Dict[str, Any]:
     return {
         "box_humidity": float(values[1]),
         "box_temperature": float(values[2]),
-        "power_microscope_ctrl": bool((relay_status >> 0) & 1),
-        "power_box_light": bool((relay_status >> 1) & 1),
-        "power_probecard_light": bool((relay_status >> 2) & 1),
-        "power_laser_sensor": bool((relay_status >> 3) & 1),
-        "power_probecard_camera": bool((relay_status >> 4) & 1),
-        "power_microscope_camera": bool((relay_status >> 5) & 1),
-        "power_microscope_light": bool((relay_status >> 6) & 1),
+        "box_dewpoint": float(values[3]),
+        "power_microscope_ctrl": test_bit(relay_status, 0),
+        "power_box_light": test_bit(relay_status, 1),
+        "power_probecard_light": test_bit(relay_status, 2),
+        "power_laser_sensor": test_bit(relay_status, 3),
+        "power_probecard_camera": test_bit(relay_status, 4),
+        "power_microscope_camera": test_bit(relay_status, 5),
+        "power_microscope_light": test_bit(relay_status, 6),
         "box_light": bool(int(values[24])),
         "box_door": bool(int(values[25])),
         "discharge_time": float(values[31]),

@@ -1,3 +1,5 @@
+import random
+
 from comet.emulator import Emulator
 from comet.emulator import message, run
 
@@ -23,17 +25,16 @@ class EnvironBoxEmulator(Emulator):
         self.probecard_camera = False
         self.discharge_time = 1000
 
-        self.box_temperature = 24.0
-        self.box_humidity = 40.0
-        self.box_lux = 0.001
-        self.door_open = False
-        self.laser_enabled = False
+        self.box_temperature: float = 24.0
+        self.box_humidity: float = 40.0
+        self.door_open: bool = False
+        self.laser_enabled: bool = False
 
         self.test_led: bool = False
         self.pt100_1_enabled = True
-        self.pt100_1 = 22.5
+        self.pt100_1: float = 22.5
         self.pt100_2_enabled = True
-        self.pt100_2 = float('nan')
+        self.pt100_2: float = float('nan')
         self.pid_control = False
         self.pid_control_mode = 'HUM'
         self.setpoints = {'HUM': 30, 'DEW': 30}
@@ -56,8 +57,23 @@ class EnvironBoxEmulator(Emulator):
         # self.factory_default = False
         # self.clear_log = False
 
-    def power_relay_states(self):
-        power_relay_states = 0
+    @property
+    def box_dewpoint(self) -> float:
+        return round(random.uniform(11.0, 11.1), 1)
+
+    @property
+    def box_lux(self) -> float:
+        lux: float = 0.
+        if self.box_light:
+            lux += random.uniform(0.40, 0.42)
+        if self.probecard_light:
+            lux += random.uniform(0.1, 0.12)
+        if self.microscope_light:
+            lux += random.uniform(0.2, 0.22)
+        return lux
+
+    def power_relay_states(self) -> int:
+        power_relay_states: int = 0
         if self.microscope_control:
             power_relay_states |= 1 << 0
         if self.box_light:
@@ -76,14 +92,15 @@ class EnvironBoxEmulator(Emulator):
 
     def create_pc_data(self):
         pc_data = [0] * self.PC_DATA_SIZE
-        pc_data[1] = self.box_humidity
-        pc_data[2] = self.box_temperature
+        pc_data[1] = format(self.box_humidity, '.2f')
+        pc_data[2] = format(self.box_temperature, '.2f')
+        pc_data[3] = format(self.box_dewpoint, '.2f')
         pc_data[4] = int(self.pid_control)
         pc_data[23] = self.power_relay_states()
         pc_data[24] = int(self.box_light)
         pc_data[25] = int(self.door_open)
         pc_data[30] = int(self.test_led)
-        pc_data[32] = self.box_lux
+        pc_data[32] = format(self.box_lux, '.1f')
         pc_data[33] = self.pt100_1
         pc_data[34] = self.pt100_2
         return pc_data
