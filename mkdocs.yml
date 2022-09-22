@@ -1,0 +1,18 @@
+site_name: COMET
+site_url: https://hephy-dd.github.com/comet/
+repo_url: https://github.com/hephy-dd/comet/
+edit_uri: edit/main/docs/
+site_description: Control and Measurement Toolkit
+site_author: HEPHY
+copyright: 'COMET is licensed under the <a href="https://github.com/hephy-dd/comet/LICENSE">GNU General Public License Version 3</a>'
+nav:
+    - Home: index.md
+    - drivers.md
+    - emulators.md
+    - helpers.md
+theme:
+    name: readthedocs
+    highlightjs: true
+extra_css: [extra.css]
+extra:
+    version: 1.0.x
