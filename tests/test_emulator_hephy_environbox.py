@@ -15,6 +15,8 @@ class EnvironBoxEmulatorTest(unittest.TestCase):
             "box_humidity.max": 40.0,
             "pt100_1.min": 21.5,
             "pt100_1.max": 21.5,
+            "pt100_2.min": 22.5,
+            "pt100_2.max": 22.5,
         })
 
     def test_basic(self):
@@ -46,15 +48,17 @@ class EnvironBoxEmulatorTest(unittest.TestCase):
         self.assertEqual(self.emulator('SET:DISCHARGE_TIME 1000'), 'OK')
         self.assertEqual(self.emulator('GET:DISCHARGE_TIME ?'), '1000')
 
-    def test_set_pt100(self):
+    def test_set_pt100_1(self):
         self.assertEqual(self.emulator('SET:PT100_1 OFF'), 'OK')
+        self.assertEqual(self.emulator('GET:PT100_1 ?'), 'NAN')
         self.assertEqual(self.emulator('SET:PT100_1 ON'), 'OK')
-        self.assertEqual(self.emulator('SET:PT100_2 OFF'), 'OK')
-        self.assertEqual(self.emulator('SET:PT100_2 ON'), 'OK')
+        self.assertEqual(self.emulator('GET:PT100_1 ?'), '21.50')
 
-    def test_get_pt100(self):
-        self.assertEqual(self.emulator('GET:PT100_1 ?'), '21.5')
-        self.assertEqual(self.emulator('GET:PT100_2 ?'), 'nan')
+    def test_set_pt100_2(self):
+        self.assertEqual(self.emulator('SET:PT100_2 OFF'), 'OK')
+        self.assertEqual(self.emulator('GET:PT100_2 ?'), 'NAN')
+        self.assertEqual(self.emulator('SET:PT100_2 ON'), 'OK')
+        self.assertEqual(self.emulator('GET:PT100_2 ?'), '22.50')
 
     def test_microscope_ctrl(self):
         self.assertEqual(self.emulator('GET:MICROSCOPE_CTRL ?'), '0')
@@ -116,3 +120,6 @@ class EnvironBoxEmulatorTest(unittest.TestCase):
 
     def test_version(self):
         self.assertEqual(self.emulator('GET:VERSION ?'), 'V2.0')
+
+    def test_pc_data(self):
+        self.assertEqual(self.emulator('GET:PC_DATA ?'), '2,40.0,24.0,9.58,0,30.0,0.0,0.00,0.250000,0.010000,1.230000,0.00,0.00,1,22.400000,1.250000,3.560000,1,0.00,0,0.00,0.00,0,0,0,0,0,0,0,0,0,1000,0.0,21.50,NAN,0,1,1,0')

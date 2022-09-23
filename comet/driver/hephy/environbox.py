@@ -93,11 +93,11 @@ class EnvironBox(Instrument):
 
     def reset(self) -> None:
         self._error_queue.clear()
-        self.write("*RST")
+        # self.write("*RST")
 
     def clear(self) -> None:
         self._error_queue.clear()
-        self.write("*CLS")
+        # self.write("*CLS")
 
     # Error queue
 

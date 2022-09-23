@@ -2,6 +2,7 @@ include README.md
 include LICENSE
 include pyproject.toml
 include tox.ini
+include mkdocs.yml
 
-include docs/_config.yml
+include docs/extra.css
 recursive-include docs/ *.md

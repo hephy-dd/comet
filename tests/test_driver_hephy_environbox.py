@@ -24,11 +24,11 @@ class BrandBoxTest(unittest.TestCase):
         buffer = []
         driver = EnvironBox(Resource(buffer))
 
-        buffer.extend(['EnvironBox V1.0', 'OK', 'OK'])
+        buffer.extend(['EnvironBox V1.0'])
         self.assertEqual(driver.identify(), 'EnvironBox V1.0')
-        self.assertEqual(driver.reset(), None)
-        self.assertEqual(driver.clear(), None)
-        self.assertEqual(buffer, ['*IDN?', '*RST', '*CLS'])
+        self.assertEqual(driver.reset(), None)  # no query!
+        self.assertEqual(driver.clear(), None)  # no query!
+        self.assertEqual(buffer, ['*IDN?'])
 
     def test_errors(self):
         buffer = []
@@ -37,16 +37,15 @@ class BrandBoxTest(unittest.TestCase):
         self.assertEqual(driver.next_error(), None)
 
         buffer.append('Err99')
-        driver.clear()  # performs query
-        self.assertEqual(buffer.pop(0), '*CLS')
+        driver.write('1')
         error = driver.next_error()
         self.assertEqual(error.code, 99)
         self.assertEqual(error.message, 'Invalid command')
         self.assertEqual(driver.next_error(), None)
 
+        buffer.clear()
         buffer.append('Err999')
-        driver.clear()  # performs query
-        self.assertEqual(buffer.pop(0), '*CLS')
+        driver.query('GET:FOO ?')
         error = driver.next_error()
         self.assertEqual(error.code, 999)
         self.assertEqual(error.message, 'Unknown command')
@@ -116,7 +115,7 @@ class BrandBoxTest(unittest.TestCase):
         self.assertEqual(buffer.pop(0), 'SET:BOX_LIGHT OFF')
 
     def test_parse_pc_data(self):
-        response = "2,1.23,2.34,11.1,0,0,0,0,0,0,0,0,0,HUM,0,0,0,0,0,0,0,0,0,85,1,0,0,0,0,0,0,3.45,0.21,0.23,0.34,0,M,1,0"
+        response = "2,1.23,2.34,11.1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,85,1,0,0,0,0,0,0,3.45,0.21,0.23,0.34,0,1,1,0"
         data = parse_pc_data(response)
         assert data["sensor_count"] == 2
         assert data["box_humidity"] == 1.23
@@ -131,7 +130,7 @@ class BrandBoxTest(unittest.TestCase):
         assert data["pid_kd_1"] == 0.
         assert data["pid_min"] == 0
         assert data["pid_max"] == 0
-        assert data["pid_control_mode"] == "HUM"
+        assert data["pid_control_mode"] == "1"
         assert data["pid_kp_2"] == 0.
         assert data["pid_ki_2"] == 0.
         assert data["pid_kd_2"] == 0.
@@ -160,6 +159,6 @@ class BrandBoxTest(unittest.TestCase):
         assert data["pt100_1"] == 0.23
         assert data["pt100_2"] == 0.34
         assert data["pid_sample_time"] == 0.
-        assert data["pid_drop_mode"] == "M"
+        assert data["pid_drop_mode"] == "1"
         assert data["pt100_1_enabled"] == True
         assert data["pt100_2_enabled"] == False

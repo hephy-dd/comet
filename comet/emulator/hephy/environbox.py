@@ -20,7 +20,7 @@ class EnvironBoxEmulator(Emulator):
         super().__init__()
         self.sensor_address: int = 40
         self.discharge: str = "OFF"
-        self.sensor_nbr: int = 3
+        self.sensor_count: int = 2
 
         self.laser_sensor: bool = False
         self.box_light: bool = False
@@ -40,7 +40,7 @@ class EnvironBoxEmulator(Emulator):
         self.pt100_2_enabled: bool = False
         self.pid_control: bool = False
         self.pid_control_mode = "HUM"
-        self.pid_setpoints = {"HUM": 30, "DEW": 30}
+        self.pid_setpoints = {"HUM": 30., "DEW": 30.}
         self.pid_kp: float = 0.25
         self.pid_ki: float = 0.01
         self.pid_kd: float = 1.23
@@ -74,14 +74,14 @@ class EnvironBoxEmulator(Emulator):
 
     @property
     def box_dewpoint(self) -> float:
-        return round(t_dew(self.box_temperature, self.box_humidity), 1)
+        return round(t_dew(self.box_temperature, self.box_humidity), 2)
 
     @property
-    def pid_setpoint(self) -> int:
+    def pid_setpoint(self) -> float:
         return self.pid_setpoints[self.pid_control_mode]
 
     @pid_setpoint.setter
-    def pid_setpoint(self, value: int) -> None:
+    def pid_setpoint(self, value: float) -> None:
         self.pid_setpoints[self.pid_control_mode] = value
 
     @property
@@ -131,19 +131,27 @@ class EnvironBoxEmulator(Emulator):
 
     def create_pc_data(self):
         pc_data = ["0"] * type(self).PC_DATA_SIZE
-        pc_data[0] = format(self.sensor_nbr, "d")
+        pc_data[0] = format(self.sensor_count, "d")
         pc_data[1] = format(self.box_humidity, ".1F")
         pc_data[2] = format(self.box_temperature, ".1F")
-        pc_data[3] = format(self.box_dewpoint, ".1F")
+        pc_data[3] = format(self.box_dewpoint, ".2F")
         pc_data[4] = format(self.pid_control, "d")
-        pc_data[5] = format(self.pid_setpoint, "d")
-        pc_data[8] = format(self.pid_kp, ".2F")
-        pc_data[9] = format(self.pid_ki, ".2F")
-        pc_data[10] = format(self.pid_kd, ".2F")
-        pc_data[13] = format(self.pid_control_mode)
-        pc_data[14] = format(self.pid_kp2, ".2F")
-        pc_data[15] = format(self.pid_ki2, ".2F")
-        pc_data[16] = format(self.pid_kd2, ".2F")
+        pc_data[5] = format(self.pid_setpoint, ".1F")
+        pc_data[6] = format(0, ".1F")
+        pc_data[7] = format(0, ".2F")
+        pc_data[8] = format(self.pid_kp, ".6F")
+        pc_data[9] = format(self.pid_ki, ".6F")
+        pc_data[10] = format(self.pid_kd, ".6F")
+        pc_data[11] = format(0, ".2F")
+        pc_data[12] = format(0, ".2F")
+        pc_data[13] = "1"  # format(self.pid_control_mode)  # TODO
+        pc_data[14] = format(self.pid_kp2, ".6F")
+        pc_data[15] = format(self.pid_ki2, ".6F")
+        pc_data[16] = format(self.pid_kd2, ".6F")
+        pc_data[17] = "1"
+        pc_data[18] = format(0, ".2F")
+        pc_data[20] = format(0, ".2F")
+        pc_data[21] = format(0, ".2F")
         pc_data[23] = format(self.power_relay_states(), "d")
         pc_data[24] = format(self.box_light, "d")
         pc_data[25] = format(self.door_open, "d")
@@ -151,10 +159,10 @@ class EnvironBoxEmulator(Emulator):
         pc_data[30] = format(self.test_led, "d")
         pc_data[31] = format(self.discharge_time, "d")
         pc_data[32] = format(self.box_lux, ".1F")
-        pc_data[33] = format(self.pt100_1, ".1F")
-        pc_data[34] = format(self.pt100_2, ".1F")
+        pc_data[33] = format(self.pt100_1, ".2F")
+        pc_data[34] = format(self.pt100_2, ".2F")
         pc_data[36] = format(self.pid_sample_time, "d")
-        pc_data[36] = format(self.pid_drop_mode)
+        pc_data[36] = "1"  # format(self.pid_drop_mode)  # TODO
         pc_data[37] = format(self.pt100_1_enabled, "d")
         pc_data[38] = format(self.pt100_2_enabled, "d")
         return pc_data
@@ -164,7 +172,11 @@ class EnvironBoxEmulator(Emulator):
         return type(self).IDENTITY
 
     # @message(r"\*RST")
-    # def set_idn(self):
+    # def set_reset(self):
+    #     return self.SUCCESS
+
+    # @message(r"\*CLS")
+    # def set_clear(self):
     #     return self.SUCCESS
 
     @message(r"SET:NEW_ADDR (\d+)")
@@ -208,7 +220,7 @@ class EnvironBoxEmulator(Emulator):
 
     @message(r"GET:PT100_1 \?")
     def get_pt100_1(self):
-        return format(self.pt100_1, ".1f")
+        return format(self.pt100_1, ".2F")
 
     @message(r"SET:PT100_2 (ON|OFF)")
     def set_pt100_2(self, value):
@@ -217,7 +229,7 @@ class EnvironBoxEmulator(Emulator):
 
     @message(r"GET:PT100_2 \?")
     def get_pt100_2(self):
-        return format(self.pt100_2, ".1f")
+        return format(self.pt100_2, ".2F")
 
     @message(r"SET:CTRL (ON|OFF)")
     def set_ctrl(self, value):
@@ -233,14 +245,17 @@ class EnvironBoxEmulator(Emulator):
         self.pid_control_mode = mode
         return self.SUCCESS
 
-    @message(r"SET:SETPOINT (\d+)")
+    @message(r"SET:SETPOINT (.+)")
     def set_setpoint(self, setpoint):
-        self.pid_setpoint = int(setpoint)
+        try:
+            self.pid_setpoint = float(setpoint)
+        except Exception:
+            return format_error(30)
         return self.SUCCESS
 
     @message(r"GET:SETPOINT \?")
     def get_setpoint(self):
-        return self.pid_setpoint
+        return format(self.pid_setpoint, ".2F")
 
     @message(r"SET:PID_KP (.+)")
     def set_pid_kp(self, value):
@@ -252,7 +267,7 @@ class EnvironBoxEmulator(Emulator):
 
     @message(r"GET:PID_KP \?")
     def get_pid_kp(self):
-        return format(self.pid_kp, ".2f")
+        return format(self.pid_kp, ".2F")
 
     @message(r"SET:PID_KI (.+)")
     def set_pid_ki(self, value):
@@ -264,7 +279,7 @@ class EnvironBoxEmulator(Emulator):
 
     @message(r"GET:PID_KI \?")
     def get_pid_ki(self):
-        return format(self.pid_ki, ".2f")
+        return format(self.pid_ki, ".2F")
 
     @message(r"SET:PID_KD (.+)")
     def set_pid_kd(self, value):
@@ -276,7 +291,7 @@ class EnvironBoxEmulator(Emulator):
 
     @message(r"GET:PID_KD \?")
     def get_pid_kd(self):
-        return format(self.pid_kd, ".2f")
+        return format(self.pid_kd, ".2F")
 
     @message(r"SET:PID_KP2 (.+)")
     def set_pid_kp2(self, value):
@@ -288,7 +303,7 @@ class EnvironBoxEmulator(Emulator):
 
     @message(r"GET:PID_KP2 \?")
     def get_pid_kp2(self):
-        return format(self.pid_kp2, ".2f")
+        return format(self.pid_kp2, ".2F")
 
     @message(r"SET:PID_KI2 (.+)")
     def set_pid_ki2(self, value):
@@ -300,7 +315,7 @@ class EnvironBoxEmulator(Emulator):
 
     @message(r"GET:PID_KI2 \?")
     def get_pid_ki2(self):
-        return format(self.pid_ki2, ".2f")
+        return format(self.pid_ki2, ".2F")
 
     @message(r"SET:PID_KD2 (.+)")
     def set_pid_kd2(self, value):
@@ -312,7 +327,7 @@ class EnvironBoxEmulator(Emulator):
 
     @message(r"GET:PID_KD2 (.+)")
     def get_pid_kd2(self):
-        return format(self.pid_kd2, ".2f")
+        return format(self.pid_kd2, ".2F")
 
     @message(r"SET:PID_MIN (\d+)")
     def set_pid_min(self, value):
@@ -348,7 +363,7 @@ class EnvironBoxEmulator(Emulator):
 
     @message(r"GET:PID_PROP_MODE \?")
     def get_pid_drop_mode(self):
-        return self.pid_drop_mode
+        return "1"  # self.pid_drop_mode  # TODO
 
     @message(r"SET:PID_THRESHOLD (\d+)")
     def set_pid_threshold(self, value):
@@ -459,9 +474,9 @@ class EnvironBoxEmulator(Emulator):
     # def set_clock(self):
     #     return self.SUCCESS
 
-    # @message(r'GET:CHIP_ADDR \d')
-    # def get_chip_addr(self):
-    #     return self.SUCCESS
+    @message(r'GET:CHIP_ADDR (1|2)')
+    def get_chip_addr(self):
+        return format(self.sensor_address, "d")
 
     # @message(r'GET:DATA \d')
     # def get_data(self):
@@ -471,21 +486,21 @@ class EnvironBoxEmulator(Emulator):
     # def get_data_box(self):
     #     return 'TODO'
 
-    # @message(r'GET:CHIP_NBR \?')
-    # def get_chip_nbr(self):
-    #     return 'TODO'
+    @message(r'GET:CHIP_NBR \?')
+    def get_chip_nbr(self):
+        return format(self.sensor_count, "d")
 
     @message(r"GET:TEMP \?")
     def get_temp(self):
-        return format(self.box_temperature, ".1f")
+        return format(self.box_temperature, ".1F")
 
     @message(r"GET:HUM \?")
     def get_hum(self):
-        return format(self.box_humidity, ".1f")
+        return format(self.box_humidity, ".1F")
 
     @message(r"GET:LUX \?")
     def get_lux(self):
-        return format(self.box_lux, ".0f")
+        return format(self.box_lux, ".1F")
 
     @message(r"GET:VALVE_ON \?")
     def get_valve_on(self):
@@ -510,10 +525,10 @@ class EnvironBoxEmulator(Emulator):
     @message(r"GET:ENV \?")
     def get_env(self):
         values = [
-            format(self.box_temperature, ".1f"),
-            format(self.box_humidity, ".1f"),
+            format(self.box_temperature, ".1F"),
+            format(self.box_humidity, ".1F"),
             format(self.box_light, "d"),
-            format(self.pt100_1, ".1f"),
+            format(self.pt100_1, ".1F"),
         ]
         return ",".join(values)
 
