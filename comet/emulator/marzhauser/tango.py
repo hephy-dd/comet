@@ -13,6 +13,8 @@ class TANGOEmulator(Emulator):
     def __init__(self):
         super().__init__()
         self.position = {"x": 0.0, "y": 0.0, "z": 0.0}
+        self.calst = {"x": 3, "y": 3, "z": 3}
+        self.statusaxis = {"x": "@", "y": "@", "z": "@"}
         self.velocity = {"x": 10.0, "y": 10.0, "z": 10.0}
 
     # Controller informations
@@ -39,6 +41,16 @@ class TANGOEmulator(Emulator):
     def set_move_absolute_xyz(self, axis, value):
         self.position[axis] = float(value)
         return "@@@-."
+
+    @message(r'^\?statusaxis (x|y|z)')
+    def get_statusaxis_xyz(self, axis):
+        value = self.statusaxis.get(axis, "@")
+        return f"{value}"
+
+    @message(r'^\?calst (x|y|z)')
+    def get_calst_xyz(self, axis):
+        value = self.calst.get(axis, 0)
+        return f"{value:d}"
 
     @message(r'\?vel')
     def get_vel(self):
