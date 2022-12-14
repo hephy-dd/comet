@@ -37,7 +37,7 @@ class TANGOEmulator(Emulator):
         value = self.position.get(axis)
         return f"{value:.3f}"
 
-    @message(r'^moa (x|y|z) ([^\s]+)')
+    @message(r'^\!?moa (x|y|z) ([^\s]+)')
     def set_move_absolute_xyz(self, axis, value):
         self.position[axis] = float(value)
         return "@@@-."
