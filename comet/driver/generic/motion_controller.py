@@ -22,6 +22,11 @@ class MotionControllerAxis(Driver):
     def range_measure(self) -> None:
         ...
 
+    @property
+    @abstractmethod
+    def is_calibrated(self) -> bool:
+        ...
+
     @abstractmethod
     def move_absolute(self, value: float) -> None:
         ...
@@ -53,6 +58,11 @@ class MotionController(Instrument):
 
     @abstractmethod
     def range_measure(self) -> None:
+        ...
+
+    @property
+    @abstractmethod
+    def is_calibrated(self) -> bool:
         ...
 
     @abstractmethod

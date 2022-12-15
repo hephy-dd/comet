@@ -52,6 +52,14 @@ ERROR_MESSAGES: Dict[int, str] = {
 }
 
 
+def parse_error(response: str) -> Optional[InstrumentError]:
+    code = int(response)
+    if code:
+        message = ERROR_MESSAGES.get(code, "unknown error")
+        return InstrumentError(code, message)
+    return None
+
+
 class TangoAxis(MotionControllerAxis):
 
     @property
@@ -65,6 +73,12 @@ class TangoAxis(MotionControllerAxis):
     def range_measure(self) -> None:
         self.resource.write("!autostatus 0")
         self.resource.write(f"!rm {self.name}")
+
+    @property
+    def is_calibrated(self) -> bool:
+        """Return True if axis is calibrated and range measured."""
+        result = self.resource.query(f"?calst {self.name}")
+        return (int(result) & 0x3) == 0x3
 
     def move_absolute(self, value: float) -> None:
         self.resource.write("!autostatus 0")
@@ -97,11 +111,7 @@ class Tango(MotionController):
         self.resource.write("!err")  # clear error state
 
     def next_error(self) -> Optional[InstrumentError]:
-        code = int(self.resource.query("?err"))
-        if code:
-            message = ERROR_MESSAGES.get(code, "unknown error")
-            return InstrumentError(code, message)
-        return None
+        return parse_error(self.resource.query("?err"))
 
     def __getitem__(self, index: int) -> TangoAxis:
         return TangoAxis(self.resource, index)
@@ -113,6 +123,12 @@ class Tango(MotionController):
     def range_measure(self) -> None:
         self.resource.write("!autostatus 0")
         self.resource.write("!rm")
+
+    @property
+    def is_calibrated(self) -> bool:
+        """Return True if all active axes are calibrated and range measured."""
+        values = self.resource.query("?calst").split()
+        return [(int(value) & 0x3) for value in values].count(0x3) == len(values)
 
     def move_absolute(self, position: Position) -> None:
         values = " ".join([format(value, '.3f') for value in position])

@@ -19,6 +19,14 @@ def test_tango():
     assert instr.range_measure() is None
     assert resource.buffer == ["!autostatus 0", "!rm"]
 
+    resource.buffer = ["3 3 3"]
+    assert instr.is_calibrated
+    assert resource.buffer == ["?calst"]
+
+    resource.buffer = ["3 2"]
+    assert not instr.is_calibrated
+    assert resource.buffer == ["?calst"]
+
     resource.buffer = []
     assert instr.move_absolute([2.1, 4.2]) is None
     assert resource.buffer == ["!autostatus 0", "!moa 2.100 4.200"]
@@ -39,11 +47,11 @@ def test_tango():
     assert instr.position == [2.1, 4.2]
     assert resource.buffer == ["?pos"]
 
-    resource.buffer = ["@@M-"]
+    resource.buffer = ["@@M-."]
     assert instr.is_moving
     assert resource.buffer == ["?statusaxis"]
 
-    resource.buffer = ["@@@-"]
+    resource.buffer = ["@@@-."]
     assert not instr.is_moving
     assert resource.buffer == ["?statusaxis"]
 

@@ -19,6 +19,14 @@ def test_corvus():
     assert instr.range_measure() is None
     assert resource.buffer == ["rm"]
 
+    resource.buffer = ["3 3 3"]
+    assert instr.is_calibrated
+    assert resource.buffer == ["getcaldone"]
+
+    resource.buffer = ["3 2"]
+    assert not instr.is_calibrated
+    assert resource.buffer == ["getcaldone"]
+
     resource.buffer = []
     assert instr.move_absolute([0, 4.2]) is None
     assert resource.buffer == ["0.000 4.200 move"]

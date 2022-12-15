@@ -23,6 +23,14 @@ ERROR_MESSAGES: Dict[int, str] = {
 }
 
 
+def parse_error(response: str) -> Optional[InstrumentError]:
+    code = int(response)
+    if code:
+        message = ERROR_MESSAGES.get(code, "unknown error")
+        return InstrumentError(code, message)
+    return None
+
+
 class CorvusAxis(MotionControllerAxis):
 
     def calibrate(self) -> None:
@@ -30,6 +38,12 @@ class CorvusAxis(MotionControllerAxis):
 
     def range_measure(self) -> None:
         self.resource.write(f"{self.index:d} nrm")
+
+    @property
+    def is_calibrated(self) -> bool:
+        """Return True if axis is calibrated and range measured."""
+        result = self.resource.query(f"{self.index:d} getcaldone")
+        return int(result) == 0x3
 
     def move_absolute(self, value: float) -> None:
         self.resource.write(f"{value:.3f} {self.index:d} nmove")
@@ -60,11 +74,8 @@ class Corvus(MotionController):
         ...
 
     def next_error(self) -> Optional[InstrumentError]:
-        code = int(self.resource.query("geterror"))
-        if code:
-            message = ERROR_MESSAGES.get(code, "unknown error")
-            return InstrumentError(code, message)
-        return None
+        response = self.resource.query("geterror")
+        return parse_error(response)
 
     def __getitem__(self, index: int) -> CorvusAxis:
         return CorvusAxis(self.resource, index)
@@ -74,6 +85,12 @@ class Corvus(MotionController):
 
     def range_measure(self) -> None:
         self.resource.write("rm")
+
+    @property
+    def is_calibrated(self) -> bool:
+        """Return True if all active axes are calibrated and range measured."""
+        values = self.resource.query(f"getcaldone").split()
+        return [int(value) for value in values].count(0x3) == len(values)
 
     def move_absolute(self, position: Position) -> None:
         values = " ".join([format(value, '.3f') for value in position])
