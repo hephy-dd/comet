@@ -2,10 +2,10 @@
 
 from comet.emulator import Emulator, message, run
 
-__all__ = ['TANGOEmulator']
+__all__ = ['TangoEmulator']
 
 
-class TANGOEmulator(Emulator):
+class TangoEmulator(Emulator):
     """TANGO emulator."""
 
     version_string = 'TANGO-MINI3-EMULATOR, Version 1.00, Mar 11 2022, 13:51:01'
@@ -22,6 +22,10 @@ class TANGOEmulator(Emulator):
     @message(r'\??version')
     def get_version(self):
         return type(self).version_string
+
+    @message(r'\??err')
+    def get_error(self):
+        return "0"
 
     # Positioning
 
@@ -85,4 +89,4 @@ class TANGOEmulator(Emulator):
 
 
 if __name__ == '__main__':
-    run(TANGOEmulator())
+    run(TangoEmulator())

@@ -1,7 +1,7 @@
 from typing import Optional
 
-from comet.driver.generic import Electrometer
 from comet.driver.generic import InstrumentError
+from comet.driver.generic.electrometer import Electrometer
 
 __all__ = ['K6517B']
 

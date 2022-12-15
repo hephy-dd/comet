@@ -1,11 +1,15 @@
-from comet.driver.marzhauser import Venus2
+from comet.driver.marzhauser import Venus
 
 from .test_driver import Resource
 
 
-def test_venus2():
+def test_venus():
     resource = Resource()
-    instr = Venus2(resource)
+    instr = Venus(resource)
+
+    resource.buffer = ["TANGO-MINI3", "serialnumber"]
+    assert instr.identify() == "TANGO-MINI3"
+    assert resource.buffer == ["tango"]
 
     resource.buffer = []
     assert instr.calibrate() is None
@@ -56,9 +60,9 @@ def test_venus2():
     assert resource.buffer == ["1 joystick"]
 
 
-def test_venus2_axes():
+def test_venus_axes():
     resource = Resource()
-    instr = Venus2(resource)
+    instr = Venus(resource)
 
     resource.buffer = []
     assert instr[0].calibrate() is None

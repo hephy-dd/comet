@@ -1,7 +1,7 @@
 from typing import List, Optional
 
-from comet.driver.generic import SwitchingMatrix
 from comet.driver.generic import InstrumentError
+from comet.driver.generic.switching_matrix import SwitchingMatrix
 from comet.utils import combine_matrix
 
 __all__ = ['K707B']

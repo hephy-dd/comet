@@ -7,6 +7,10 @@ def test_tango():
     resource = Resource()
     instr = Tango(resource)
 
+    resource.buffer = ["TANGO-MINI3"]
+    assert instr.identify() == "TANGO-MINI3"
+    assert resource.buffer == ["?version"]
+
     resource.buffer = []
     assert instr.calibrate() is None
     assert resource.buffer == ["!autostatus 0", "!cal"]

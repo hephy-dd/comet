@@ -1,18 +1,17 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import Iterable
 
-from .instrument import Instrument
+from .instrument import Driver, Instrument
 
-__all__ = ["StepperMotorAxis", "StepperMotorController"]
+__all__ = ["MotionControllerAxis", "MotionController"]
 
 Position = Iterable[float]
 
 
-class StepperMotorAxis(ABC):
+class MotionControllerAxis(Driver):
 
     def __init__(self, resource, index: int) -> None:
-        super().__init__()
-        self.resource = resource
+        super().__init__(resource)
         self.index: int = index
 
     @abstractmethod
@@ -42,10 +41,10 @@ class StepperMotorAxis(ABC):
         ...
 
 
-class StepperMotorController(Instrument):
+class MotionController(Instrument):
 
     @abstractmethod
-    def __getitem__(self, index: int) -> StepperMotorAxis:
+    def __getitem__(self, index: int) -> MotionControllerAxis:
         ...
 
     @abstractmethod

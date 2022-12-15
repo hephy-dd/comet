@@ -3,7 +3,7 @@ from typing import Dict, Optional
 from comet.driver.generic import InstrumentError
 from comet.driver.generic.motion_controller import Position, MotionControllerAxis, MotionController
 
-__all__ = ["Tango"]
+__all__ = ["Venus"]
 
 ERROR_MESSAGES: Dict[int, str] = {
     1: "no valid axis name",
@@ -52,101 +52,89 @@ ERROR_MESSAGES: Dict[int, str] = {
 }
 
 
-class TangoAxis(MotionControllerAxis):
-
-    @property
-    def name(self) -> str:
-        return "xyza"[self.index]
+class VenusAxis(MotionControllerAxis):
 
     def calibrate(self) -> None:
-        self.resource.write("!autostatus 0")
-        self.resource.write(f"!cal {self.name}")
+        self.resource.write(f"{self.index:d} ncal")
 
     def range_measure(self) -> None:
-        self.resource.write("!autostatus 0")
-        self.resource.write(f"!rm {self.name}")
+        self.resource.write(f"{self.index:d} nrm")
 
     def move_absolute(self, value: float) -> None:
-        self.resource.write("!autostatus 0")
-        self.resource.write(f"!moa {self.name} {value:.3f}")
+        self.resource.write(f"{value:.3f} {self.index:d} nmove")
 
     def move_relative(self, value: float) -> None:
-        self.resource.write("!autostatus 0")
-        self.resource.write(f"!mor {self.name} {value:.3f}")
+        self.resource.write(f"{value:.3f} {self.index:d} nrmove")
 
     @property
     def position(self) -> float:
-        result = self.resource.query(f"?pos {self.name}")
+        result = self.resource.query(f"{self.index:d} npos")
         return float(result)
 
     @property
     def is_moving(self) -> bool:
-        result = self.resource.query(f"?statusaxis {self.name}")
-        return "M" in result
+        result = self.resource.query("status")
+        return bool(int(result) & 0x1)
 
 
-class Tango(MotionController):
+class Venus(MotionController):
 
     def identify(self) -> str:
-        return self.resource.query("?version").strip()
+        result = self.resource.query("tango").strip()
+        self.resource.read()  # 2nd line
+        return result
 
     def reset(self) -> None:
         ...
 
     def clear(self) -> None:
-        self.resource.write("!err")  # clear error state
+        ...
 
     def next_error(self) -> Optional[InstrumentError]:
-        code = int(self.resource.query("?err"))
+        code = int(self.resource.query("geterror"))
         if code:
             message = ERROR_MESSAGES.get(code, "unknown error")
             return InstrumentError(code, message)
         return None
 
-    def __getitem__(self, index: int) -> TangoAxis:
-        return TangoAxis(self.resource, index)
+    def __getitem__(self, index: int) -> VenusAxis:
+        return VenusAxis(self.resource, index)
 
     def calibrate(self) -> None:
-        self.resource.write("!autostatus 0")
-        self.resource.write("!cal")
+        self.resource.write("cal")
 
     def range_measure(self) -> None:
-        self.resource.write("!autostatus 0")
-        self.resource.write("!rm")
+        self.resource.write("rm")
 
     def move_absolute(self, position: Position) -> None:
         values = " ".join([format(value, '.3f') for value in position])
-        self.resource.write("!autostatus 0")
-        self.resource.write(f"!moa {values}")
+        self.resource.write(f"{values} move")
 
     def move_relative(self, position: Position) -> None:
         values = " ".join([format(value, '.3f') for value in position])
-        self.resource.write("!autostatus 0")
-        self.resource.write(f"!mor {values}")
+        self.resource.write(f"{values} rmove")
 
-    def abort(self) -> None:
-        self.resource.write("!a")
+    def abort(self):
+        self.resource.write("abort")
 
-    def force_abort(self) -> None:
+    def force_abort(self):
         self.resource.write(chr(0x03))  # Ctrl+C
 
     @property
     def position(self) -> Position:
-        result = self.resource.query("?pos")
+        result = self.resource.query("pos")
         return [float(value) for value in result.split()]
 
     @property
     def is_moving(self) -> bool:
-        result = self.resource.query("?statusaxis")
-        return "M" in result
+        result = self.resource.query("status")
+        return bool(int(result) & 0x1)
 
     @property
     def joystick_enabled(self) -> bool:
-        result = self.resource.query(f"?joy")
+        result = self.resource.query("getjoystick")
         return bool(int(result))
 
     @joystick_enabled.setter
     def joystick_enabled(self, value: bool) -> None:
-        enabled = {False: 0, True: 2}[value]
-        self.resource.write("!autostatus 0")
-        self.resource.write(f"!joy {enabled:d}")
+        self.resource.write(f"{value:d} joystick")

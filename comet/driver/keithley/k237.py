@@ -1,8 +1,8 @@
 import time
 from typing import Optional
 
-from comet.driver.generic import SourceMeterUnit
 from comet.driver.generic import InstrumentError
+from comet.driver.generic.source_meter_unit import SourceMeterUnit
 
 __all__ = ['K237']
 

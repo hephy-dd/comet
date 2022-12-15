@@ -5,11 +5,11 @@ from .instrument import (
     RouteTerminalMixin,
     Instrument,
 )
-from .sourcemeter import SourceMeterUnit
+from .source_meter_unit import SourceMeterUnit
 from .electrometer import Electrometer
-from .lcrmeter import LCRMeter
-from .matrix import SwitchingMatrix
-from .steppermotor import (
-    StepperMotorAxis,
-    StepperMotorController,
+from .lcr_meter import LCRMeter
+from .switching_matrix import SwitchingMatrix
+from .motion_controller import (
+    MotionController,
+    MotionControllerAxis,
 )

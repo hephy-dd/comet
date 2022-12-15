@@ -1,2 +1,2 @@
 from .tango import Tango
-from .venus2 import Venus2
+from .venus import Venus

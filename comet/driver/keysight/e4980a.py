@@ -1,7 +1,7 @@
 from typing import Optional, Tuple
 
-from comet.driver.generic import LCRMeter
 from comet.driver.generic import InstrumentError
+from comet.driver.generic.lcr_meter import LCRMeter
 
 __all__ = ['E4980A']
 

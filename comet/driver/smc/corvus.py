@@ -1,12 +1,29 @@
-from typing import Iterable, Optional
+from typing import Dict, Optional
 
 from comet.driver.generic import InstrumentError
-from comet.driver.generic import StepperMotorAxis, StepperMotorController
+from comet.driver.generic.motion_controller import Position, MotionControllerAxis, MotionController
 
-Position = Iterable[float]
+__all__ = ["Corvus"]
+
+ERROR_MESSAGES: Dict[int, str] = {
+    1: "internal error",
+    2: "internal error",
+    3: "internal error",
+    4: "internal error",
+    1001: "wrong parameter",
+    1002: "not enough parameter on the stack",
+    1003: "not enough parameter on the stack",
+    1007: "range of parameter is exceeded",
+    1004: "move stopped working range should run over",
+    1008: "not enough parameter on the stack",
+    1009: "not enough space on the stack",
+    1010: "not enough space on parameter memory",
+    1015: "parameters outside the working range",
+    2000: "unknown command",
+}
 
 
-class Venus2Axis(StepperMotorAxis):
+class CorvusAxis(MotionControllerAxis):
 
     def calibrate(self) -> None:
         self.resource.write(f"{self.index:d} ncal")
@@ -31,7 +48,7 @@ class Venus2Axis(StepperMotorAxis):
         return bool(int(result) & 0x1)
 
 
-class Venus2(StepperMotorController):
+class Corvus(MotionController):
 
     def identify(self) -> str:
         return self.resource.query("identify").strip()
@@ -43,10 +60,14 @@ class Venus2(StepperMotorController):
         ...
 
     def next_error(self) -> Optional[InstrumentError]:
-        ...
+        code = int(self.resource.query("geterror"))
+        if code:
+            message = ERROR_MESSAGES.get(code, "unknown error")
+            return InstrumentError(code, message)
+        return None
 
-    def __getitem__(self, index: int) -> Venus2Axis:
-        return Venus2Axis(self.resource, index)
+    def __getitem__(self, index: int) -> CorvusAxis:
+        return CorvusAxis(self.resource, index)
 
     def calibrate(self) -> None:
         self.resource.write("cal")

@@ -1,8 +1,8 @@
 import re
 from typing import Dict, List, Optional, Tuple
 
-from comet.driver.generic import SwitchingMatrix
 from comet.driver.generic import InstrumentError
+from comet.driver.generic.switching_matrix import SwitchingMatrix
 from comet.utils import combine_matrix
 
 __all__ = ['BrandBox']
