@@ -16,7 +16,7 @@ class IEC60488EmulatorTest(unittest.TestCase):
         self.assertEqual(self.emulator('*ESE 1'), None)
         self.assertEqual(self.emulator('*STB?'), '0')
         self.assertEqual(self.emulator('*OPC?'), '1')
-        self.assertEqual(self.emulator('*OPC 1'), None)
+        self.assertEqual(self.emulator('*OPC'), None)
         self.assertEqual(self.emulator('*RST'), None)
         self.assertEqual(self.emulator('*CLS'), None)
         self.assertEqual(self.emulator('*TST?'), '0')

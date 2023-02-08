@@ -34,8 +34,8 @@ class IEC60488Emulator(Emulator):
     def get_opc(self):
         return 1
 
-    @message(r"\*OPC (\d+)")
-    def set_opc(self, value):
+    @message(r"\*OPC")
+    def set_opc(self):
         ...
 
     @message(r"\*RST")
