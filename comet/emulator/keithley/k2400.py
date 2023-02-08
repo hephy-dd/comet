@@ -22,10 +22,12 @@ class K2400Emulator(IEC60488Emulator):
         self.sense_voltage_protection_level = 2.1e+1
         self.sense_current_protection_level = 1.05e-5
         self.sense_function = 'CURR'
+        self.sense_function_concurrent = False
         self.sense_average_tcontrol = 'REP'
         self.sense_average_count = 10
         self.sense_average_state = False
         self.sense_nplc = 1.0
+        self.system_rsense = False
         self.format_elements = ['VOLT', 'CURR', 'RES', 'TIME', 'STAT']
 
     @message(r'\*RST')
@@ -40,10 +42,12 @@ class K2400Emulator(IEC60488Emulator):
         self.source_range_auto.update({'VOLT': True, 'CURR': True})
         self.source_voltage_protection_level = self.DEFAULT_VOLTAGE_PROTECTION_LEVEL
         self.sense_function = 'CURR'
+        self.sense_function_concurrent = False
         self.sense_average_tcontrol = 'REP'
         self.sense_average_count = 10
         self.sense_average_state = False
         self.sense_nplc = 1.0
+        self.system_rsense = False
         self.format_elements = ['VOLT', 'CURR', 'RES', 'TIME', 'STAT']
 
     @message(r'\*CLS')
@@ -200,10 +204,17 @@ class K2400Emulator(IEC60488Emulator):
 
     @message(r'(?::?SENS)?:FUNC(?::ON)? \'(VOLT|CURR)\'')
     def set_sense_function_on(self, function):
-        try:
-            self.sense_function = function
-        except KeyError:
-            self.error_queue.append((101, "malformed command"))
+        self.sense_function = function
+
+    # Concurrent function
+
+    @message(r'^(?::?SENS)?:FUNC:CONC\?$')
+    def get_sense_function_concurrent(self):
+        return int(self.sense_function_concurrent)
+
+    @message(r'^(?::?SENS)?:FUNC:CONC (OFF|ON|0|1)$')
+    def set_sense_function_concurrent(self, state):
+        self.sense_function_concurrent = {'OFF': False, 'ON': True, '0': False, '1': True}[state]
 
     # Average
 
@@ -240,6 +251,16 @@ class K2400Emulator(IEC60488Emulator):
     @message(r'(?::?SENS)?:(?:VOLT|CURR|RES):NPLC (.+)')
     def set_sense_nplc(self, nplc: str):
         self.sense_nplc = round(float(nplc), 2)
+
+    # 2/4-wire remote sense
+
+    @message(r'(?::?SYST):RSEN\?')
+    def get_system_rsense(self):
+        return int(self.system_rsense)
+
+    @message(r'(?::?SYST):RSEN (OFF|ON|0|1)')
+    def set_system_rsense(self, state: str):
+        self.system_rsense = {'OFF': False, 'ON': True, '0': False, '1': True}[state]
 
     # Format
 
