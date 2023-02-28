@@ -20,6 +20,7 @@ class K6517BEmulator(IEC60488Emulator):
         self.output_state: bool = False
         self.source_voltage_level_immediate_amplitude: float = 0.0
         self.source_voltage_range: float = 100.0
+        self.source_voltage_mconnect: bool = False
         self.source_current_limit_state: bool = False
 
     @message(r"\*RST")
@@ -34,6 +35,7 @@ class K6517BEmulator(IEC60488Emulator):
         self.output_state = False
         self.source_voltage_level_immediate_amplitude = 0.0
         self.source_voltage_range = 100.0
+        self.source_voltage_mconnect = False
         self.source_current_limit_state = False
 
     @message(r"\*CLS")
@@ -91,6 +93,8 @@ class K6517BEmulator(IEC60488Emulator):
     def get_sense_function(self):
         return f'"{self.sense_function}:DC"'
 
+    # Output
+
     @message(r"^:?OUTP(?::STAT)?\s+(0|1|ON|OFF)$")
     def set_output_state(self, value):
         self.output_state = {"0": False, "1": True, "OFF": False, "ON": True}[value]
@@ -98,6 +102,8 @@ class K6517BEmulator(IEC60488Emulator):
     @message(r"^:?OUTP(?::STAT)?\?$")
     def get_output_state(self):
         return {False: "0", True: "1"}[self.output_state]
+
+    # Source
 
     @message(r"^:?SOUR:VOLT(?::LEV(?::IMM(?::AMPL)?)?)?\s+(.+)$")
     def set_source_voltage_level_immediate_amplitude(self, level):
@@ -124,6 +130,16 @@ class K6517BEmulator(IEC60488Emulator):
     @message(r"^:?SOUR:CURR:LIM(?::STAT)?\?$")
     def get_source_current_limit_state(self):
         return {False: "0", True: "1"}[self.source_current_limit_state]
+
+    @message(r"^:?SOUR:VOLT:MCON\s+(0|1|ON|OFF)$")
+    def set_source_voltage_mconnect(self, value):
+        self.source_voltage_mconnect = {"0": False, "1": True, "OFF": False, "ON": True}[value]
+
+    @message(r"^:?SOUR:VOLT:MCON\?$")
+    def get_source_voltage_mconnect(self):
+        return {False: "0", True: "1"}[self.source_voltage_mconnect]
+
+    # Measure
 
     @message(r":?INIT")
     def set_init(self):
