@@ -1,13 +1,10 @@
-import unittest
-import random
-
-from comet.driver import Driver
+import pytest
 
 
 class Resource:
 
-    def __init__(self):
-        self.buffer = []
+    def __init__(self, buffer):
+        self.buffer = buffer
 
     def clear(self):
         ...  # VISA bus clear
@@ -23,15 +20,11 @@ class Resource:
         return self.read()
 
 
-class BaseDriverTest(unittest.TestCase):
-
-    driver_cls = None
-
-    def setUp(self):
-        self.resource = Resource()
-        self.driver = self.driver_cls(self.resource)
+@pytest.fixture
+def buffer():
+    return []
 
 
-class DriverTest(unittest.TestCase):
-
-    ...
+@pytest.fixture
+def resource(buffer):
+    return Resource(buffer)

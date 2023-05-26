@@ -1,71 +1,77 @@
-import unittest
+import pytest
 
 from comet.driver.keithley import K2657A
 
-from .test_driver import BaseDriverTest
+from .test_driver import resource, buffer
 
 
-class K2657ATest(BaseDriverTest):
+@pytest.fixture
+def driver(resource):
+    return K2657A(resource)
 
-    driver_cls = K2657A
 
-    def test_basic(self):
-        self.resource.buffer = ['Keithley Model 2657A', '1', '1']
-        self.assertEqual(self.driver.identify(), 'Keithley Model 2657A')
-        self.assertEqual(self.driver.reset(), None)
-        self.assertEqual(self.driver.clear(), None)
-        self.assertEqual(self.resource.buffer, ['*IDN?', '*RST', '*OPC?', '*CLS', '*OPC?'])
+def test_basic(driver, resource):
+    resource.buffer = ['Keithley Model 2657A', '1', '1']
+    assert driver.identify() == 'Keithley Model 2657A'
+    assert driver.reset() is None
+    assert driver.clear() is None
+    assert resource.buffer == ['*IDN?', '*RST', '*OPC?', '*CLS', '*OPC?']
 
-    def test_errors(self):
-        self.resource.buffer = ['0\t"no error"\t0\t0']
-        self.assertEqual(self.driver.next_error(), None)
-        self.assertEqual(self.resource.buffer, ['print(errorqueue.next())'])
 
-        self.resource.buffer = ['42\t"test error"\t0\t0']
-        error = self.driver.next_error()
-        self.assertEqual(error.code, 42)
-        self.assertEqual(error.message, 'test error')
+def test_errors(driver, resource):
+    resource.buffer = ['0\t"no error"\t0\t0']
+    assert driver.next_error() is None
+    assert resource.buffer == ['print(errorqueue.next())']
 
-    def test_output(self):
-        self.resource.buffer = ['0']
-        self.assertEqual(self.driver.output, self.driver.OUTPUT_OFF)
-        self.assertEqual(self.resource.buffer, ['print(smua.source.output)'])
+    resource.buffer = ['42\t"test error"\t0\t0']
+    error = driver.next_error()
+    assert error.code == 42
+    assert error.message == 'test error'
 
-        self.resource.buffer = ['1']
-        self.assertEqual(self.driver.output, self.driver.OUTPUT_ON)
-        self.assertEqual(self.resource.buffer, ['print(smua.source.output)'])
 
-        self.resource.buffer = ['1']
-        self.driver.output = self.driver.OUTPUT_OFF
-        self.assertEqual(self.resource.buffer, ['smua.source.output = 0', '*OPC?'])
+def test_output(driver, resource):
+    resource.buffer = ['0']
+    assert driver.output == driver.OUTPUT_OFF
+    assert resource.buffer == ['print(smua.source.output)']
 
-        self.resource.buffer = ['1']
-        self.driver.output = self.driver.OUTPUT_ON
-        self.assertEqual(self.resource.buffer, ['smua.source.output = 1', '*OPC?'])
+    resource.buffer = ['1']
+    assert driver.output == driver.OUTPUT_ON
+    assert resource.buffer == ['print(smua.source.output)']
 
-    def test_function(self):
-        self.resource.buffer = ['1']
-        self.assertEqual(self.driver.function, self.driver.FUNCTION_VOLTAGE)
-        self.assertEqual(self.resource.buffer, ['print(smua.source.func)'])
+    resource.buffer = ['1']
+    driver.output = driver.OUTPUT_OFF
+    assert resource.buffer == ['smua.source.output = 0', '*OPC?']
 
-        self.resource.buffer = ['0']
-        self.assertEqual(self.driver.function, self.driver.FUNCTION_CURRENT)
-        self.assertEqual(self.resource.buffer, ['print(smua.source.func)'])
+    resource.buffer = ['1']
+    driver.output = driver.OUTPUT_ON
+    assert resource.buffer == ['smua.source.output = 1', '*OPC?']
 
-        self.resource.buffer = ['1']
-        self.driver.function = self.driver.FUNCTION_VOLTAGE
-        self.assertEqual(self.resource.buffer, ['smua.source.func = 1', '*OPC?'])
 
-        self.resource.buffer = ['1']
-        self.driver.function = self.driver.FUNCTION_CURRENT
-        self.assertEqual(self.resource.buffer, ['smua.source.func = 0', '*OPC?'])
+def test_function(driver, resource):
+    resource.buffer = ['1']
+    assert driver.function == driver.FUNCTION_VOLTAGE
+    assert resource.buffer == ['print(smua.source.func)']
 
-    def test_measure_voltage(self):
-        self.resource.buffer = ['+4.200000E-03']
-        self.assertEqual(self.driver.measure_voltage(), 4.2e-03)
-        self.assertEqual(self.resource.buffer, ['print(smua.measure.v())'])
+    resource.buffer = ['0']
+    assert driver.function == driver.FUNCTION_CURRENT
+    assert resource.buffer == ['print(smua.source.func)']
 
-    def test_measure_voltage(self):
-        self.resource.buffer = ['+4.200000E-06']
-        self.assertEqual(self.driver.measure_current(), 4.2e-06)
-        self.assertEqual(self.resource.buffer, ['print(smua.measure.i())'])
+    resource.buffer = ['1']
+    driver.function = driver.FUNCTION_VOLTAGE
+    assert resource.buffer == ['smua.source.func = 1', '*OPC?']
+
+    resource.buffer = ['1']
+    driver.function = driver.FUNCTION_CURRENT
+    assert resource.buffer == ['smua.source.func = 0', '*OPC?']
+
+
+def test_measure_voltage(driver, resource):
+    resource.buffer = ['+4.200000E-03']
+    assert driver.measure_voltage() == 4.2e-03
+    assert resource.buffer == ['print(smua.measure.v())']
+
+
+def test_measure_voltage(driver, resource):
+    resource.buffer = ['+4.200000E-06']
+    assert driver.measure_current() == 4.2e-06
+    assert resource.buffer == ['print(smua.measure.i())']

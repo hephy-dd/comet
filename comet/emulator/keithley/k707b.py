@@ -10,7 +10,7 @@ class K707BEmulator(IEC60488Emulator):
     IDENTITY = "Keithley Inc., Model 707B, 43768438, v1.0 (Emulator)"
     CHANNELS = combine_matrix('1234', 'ABCDEFGH', (format(i, '02d') for i in range(1, 13)))
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.error_queue: list = []
         self.closed_channels: Set[str] = set()

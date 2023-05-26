@@ -1,7 +1,7 @@
 import datetime
 import re
 from math import log
-from typing import Iterable, List, Tuple, Union
+from typing import Iterable, List, Tuple, Optional, Union
 
 from pint import UnitRegistry, Quantity
 
@@ -77,7 +77,7 @@ def t_dew(t: float, rh: float) -> float:
     return (b * m) / (a - m)
 
 
-def make_iso(dt: Union[float, datetime.datetime] = None) -> str:
+def make_iso(dt: Optional[Union[float, datetime.datetime]] = None) -> str:
     """Return filesystem safe ISO date time.
 
     >>> make_iso()
