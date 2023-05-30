@@ -1,14 +1,12 @@
-import os
-import unittest
+import pytest
 
 from comet.emulator.hephy.environbox import EnvironBoxEmulator
 
 
-class EnvironBoxEmulatorTest(unittest.TestCase):
-
-    def setUp(self):
-        self.emulator = EnvironBoxEmulator()
-        self.emulator.options.update({
+@pytest.fixture
+def emulator():
+    emulator = EnvironBoxEmulator()
+    emulator.options.update({
             "box_temperature.min": 24.0,
             "box_temperature.max": 24.0,
             "box_humidity.min": 40.0,
@@ -18,108 +16,129 @@ class EnvironBoxEmulatorTest(unittest.TestCase):
             "pt100_2.min": 22.5,
             "pt100_2.max": 22.5,
         })
+    return emulator
 
-    def test_basic(self):
-        self.assertEqual(self.emulator('*IDN?'), 'EnvironBox, v1.0 (Emulator)')
-        # self.assertEqual(self.emulator('*RST'), 'OK')
 
-    def test_sensor_address(self):
-        self.assertEqual(self.emulator('SET:NEW_ADDR 45'), 'OK')
-        self.assertEqual(self.emulator.sensor_address, 45)
-        self.assertEqual(self.emulator('SET:NEW_ADDR 40'), 'OK')
-        self.assertEqual(self.emulator.sensor_address, 40)
+def test_basic(emulator):
+    assert emulator("*IDN?") == "EnvironBox, v1.0 (Emulator)"
+    # assert emulator("*RST") == "OK"
 
-    def test_test_led(self):
-        self.assertEqual(self.emulator('GET:TEST_LED ?'), '0')
-        self.assertEqual(self.emulator('SET:TEST_LED ON'), 'OK')
-        self.assertEqual(self.emulator('GET:TEST_LED ?'), '1')
-        self.assertEqual(self.emulator('SET:TEST_LED OFF'), 'OK')
-        self.assertEqual(self.emulator('GET:TEST_LED ?'), '0')
 
-    def test_discharge(self):
-        self.assertEqual(self.emulator('SET:DISCHARGE AUTO'), 'OK')
-        self.assertEqual(self.emulator('SET:DISCHARGE ON'), 'OK')
-        self.assertEqual(self.emulator('SET:DISCHARGE OFF'), 'OK')
+def test_sensor_address(emulator):
+    assert emulator("SET:NEW_ADDR 45") == "OK"
+    assert emulator.sensor_address == 45
+    assert emulator("SET:NEW_ADDR 40") == "OK"
+    assert emulator.sensor_address == 40
 
-    def test_discharge_time(self):
-        self.assertEqual(self.emulator('GET:DISCHARGE_TIME ?'), '1000')
-        self.assertEqual(self.emulator('SET:DISCHARGE_TIME 42'), 'OK')
-        self.assertEqual(self.emulator('GET:DISCHARGE_TIME ?'), '42')
-        self.assertEqual(self.emulator('SET:DISCHARGE_TIME 1000'), 'OK')
-        self.assertEqual(self.emulator('GET:DISCHARGE_TIME ?'), '1000')
 
-    def test_set_pt100_1(self):
-        self.assertEqual(self.emulator('SET:PT100_1 OFF'), 'OK')
-        self.assertEqual(self.emulator('GET:PT100_1 ?'), 'NAN')
-        self.assertEqual(self.emulator('SET:PT100_1 ON'), 'OK')
-        self.assertEqual(self.emulator('GET:PT100_1 ?'), '21.50')
+def test_test_led(emulator):
+    assert emulator("GET:TEST_LED ?") == "0"
+    assert emulator("SET:TEST_LED ON") == "OK"
+    assert emulator("GET:TEST_LED ?") == "1"
+    assert emulator("SET:TEST_LED OFF") == "OK"
+    assert emulator("GET:TEST_LED ?") == "0"
 
-    def test_set_pt100_2(self):
-        self.assertEqual(self.emulator('SET:PT100_2 OFF'), 'OK')
-        self.assertEqual(self.emulator('GET:PT100_2 ?'), 'NAN')
-        self.assertEqual(self.emulator('SET:PT100_2 ON'), 'OK')
-        self.assertEqual(self.emulator('GET:PT100_2 ?'), '22.50')
 
-    def test_microscope_ctrl(self):
-        self.assertEqual(self.emulator('GET:MICROSCOPE_CTRL ?'), '0')
-        self.assertEqual(self.emulator('SET:MICROSCOPE_CTRL ON'), 'OK')
-        self.assertEqual(self.emulator('GET:MICROSCOPE_CTRL ?'), '1')
-        self.assertEqual(self.emulator('SET:MICROSCOPE_CTRL OFF'), 'OK')
-        self.assertEqual(self.emulator('GET:MICROSCOPE_CTRL ?'), '0')
+def test_discharge(emulator):
+    assert emulator("SET:DISCHARGE AUTO") == "OK"
+    assert emulator("SET:DISCHARGE ON") == "OK"
+    assert emulator("SET:DISCHARGE OFF") == "OK"
 
-    def test_microscope_light(self):
-        self.assertEqual(self.emulator('GET:MICROSCOPE_LIGHT ?'), '0')
-        self.assertEqual(self.emulator('SET:MICROSCOPE_LIGHT ON'), 'OK')
-        self.assertEqual(self.emulator('GET:MICROSCOPE_LIGHT ?'), '1')
-        self.assertEqual(self.emulator('SET:MICROSCOPE_LIGHT OFF'), 'OK')
-        self.assertEqual(self.emulator('GET:MICROSCOPE_LIGHT ?'), '0')
 
-    def test_microscope_camera(self):
-        self.assertEqual(self.emulator('GET:MICROSCOPE_CAM ?'), '0')
-        self.assertEqual(self.emulator('SET:MICROSCOPE_CAM ON'), 'OK')
-        self.assertEqual(self.emulator('GET:MICROSCOPE_CAM ?'), '1')
-        self.assertEqual(self.emulator('SET:MICROSCOPE_CAM OFF'), 'OK')
-        self.assertEqual(self.emulator('GET:MICROSCOPE_CAM ?'), '0')
+def test_discharge_time(emulator):
+    assert emulator("GET:DISCHARGE_TIME ?") == "1000"
+    assert emulator("SET:DISCHARGE_TIME 42") == "OK"
+    assert emulator("GET:DISCHARGE_TIME ?") == "42"
+    assert emulator("SET:DISCHARGE_TIME 1000") == "OK"
+    assert emulator("GET:DISCHARGE_TIME ?") == "1000"
 
-    def test_probecard_light(self):
-        self.assertEqual(self.emulator('GET:PROBCARD_LIGHT ?'), '0')
-        self.assertEqual(self.emulator('SET:PROBCARD_LIGHT ON'), 'OK')
-        self.assertEqual(self.emulator('GET:PROBCARD_LIGHT ?'), '1')
-        self.assertEqual(self.emulator('SET:PROBCARD_LIGHT OFF'), 'OK')
-        self.assertEqual(self.emulator('GET:PROBCARD_LIGHT ?'), '0')
 
-    def test_probecard_camera(self):
-        self.assertEqual(self.emulator('GET:PROBCARD_CAM ?'), '0')
-        self.assertEqual(self.emulator('SET:PROBCARD_CAM ON'), 'OK')
-        self.assertEqual(self.emulator('GET:PROBCARD_CAM ?'), '1')
-        self.assertEqual(self.emulator('SET:PROBCARD_CAM OFF'), 'OK')
-        self.assertEqual(self.emulator('GET:PROBCARD_CAM ?'), '0')
+def test_set_pt100_1(emulator):
+    assert emulator("SET:PT100_1 OFF") == "OK"
+    assert emulator("GET:PT100_1 ?") == "NAN"
+    assert emulator("SET:PT100_1 ON") == "OK"
+    assert emulator("GET:PT100_1 ?") == "21.50"
 
-    def test_laser_sensor(self):
-        self.assertEqual(self.emulator('SET:LASER_SENSOR ON'), 'OK')
-        self.assertEqual(self.emulator('SET:LASER_SENSOR OFF'), 'OK')
 
-    def test_box_light(self):
-        self.assertEqual(self.emulator('GET:LIGHT ?'), '0')
-        self.assertEqual(self.emulator('SET:BOX_LIGHT ON'), 'OK')
-        self.assertEqual(self.emulator('GET:LIGHT ?'), '1')
-        self.assertEqual(self.emulator('SET:BOX_LIGHT OFF'), 'OK')
-        self.assertEqual(self.emulator('GET:LIGHT ?'), '0')
+def test_set_pt100_2(emulator):
+    assert emulator("SET:PT100_2 OFF") == "OK"
+    assert emulator("GET:PT100_2 ?") == "NAN"
+    assert emulator("SET:PT100_2 ON") == "OK"
+    assert emulator("GET:PT100_2 ?") == "22.50"
 
-    def test_door(self):
-        self.assertEqual(self.emulator('GET:DOOR ?'), '0')
 
-    def test_laser(self):
-        self.assertEqual(self.emulator('GET:LASER ?'), '0')
+def test_microscope_ctrl(emulator):
+    assert emulator("GET:MICROSCOPE_CTRL ?") == "0"
+    assert emulator("SET:MICROSCOPE_CTRL ON") == "OK"
+    assert emulator("GET:MICROSCOPE_CTRL ?") == "1"
+    assert emulator("SET:MICROSCOPE_CTRL OFF") == "OK"
+    assert emulator("GET:MICROSCOPE_CTRL ?") == "0"
 
-    def test_relay_status(self):
-        self.assertEqual(self.emulator('GET:RELAY_STATUS ?'), '0')
 
-    def test_env(self):
-        self.assertEqual(self.emulator('GET:ENV ?'), '24.0,40.0,0,21.5')
+def test_microscope_light(emulator):
+    assert emulator("GET:MICROSCOPE_LIGHT ?") == "0"
+    assert emulator("SET:MICROSCOPE_LIGHT ON") == "OK"
+    assert emulator("GET:MICROSCOPE_LIGHT ?") == "1"
+    assert emulator("SET:MICROSCOPE_LIGHT OFF") == "OK"
+    assert emulator("GET:MICROSCOPE_LIGHT ?") == "0"
 
-    def test_version(self):
-        self.assertEqual(self.emulator('GET:VERSION ?'), 'V2.0')
 
-    def test_pc_data(self):
-        self.assertEqual(self.emulator('GET:PC_DATA ?'), '2,40.0,24.0,9.58,0,30.0,0.0,0.00,0.250000,0.010000,1.230000,0.00,0.00,1,22.400000,1.250000,3.560000,1,0.00,0,0.00,0.00,0,0,0,0,0,0,0,0,0,1000,0.0,21.50,NAN,0,1,1,0')
+def test_microscope_camera(emulator):
+    assert emulator("GET:MICROSCOPE_CAM ?") == "0"
+    assert emulator("SET:MICROSCOPE_CAM ON") == "OK"
+    assert emulator("GET:MICROSCOPE_CAM ?") == "1"
+    assert emulator("SET:MICROSCOPE_CAM OFF") == "OK"
+    assert emulator("GET:MICROSCOPE_CAM ?") == "0"
+
+
+def test_probecard_light(emulator):
+    assert emulator("GET:PROBCARD_LIGHT ?") == "0"
+    assert emulator("SET:PROBCARD_LIGHT ON") == "OK"
+    assert emulator("GET:PROBCARD_LIGHT ?") == "1"
+    assert emulator("SET:PROBCARD_LIGHT OFF") == "OK"
+    assert emulator("GET:PROBCARD_LIGHT ?") == "0"
+
+
+def test_probecard_camera(emulator):
+    assert emulator("GET:PROBCARD_CAM ?") == "0"
+    assert emulator("SET:PROBCARD_CAM ON") == "OK"
+    assert emulator("GET:PROBCARD_CAM ?") == "1"
+    assert emulator("SET:PROBCARD_CAM OFF") == "OK"
+    assert emulator("GET:PROBCARD_CAM ?") == "0"
+
+
+def test_laser_sensor(emulator):
+    assert emulator("SET:LASER_SENSOR ON") == "OK"
+    assert emulator("SET:LASER_SENSOR OFF") == "OK"
+
+
+def test_box_light(emulator):
+    assert emulator("GET:LIGHT ?") == "0"
+    assert emulator("SET:BOX_LIGHT ON") == "OK"
+    assert emulator("GET:LIGHT ?") == "1"
+    assert emulator("SET:BOX_LIGHT OFF") == "OK"
+    assert emulator("GET:LIGHT ?") == "0"
+
+
+def test_door(emulator):
+    assert emulator("GET:DOOR ?") == "0"
+
+
+def test_laser(emulator):
+    assert emulator("GET:LASER ?") == "0"
+
+
+def test_relay_status(emulator):
+    assert emulator("GET:RELAY_STATUS ?") == "0"
+
+
+def test_env(emulator):
+    assert emulator("GET:ENV ?") == "24.0,40.0,0,21.5"
+
+
+def test_version(emulator):
+    assert emulator("GET:VERSION ?") == "V2.0"
+
+
+def test_pc_data(emulator):
+    assert emulator("GET:PC_DATA ?") == "2,40.0,24.0,9.58,0,30.0,0.0,0.00,0.250000,0.010000,1.230000,0.00,0.00,1,22.400000,1.250000,3.560000,1,0.00,0,0.00,0.00,0,0,0,0,0,0,0,0,0,1000,0.0,21.50,NAN,0,1,1,0"

@@ -1,23 +1,22 @@
-import os
-import unittest
+import pytest
 
 from comet.emulator.iec60488 import IEC60488Emulator
 
 
-class IEC60488EmulatorTest(unittest.TestCase):
+@pytest.fixture
+def emulator():
+    return IEC60488Emulator()
 
-    def setUp(self):
-        self.emulator = IEC60488Emulator()
 
-    def test_basic(self):
-        self.assertEqual(self.emulator('*IDN?'), 'Generic IEC60488 Instrument (Emulator)')
-        self.assertTrue(self.emulator('*ESR?') in ('0', '1'))
-        self.assertEqual(self.emulator('*ESE?'), '0')
-        self.assertEqual(self.emulator('*ESE 1'), None)
-        self.assertEqual(self.emulator('*STB?'), '0')
-        self.assertEqual(self.emulator('*OPC?'), '1')
-        self.assertEqual(self.emulator('*OPC'), None)
-        self.assertEqual(self.emulator('*RST'), None)
-        self.assertEqual(self.emulator('*CLS'), None)
-        self.assertEqual(self.emulator('*TST?'), '0')
-        self.assertEqual(self.emulator('*WAI'), None)
+def test_basic(emulator):
+    assert emulator("*IDN?") == "Generic IEC60488 Instrument (Emulator)"
+    assert emulator("*ESR?") in ("0", "1")
+    assert emulator("*ESE?") == "0"
+    assert emulator("*ESE 1") is None
+    assert emulator("*STB?") == "0"
+    assert emulator("*OPC?") == "1"
+    assert emulator("*OPC") is None
+    assert emulator("*RST") is None
+    assert emulator("*CLS") is None
+    assert emulator("*TST?") == "0"
+    assert emulator("*WAI") is None
