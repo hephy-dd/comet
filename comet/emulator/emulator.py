@@ -3,10 +3,11 @@ import importlib
 import inspect
 import logging
 import re
+import signal
 import threading
 from typing import Any, Callable, Dict, List, Optional, Type, Union
 
-from .tcpserver import TCPServer, TCPServerContext
+from .tcpserver import TCPServer, TCPServerThread, TCPServerContext
 
 __all__ = ["Emulator", "message", "emulator_factory", "run"]
 
@@ -122,18 +123,21 @@ def run(emulator: Emulator) -> int:
 
     address = args.hostname, args.port
     server = TCPServer(address, context)
+    thread = TCPServerThread(server)
 
     hostname, port = server.server_address
 
     context.logger.info("starting... %s:%s", hostname, port)
 
-    try:
-        with server:
-            while True:
-                server.handle_request()
-    except KeyboardInterrupt:
-        ...
+    thread.start()
 
-    context.logger.info("stopping... %s:%s", hostname, port)
+    def handle_event(signum, frame):
+        context.logger.info("stopping... %s:%s", hostname, port)
+        server.shutdown()
+
+    signal.signal(signal.SIGTERM, handle_event)
+    signal.signal(signal.SIGINT, handle_event)
+
+    thread.join()
 
     return 0

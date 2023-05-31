@@ -2,7 +2,7 @@ import pytest
 
 from comet.driver.keithley import K6517B
 
-from .test_driver import resource, buffer
+from .test_driver import resource
 
 
 @pytest.fixture

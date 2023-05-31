@@ -3,7 +3,7 @@ import pytest
 from comet.driver.hephy import EnvironBox
 from comet.driver.hephy.environbox import parse_pc_data
 
-from .test_driver import resource, buffer
+from .test_driver import resource
 
 
 @pytest.fixture
@@ -11,86 +11,90 @@ def driver(resource):
     return EnvironBox(resource)
 
 
-def test_basic(driver, buffer):
-    buffer.extend(['EnvironBox V1.0'])
-    assert driver.identify() == 'EnvironBox V1.0'
+def test_basic(driver, resource):
+    resource.buffer = ["EnvironBox V1.0"]
+    assert driver.identify() == "EnvironBox V1.0"
     assert driver.reset() is None  # no query!
     assert driver.clear() is None  # no query!
-    assert buffer == ['*IDN?']
+    assert resource.buffer == ["*IDN?"]
 
 
-def test_errors(driver, buffer):
+def test_errors(driver, resource):
     assert driver.next_error() is None
 
-    buffer.append('Err99')
-    driver.write('1')
+    resource.buffer = ["Err99"]
+    driver.write("1")
     error = driver.next_error()
     assert error.code == 99
-    assert error.message == 'Invalid command'
+    assert error.message == "Invalid command"
     assert driver.next_error() is None
 
-    buffer.clear()
-    buffer.append('Err999')
-    driver.query('GET:FOO ?')
+    resource.buffer = ["Err999"]
+    driver.query("GET:FOO ?")
     error = driver.next_error()
     assert error.code == 999
-    assert error.message == 'Unknown command'
+    assert error.message == "Unknown command"
     assert driver.next_error() is None
 
 
-def test_discharge(driver):
+def test_discharge(driver, resource):
+    resource.buffer = ["OK"]
     assert driver.set_discharge(driver.DISCARGE_ON) is None
+    assert resource.buffer == ["SET:DISCHARGE ON"]
+
+    resource.buffer = ["OK"]
     assert driver.set_discharge(driver.DISCARGE_OFF) is None
+    assert resource.buffer == ["SET:DISCHARGE OFF"]
 
 
-def test_environment(driver, buffer):
-    buffer.append(format(30.1, '.1f'))
+def test_environment(driver, resource):
+    resource.buffer = ["30.1"]
     assert driver.get_box_humidity() == 30.1
-    assert buffer.pop(0) == 'GET:HUM ?'
+    assert resource.buffer == ["GET:HUM ?"]
 
-    buffer.append(format(25.2, '.1f'))
+    resource.buffer = ["25.2"]
     assert driver.get_box_temperature() == 25.2
-    assert buffer.pop(0) == 'GET:TEMP ?'
+    assert resource.buffer == ["GET:TEMP ?"]
 
-    buffer.append(format(1, '.1f'))
+    resource.buffer = ["1.0"]
     assert driver.get_box_lux() == 1
-    assert buffer.pop(0) == 'GET:LUX ?'
+    assert resource.buffer == ["GET:LUX ?"]
 
-    buffer.append(format(25.5, '.1f'))
+    resource.buffer = ["25.5"]
     assert driver.get_chuck_temperature() == 25.5
-    assert buffer.pop(0) == 'GET:PT100_1 ?'
+    assert resource.buffer == ["GET:PT100_1 ?"]
 
-    buffer.append(format(25.1, '.1f'))
+    resource.buffer = ["25.1"]
     assert driver.get_chuck_block_temperature() == 25.1
-    assert buffer.pop(0) == 'GET:PT100_2 ?'
+    assert resource.buffer == ["GET:PT100_2 ?"]
 
 
-def test_box_door(driver, buffer):
-    buffer.append('0')
+def test_box_door(driver, resource):
+    resource.buffer = ["0"]
     assert driver.get_box_door_state() == driver.BOX_DOOR_CLOSED
-    assert buffer.pop(0) == 'GET:DOOR ?'
+    assert resource.buffer == ["GET:DOOR ?"]
 
-    buffer.append('1')
+    resource.buffer = ["1"]
     assert driver.get_box_door_state() == driver.BOX_DOOR_OPEN
-    assert buffer.pop(0) == 'GET:DOOR ?'
+    assert resource.buffer == ["GET:DOOR ?"]
 
 
-def test_box_light(driver, buffer):
-    buffer.append('0')
+def test_box_light(driver, resource):
+    resource.buffer = ["0"]
     assert driver.get_box_light() == driver.BOX_LIGHT_OFF
-    assert buffer.pop(0) == 'GET:LIGHT ?'
+    assert resource.buffer == ["GET:LIGHT ?"]
 
-    buffer.append('1')
+    resource.buffer = ["1"]
     assert driver.get_box_light() == driver.BOX_LIGHT_ON
-    assert buffer.pop(0) == 'GET:LIGHT ?'
+    assert resource.buffer == ["GET:LIGHT ?"]
 
-    buffer.append('OK')
+    resource.buffer = ["OK"]
     assert driver.set_box_light(driver.BOX_LIGHT_ON) is None
-    assert buffer.pop(0) == 'SET:BOX_LIGHT ON'
+    assert resource.buffer == ["SET:BOX_LIGHT ON"]
 
-    buffer.append('OK')
+    resource.buffer = ["OK"]
     assert driver.set_box_light(driver.BOX_LIGHT_OFF) is None
-    assert buffer.pop(0) == 'SET:BOX_LIGHT OFF'
+    assert resource.buffer == ["SET:BOX_LIGHT OFF"]
 
 
 def test_parse_pc_data():

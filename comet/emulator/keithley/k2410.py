@@ -8,5 +8,5 @@ class K2410Emulator(K2400Emulator):
     DEFAULT_VOLTAGE_PROTECTION_LEVEL = 1100.
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     run(K2410Emulator())

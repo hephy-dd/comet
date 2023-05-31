@@ -2,7 +2,7 @@ import pytest
 
 from comet.driver.marzhauser import Venus
 
-from .test_driver import resource, buffer
+from .test_driver import resource
 
 
 @pytest.fixture

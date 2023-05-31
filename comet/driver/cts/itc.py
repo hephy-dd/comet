@@ -13,7 +13,7 @@ class ITCDriver(Driver):
     def query_bytes(self, message, count) -> str:
         """Raw query for bytes.
 
-        >>> instr.query_bytes('P', 4)
+        >>> instr.query_bytes("P", 4)
         'P001'
         """
         if not isinstance(message, bytes):

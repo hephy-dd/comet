@@ -12,10 +12,10 @@ class E4980AEmulator(IEC60488Emulator):
 
     def __init__(self) -> None:
         super().__init__()
-        self.function_impedance_type: str = 'CPD'
+        self.function_impedance_type: str = "CPD"
         self.correction_open_state: int = 0
         self.correction_use: int = 0
-        self.correction_method: str = 'SING'
+        self.correction_method: str = "SING"
         self.correction_channel: int = 0
         self.correction_length: int = 4
         self.bias_voltage_level: float = 0.
@@ -23,10 +23,10 @@ class E4980AEmulator(IEC60488Emulator):
 
     @message(r'\*RST')
     def set_rst(self):
-        self.function_impedance_type = 'CPD'
+        self.function_impedance_type = "CPD"
         self.correction_open_state = 0
         self.correction_use = 0
-        self.correction_method = 'SING'
+        self.correction_method = "SING"
         self.correction_channel = 0
         self.correction_length = 4
         self.bias_voltage_level = 0.
@@ -47,11 +47,11 @@ class E4980AEmulator(IEC60488Emulator):
 
     @message(r':?CORR:OPEN:STAT\?')
     def get_correction_open_state(self) -> str:
-        return format(self.correction_open_state, 'd')
+        return format(self.correction_open_state, "d")
 
     @message(r'^:?CORR:OPEN:STAT\s+(OFF|ON|0|1)$')
     def set_correction_open_state(self, state: str) -> None:
-        self.correction_open_state = {'0': False, '1': True, 'OFF': False, 'ON': True}[state]
+        self.correction_open_state = {"0": False, "1": True, "OFF": False, "ON": True}[state]
 
     @message(r':?CORR:OPEN')
     def get_correction_open(self) -> None:
@@ -59,7 +59,7 @@ class E4980AEmulator(IEC60488Emulator):
 
     @message(r':?CORR:USE\?')
     def get_correction_use(self) -> str:
-        return format(self.correction_use, '+d')
+        return format(self.correction_use, "+d")
 
     @message(r':?CORR:METH\?')
     def get_correction_method(self) -> str:
@@ -71,7 +71,7 @@ class E4980AEmulator(IEC60488Emulator):
 
     @message(r':?CORR:USE:CHAN\?')
     def get_correction_channel(self) -> str:
-        return format(self.correction_channel, 'd')
+        return format(self.correction_channel, "d")
 
     @message(r':?CORR:USE:CHAN\s+(\d+)')
     def set_correction_channel(self, value):
@@ -79,7 +79,7 @@ class E4980AEmulator(IEC60488Emulator):
 
     @message(r':?CORR:LENG\?')
     def get_correction_length(self) -> str:
-        return format(self.correction_length, '+d')
+        return format(self.correction_length, "+d")
 
     @message(r':?CORR:LENG\s+(\d+)')
     def set_correction_length(self, length: str) -> None:
@@ -98,15 +98,15 @@ class E4980AEmulator(IEC60488Emulator):
 
     @message(r':?BIAS:POL:CURR(\::LEV)?\?')
     def get_bias_polarity_current_level(self):
-        return format(random.random() / 1000., 'E')
+        return format(random.random() / 1000., "E")
 
     @message(r':?BIAS:POL:VOLT(\::LEV)?\?')
     def get_bias_polarity_voltage_level(self):
-        return format(random.random() / 100., 'E')
+        return format(random.random() / 100., "E")
 
     @message(r':?BIAS:VOLT(?::LEV)?\?')
     def get_bias_voltage_level(self):
-        return format(self.bias_voltage_level, 'E')
+        return format(self.bias_voltage_level, "E")
 
     @message(r':?BIAS:VOLT(?::LEV)?\s+(.+)')
     def set_bias_voltage_level(self, value):
@@ -114,12 +114,12 @@ class E4980AEmulator(IEC60488Emulator):
 
     @message(r':?BIAS:STAT\?')
     def get_bias_state(self):
-        return format(self.bias_state, 'd')
+        return format(self.bias_state, "d")
 
     @message(r':?BIAS:STAT\s+(0|1|ON|OFF)')
     def set_bias_state(self, value):
-        self.bias_state = {'0': False, '1': True, 'OFF': False, 'ON': True}[value]
+        self.bias_state = {"0": False, "1": True, "OFF": False, "ON": True}[value]
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     run(E4980AEmulator())

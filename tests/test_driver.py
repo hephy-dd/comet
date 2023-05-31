@@ -1,10 +1,10 @@
 import pytest
 
 
-class Resource:
+class MockResource:
 
-    def __init__(self, buffer):
-        self.buffer = buffer
+    def __init__(self):
+        self.buffer = []
 
     def clear(self):
         ...  # VISA bus clear
@@ -19,12 +19,13 @@ class Resource:
         self.write(message)
         return self.read()
 
+    def read_bytes(self, count: int) -> bytes:
+        self.buffer.pop(0)
+
+    def write_raw(self, message: bytes) -> int:
+        self.buffer.append(message)
+
 
 @pytest.fixture
-def buffer():
-    return []
-
-
-@pytest.fixture
-def resource(buffer):
-    return Resource(buffer)
+def resource():
+    return MockResource()

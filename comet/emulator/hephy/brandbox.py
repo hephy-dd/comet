@@ -3,31 +3,35 @@ from typing import Set
 from comet.emulator import Emulator
 from comet.emulator import message, run
 
+__all__ = ["BrandBoxEmulator"]
+
 
 def split_channels(channels: str) -> set:
-    return {channel.strip() for channel in channels.split(',') if channel.strip()}
+    return {channel.strip() for channel in channels.split(",") if channel.strip()}
 
 
 def join_channels(channels: set) -> str:
-    return ','.join([format(channel) for channel in channels])
+    return ",".join([format(channel) for channel in channels])
 
 
 def format_state(state: bool) -> str:
-    return 'ON' if state else 'OFF'
+    return "ON" if state else "OFF"
 
 
 class BrandBoxEmulator(Emulator):
 
-    CHANNELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2']
-    MODS = ['IV', 'CV']
+    CHANNELS = ["A1", "A2", "B1", "B2", "C1", "C2"]
+    MODS = ["IV", "CV"]
 
-    IDENTITY = 'BrandBox, v2.0 (Emulator)'
-    SUCCESS = 'OK'
-    COMMAND_ERROR = 'Err99'
+    IDENTITY = "BrandBox, v2.0 (Emulator)"
+    SUCCESS = "OK"
+    COMMAND_ERROR = "Err99"
 
-    closed_channels: Set[str] = set()
-    test_state = False
-    mod = 'N/A'
+    def __init__(self) -> None:
+        super().__init__()
+        self.closed_channels: Set[str] = set()
+        self.test_state: bool = False
+        self.mod: str = "N/A"
 
     @property
     def opened_channels(self):
@@ -49,8 +53,8 @@ class BrandBoxEmulator(Emulator):
     def get_stb(self):
         states = []
         for channel in self.CHANNELS:
-            states.append('1' if channel in self.closed_channels else '0')
-        return ','.join(states)
+            states.append("1" if channel in self.closed_channels else "0")
+        return ",".join(states)
 
     @message(r'\*STR\?')
     def get_str(self):
@@ -93,8 +97,8 @@ class BrandBoxEmulator(Emulator):
 
     @message(r'SET:A_(ON|OFF)')
     def set_a(self, state):
-        for channel in ('A1', 'A2'):
-            if state == 'ON':
+        for channel in ("A1", "A2"):
+            if state == "ON":
                 self.closed_channels.add(channel)
             else:
                 if channel in self.closed_channels:
@@ -103,8 +107,8 @@ class BrandBoxEmulator(Emulator):
 
     @message(r'SET:B_(ON|OFF)')
     def set_b(self, state):
-        for channel in ('B1', 'B2'):
-            if state == 'ON':
+        for channel in ("B1", "B2"):
+            if state == "ON":
                 self.closed_channels.add(channel)
             else:
                 if channel in self.closed_channels:
@@ -113,8 +117,8 @@ class BrandBoxEmulator(Emulator):
 
     @message(r'SET:C_(ON|OFF)')
     def set_c(self, state):
-        for channel in ('C1', 'C2'):
-            if state == 'ON':
+        for channel in ("C1", "C2"):
+            if state == "ON":
                 self.closed_channels.add(channel)
             else:
                 if channel in self.closed_channels:
@@ -123,7 +127,7 @@ class BrandBoxEmulator(Emulator):
 
     @message(r'SET:(A1|A2|B1|B2|C1|C2)_(ON|OFF)')
     def set_abc(self, channel, state):
-        if state == 'ON':
+        if state == "ON":
             self.closed_channels.add(channel)
         else:
             if channel in self.closed_channels:
@@ -140,23 +144,23 @@ class BrandBoxEmulator(Emulator):
     @message(r'GET:A \?')
     def get_a(self):
         states = []
-        for channel in ('A1', 'A2'):
+        for channel in ("A1", "A2"):
             states.append(format_state(channel in self.closed_channels))
-        return ','.join(states)
+        return ",".join(states)
 
     @message(r'GET:B \?')
     def get_b(self):
         states = []
-        for channel in ('B1', 'B2'):
+        for channel in ("B1", "B2"):
             states.append(format_state(channel in self.closed_channels))
-        return ','.join(states)
+        return ",".join(states)
 
     @message(r'GET:C \?')
     def get_c(self):
         states = []
-        for channel in ('C1', 'C2'):
+        for channel in ("C1", "C2"):
             states.append(format_state(channel in self.closed_channels))
-        return ','.join(states)
+        return ",".join(states)
 
     @message(r'GET:(A1|A2|B1|B2|C1|C2) \?')
     def get_abc(self, channel):
@@ -168,11 +172,11 @@ class BrandBoxEmulator(Emulator):
 
     @message(r'GET:TST \?')
     def get_test(self):
-        return {False: 'OFF', True: 'ON'}[self.test_state]
+        return {False: "OFF", True: "ON"}[self.test_state]
 
     @message(r'SET:TST (ON|OFF)')
     def set_test(self, value):
-        self.test_state = value == 'ON'
+        self.test_state = value == "ON"
         return self.SUCCESS
 
     @message(r'.*')
@@ -183,5 +187,5 @@ class BrandBoxEmulator(Emulator):
         return channel in self.CHANNELS
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     run(BrandBoxEmulator())

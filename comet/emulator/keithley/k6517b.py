@@ -8,7 +8,7 @@ class K6517BEmulator(IEC60488Emulator):
 
     IDENTITY = "Keithley Inc., Model 6517B, 43768438, v1.0 (Emulator)"
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.error_queue: list = []
         self.zero_check: bool = False
