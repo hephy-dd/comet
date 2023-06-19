@@ -16,6 +16,7 @@ setup(
     ],
     package_data={
         'comet': [
+            'assets/icons/*.ico',
             'assets/icons/*.svg',
             'widgets/*.ui',
         ],
