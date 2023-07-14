@@ -12,6 +12,7 @@ class K2400Emulator(IEC60488Emulator):
         super().__init__()
         self.error_queue = []
         self.system_beeper_state = True
+        self.system_rsense = False
         self.route_terminals = 'FRON'
         self.output_state = False
         self.source_function_mode = 'VOLT'
@@ -32,6 +33,7 @@ class K2400Emulator(IEC60488Emulator):
     def set_rst(self):
         self.error_queue.clear()
         self.system_beeper_state = True
+        self.system_rsense = False
         self.route_terminals = 'FRON'
         self.output_state = False
         self.source_function_mode = 'VOLT'
@@ -70,6 +72,16 @@ class K2400Emulator(IEC60488Emulator):
     @message(r':?SYST(?:em)?:BEEP(?:er)?(?::STAT(?:e)?)? (OFF|ON|0|1)')
     def set_system_beeper_state(self, state):
         self.system_beeper_state = {'OFF': False, 'ON': True, '0': False, '1': True}[state]
+
+    # Remote sensing
+
+    @message(r':?SYST(?:em)?:RSEN(?:se)?\?')
+    def get_system_rsense(self):
+        return int(self.system_rsense)
+
+    @message(r':?SYST(?:em)?:RSEN(?:se)?\s+(OFF|ON|0|1)')
+    def set_system_rsense(self, enabled):
+        self.system_rsense = {'OFF': False, 'ON': True, '0': False, '1': True}[enabled]
 
     # Route terminal
 
