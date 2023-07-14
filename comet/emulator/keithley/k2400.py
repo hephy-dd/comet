@@ -23,6 +23,7 @@ class K2400Emulator(IEC60488Emulator):
         self.sense_voltage_protection_level = 2.1e+1
         self.sense_current_protection_level = 1.05e-5
         self.sense_function = 'CURR'
+        self.sense_function_concurrent = False
         self.sense_average_tcontrol = 'REP'
         self.sense_average_count = 10
         self.sense_average_state = False
@@ -42,6 +43,7 @@ class K2400Emulator(IEC60488Emulator):
         self.source_range_auto.update({'VOLT': True, 'CURR': True})
         self.source_voltage_protection_level = self.DEFAULT_VOLTAGE_PROTECTION_LEVEL
         self.sense_function = 'CURR'
+        self.sense_function_concurrent = False
         self.sense_average_tcontrol = 'REP'
         self.sense_average_count = 10
         self.sense_average_state = False
@@ -206,16 +208,21 @@ class K2400Emulator(IEC60488Emulator):
 
     # Sense function
 
-    @message(r'(?::?SENS)?:FUNC(?::ON)?\?')
+    @message(r'^(?::?SENS)?:FUNC(?::ON)?\?$')
     def get_sense_function_on(self):
         return f'\'{self.sense_function}:DC\''
 
-    @message(r'(?::?SENS)?:FUNC(?::ON)? \'(VOLT|CURR)\'')
+    @message(r'^(?::?SENS)?:FUNC(?::ON)?\s+\'(VOLT|CURR)\'$')
     def set_sense_function_on(self, function):
-        try:
-            self.sense_function = function
-        except KeyError:
-            self.error_queue.append((101, "malformed command"))
+        self.sense_function = function
+
+    @message(r'^(?::?SENS)?:FUNC:CONC\?$')
+    def get_sense_function_concurrent(self):
+        return f'\'{self.sense_function_concurrent}:DC\''
+
+    @message(r'^(?::?SENS)?:FUNC:CONC\s+(OFF|ON|0|1)$')
+    def set_sense_function_concurrent(self, enabled):
+        self.sense_function_concurrent = {'OFF': False, 'ON': True, '0': False, '1': True}[enabled]
 
     # Average
 
