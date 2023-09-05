@@ -21,14 +21,16 @@ class K2400Emulator(IEC60488Emulator):
         self.source_voltage_protection_level = self.DEFAULT_VOLTAGE_PROTECTION_LEVEL
         self.sense_voltage_protection_level = 2.1e+1
         self.sense_current_protection_level = 1.05e-5
-        self.sense_function = "CURR"
+        self.sense_function = SenseFunction()
+        self.sense_function.add("CURR")
         self.sense_function_concurrent = False
         self.sense_average_tcontrol = "REP"
         self.sense_average_count = 10
         self.sense_average_state = False
         self.sense_nplc = 1.0
         self.system_rsense = False
-        self.format_elements = ["VOLT", "CURR", "RES", "TIME", "STAT"]
+        self.format_elements = FormatElements()
+        self.format_elements.update(["VOLT", "CURR", "RES", "TIME", "STAT"])
 
     @message(r'\*RST')
     def set_rst(self):
@@ -41,14 +43,16 @@ class K2400Emulator(IEC60488Emulator):
         self.source_range.update({"VOLT": 0., "CURR": 0.})
         self.source_range_auto.update({"VOLT": True, "CURR": True})
         self.source_voltage_protection_level = self.DEFAULT_VOLTAGE_PROTECTION_LEVEL
-        self.sense_function = "CURR"
+        self.sense_function.clear()
+        self.sense_function.add("CURR")
         self.sense_function_concurrent = False
         self.sense_average_tcontrol = "REP"
         self.sense_average_count = 10
         self.sense_average_state = False
         self.sense_nplc = 1.0
         self.system_rsense = False
-        self.format_elements = ["VOLT", "CURR", "RES", "TIME", "STAT"]
+        self.format_elements.clear()
+        self.format_elements.update(["VOLT", "CURR", "RES", "TIME", "STAT"])
 
     @message(r'\*CLS')
     def set_cls(self):
@@ -200,11 +204,17 @@ class K2400Emulator(IEC60488Emulator):
 
     @message(r'(?::?SENS)?:FUNC(?::ON)?\?')
     def get_sense_function_on(self):
-        return f'\'{self.sense_function}:DC\''
+        return format(self.sense_function)
 
-    @message(r'(?::?SENS)?:FUNC(?::ON)? \'(VOLT|CURR)\'')
-    def set_sense_function_on(self, function):
-        self.sense_function = function
+    @message(r'(?::?SENS)?:FUNC(?::ON)? \'(VOLT|CURR|RES|TIME|STAT)\'')
+    def set_sense_function_on(self, value):
+        self.sense_function.add(value)
+
+    # TODO
+    @message(r'(?::?SENS)?:FUNC(?::ON)? \'VOLT\',\s*\'CURR\'')
+    def set_sense_function_on_2(self):
+        self.sense_function.add("VOLT")
+        self.sense_function.add("CURR")
 
     # Concurrent function
 
@@ -266,12 +276,13 @@ class K2400Emulator(IEC60488Emulator):
 
     @message(r':?FORM:ELEM\?')
     def get_format_elements(self):
-        return ','.join(self.format_elements)
+        return format(self.format_elements)
 
     @message(r':?FORM:ELEM (.+)')
     def set_format_elements(self, elements):
         elements = [element.strip() for element in elements.split(',') if element.strip()]
-        self.format_elements = elements
+        self.format_elements.clear()
+        self.format_elements.update(elements)
 
     # Measure
 
@@ -281,9 +292,22 @@ class K2400Emulator(IEC60488Emulator):
 
     @message(r':?READ\?')
     def get_read(self):
-        curr_min = float(self.options.get("curr.min", 1e6))
-        curr_max = float(self.options.get("curr.max", 1e7))
-        return format(random.uniform(curr_min, curr_max), "E")
+        result = []
+        if "VOLT" in self.format_elements._values:
+            curr_min = float(self.options.get("volt.min", self.source_level.get("VOLT")))
+            curr_max = float(self.options.get("volt.max", self.source_level.get("VOLT")))
+            result.append(format(random.uniform(curr_min, curr_max), "E"))
+        if "CURR" in self.format_elements._values:
+            curr_min = float(self.options.get("curr.min", 1e6))
+            curr_max = float(self.options.get("curr.max", 1e7))
+            result.append(format(random.uniform(curr_min, curr_max), "E"))
+        if "RES" in self.format_elements._values:
+            result.append(format(float("nan")))
+        if "TIME" in self.format_elements._values:
+            result.append(format(float("nan")))
+        if "STAT" in self.format_elements._values:
+            result.append(format(0))
+        return ",".join(result)
 
     @message(r':?FETC[H]?\?')
     def get_fetch(self):
@@ -294,6 +318,65 @@ class K2400Emulator(IEC60488Emulator):
     @message(r'(.*)')
     def unknown_message(self, request):
         self.error_queue.append((101, "malformed command"))
+
+
+class SenseFunction:
+
+    ALLOWED_VALUES = ["VOLT:DC", "CURR:DC", "RES"]
+    ALIAS_VALUES = {"VOLT": "VOLT:DC", "CURR": "CURR:DC"}
+
+    def __init__(self) -> None:
+        self._values: set = set()
+
+    def add(self, value) -> None:
+        if value in self.ALIAS_VALUES:
+            value = self.ALIAS_VALUES.get(value)
+        if value in self.ALLOWED_VALUES:
+            self._values.add(value)
+
+    def remove(self, value) -> None:
+        if value in self.ALIAS_VALUES:
+            value = self.ALIAS_VALUES.get(value)
+        if value in self._values:
+            self._values.remove(value)
+
+    def clear(self) -> None:
+        self._values.clear()
+
+    def update(self, values) -> None:
+        for value in values:
+            self.add(value)
+
+    def __str__(self) -> str:
+        values = sorted(self._values, key=lambda value: self.ALLOWED_VALUES.index(value))
+        return ",".join([f"'{value}'" for value in values])
+
+
+class FormatElements:
+
+    ALLOWED_VALUES = ["VOLT", "CURR", "RES", "TIME", "STAT"]
+
+    def __init__(self) -> None:
+        self._values: set = set()
+
+    def add(self, value) -> None:
+        if value in self.ALLOWED_VALUES:
+            self._values.add(value)
+
+    def remove(self, value) -> None:
+        if value in self._values:
+            self._values.remove(value)
+
+    def clear(self) -> None:
+        self._values.clear()
+
+    def update(self, values) -> None:
+        for value in values:
+            self.add(value)
+
+    def __str__(self) -> str:
+        values = sorted(self._values, key=lambda value: self.ALLOWED_VALUES.index(value))
+        return ",".join(values)
 
 
 if __name__ == "__main__":

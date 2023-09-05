@@ -34,7 +34,7 @@ def emulator_factory(module_name: str) -> Type:
                 if module_name == cls.__module__:
                     emulator_registry[module_name] = cls
                     break
-    cls = emulator_registry.get(module_name)
+    cls = emulator_registry.get(module_name)  # type: ignore
     if cls is None:
         raise RuntimeError(f"Unable to locate emulator module: {module_name}")
     return cls
