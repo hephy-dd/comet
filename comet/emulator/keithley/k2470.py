@@ -29,6 +29,10 @@ class K2470Emulator(IEC60488Emulator):
         self.sense_nplc = 1.0
         self.system_breakdown_protection = "OFF"
 
+    @property
+    def output_interlock_tripped(self):
+        return bool(self.options.get("interlock.tripped", True))
+
     @message(r'\*LANG\?')
     def get_lang(self):
         return self.language
@@ -92,6 +96,10 @@ class K2470Emulator(IEC60488Emulator):
             self.output_state = {'ON': True, 'OFF': False, '0': False, '1': True}[state]
         except KeyError:
             self.error_queue.append((101, "malformed command"))
+
+    @message(r':?OUTP:INT:TRIP\?')
+    def get_output_interlock_tripped(self):
+        return {False: '0', True: '1'}[self.output_interlock_tripped]
 
     # Source function mode
 
