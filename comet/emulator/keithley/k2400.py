@@ -29,7 +29,6 @@ class K2400Emulator(IEC60488Emulator):
         self.sense_average_count = 10
         self.sense_average_state = False
         self.sense_nplc = 1.0
-        self.system_rsense = False
         self.format_elements = FormatElements()
         self.format_elements.update(["VOLT", "CURR", "RES", "TIME", "STAT"])
 
@@ -52,7 +51,6 @@ class K2400Emulator(IEC60488Emulator):
         self.sense_average_count = 10
         self.sense_average_state = False
         self.sense_nplc = 1.0
-        self.system_rsense = False
         self.format_elements.clear()
         self.format_elements.update(["VOLT", "CURR", "RES", "TIME", "STAT"])
 
@@ -273,16 +271,6 @@ class K2400Emulator(IEC60488Emulator):
     @message(r'(?::?SENS)?:(?:VOLT|CURR|RES):NPLC (.+)')
     def set_sense_nplc(self, nplc: str):
         self.sense_nplc = round(float(nplc), 2)
-
-    # 2/4-wire remote sense
-
-    @message(r'(?::?SYST):RSEN\?')
-    def get_system_rsense(self):
-        return int(self.system_rsense)
-
-    @message(r'(?::?SYST):RSEN (OFF|ON|0|1)')
-    def set_system_rsense(self, state: str):
-        self.system_rsense = {"OFF": False, "ON": True, "0": False, "1": True}[state]
 
     # Format
 

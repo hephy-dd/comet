@@ -60,7 +60,7 @@ class K707BEmulator(IEC60488Emulator):
                     self.closed_channels.remove(channel)
 
     @message(r'^(.*)$')
-    def unknown_message(self, v ):
+    def unknown_message(self, v):
         self.error_queue.append((101, "malformed command"))
 
 
