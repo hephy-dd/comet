@@ -33,6 +33,8 @@ class CorvusTTEmulator(Emulator):
 
         self.joystick = False
 
+        self.status = 0
+
     @message(r'^getmacadr$')
     def get_macadr(self):
         return self.macadr
@@ -48,6 +50,10 @@ class CorvusTTEmulator(Emulator):
     @message(r'^getserialno$')
     def get_serialno(self):
         return self.serialno
+
+    @message(r'^status$')
+    def get_status(self):
+        return self.status
 
     @message(r'^pos$')
     def get_pos(self):
@@ -154,5 +160,5 @@ class CorvusTTEmulator(Emulator):
         self.z_unit = int(value)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     run(CorvusTTEmulator())
