@@ -2,13 +2,13 @@
 
 from comet.emulator import Emulator, message, run
 
-__all__ = ['TangoEmulator']
+__all__ = ["TangoEmulator"]
 
 
 class TangoEmulator(Emulator):
     """TANGO emulator."""
 
-    version_string = 'TANGO-MINI3-EMULATOR, Version 1.00, Mar 11 2022, 13:51:01'
+    version_string = "TANGO-MINI3-EMULATOR, Version 1.00, Mar 11 2022, 13:51:01"
 
     def __init__(self):
         super().__init__()
@@ -164,5 +164,5 @@ class TangoEmulator(Emulator):
         ...
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     run(TangoEmulator())

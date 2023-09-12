@@ -1,10 +1,7 @@
-import unittest
-import random
-
-from comet.driver import Driver
+import pytest
 
 
-class Resource:
+class MockResource:
 
     def __init__(self):
         self.buffer = []
@@ -22,16 +19,13 @@ class Resource:
         self.write(message)
         return self.read()
 
+    def read_bytes(self, count: int) -> bytes:
+        self.buffer.pop(0)
 
-class BaseDriverTest(unittest.TestCase):
-
-    driver_cls = None
-
-    def setUp(self):
-        self.resource = Resource()
-        self.driver = self.driver_cls(self.resource)
+    def write_raw(self, message: bytes) -> int:
+        self.buffer.append(message)
 
 
-class DriverTest(unittest.TestCase):
-
-    ...
+@pytest.fixture
+def resource():
+    return MockResource()

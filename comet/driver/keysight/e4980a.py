@@ -68,11 +68,7 @@ class E4980A(LCRMeter):
 
     @function.setter
     def function(self, function: str) -> None:
-        value = {
-            self.FUNCTION_CPD: 'CPD',
-            self.FUNCTION_CPRP: 'CPRP'
-        }[function]
-        self.write(f':FUNC:IMP:TYPE {value}')
+        self.write(f':FUNC:IMP:TYPE {function}')
 
     @property
     def amplitude(self) -> float:
@@ -90,6 +86,7 @@ class E4980A(LCRMeter):
     def frequency(self, frequency: float) -> None:
         self.write(f':FREQ:CW {frequency:E}')
 
+    # TODO
     def set_measurement_time(self, apterture: str) -> None:
         self.write(f':APER {apterture}')
 
@@ -103,7 +100,7 @@ class E4980A(LCRMeter):
 
     # Measurements
 
-    def measure_pair(self) -> Tuple[float, float]:
+    def measure_impedance(self) -> Tuple[float, float]:
         first, second = self.query(':FETC:IMP:FORM?').split(',')[:2]
         return float(first), float(second)
 

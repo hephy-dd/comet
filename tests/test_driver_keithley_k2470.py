@@ -1,88 +1,95 @@
-import unittest
+import pytest
 
 from comet.driver.keithley import K2470
 
-from .test_driver import BaseDriverTest
+from .test_driver import resource
 
 
-class K2470Test(BaseDriverTest):
+@pytest.fixture
+def driver(resource):
+    return K2470(resource)
 
-    driver_cls = K2470
 
-    def test_basic(self):
-        self.resource.buffer = ['Keithley Model 2470', '1', '1']
-        self.assertEqual(self.driver.identify(), 'Keithley Model 2470')
-        self.assertEqual(self.driver.reset(), None)
-        self.assertEqual(self.driver.clear(), None)
-        self.assertEqual(self.resource.buffer, ['*IDN?', '*RST', '*OPC?', '*CLS', '*OPC?'])
+def test_basic(driver, resource):
+    resource.buffer = ["Keithley Model 2470", "1", "1"]
+    assert driver.identify() == "Keithley Model 2470"
+    assert driver.reset() is None
+    assert driver.clear() is None
+    assert resource.buffer == ["*IDN?", "*RST", "*OPC?", "*CLS", "*OPC?"]
 
-    def test_errors(self):
-        self.resource.buffer = ['0,"no error"']
-        self.assertEqual(self.driver.next_error(), None)
-        self.assertEqual(self.resource.buffer, [':SYST:ERR:NEXT?'])
 
-        self.resource.buffer = ['42,"test error"']
-        error = self.driver.next_error()
-        self.assertEqual(error.code, 42)
-        self.assertEqual(error.message, 'test error')
+def test_errors(driver, resource):
+    resource.buffer = ["0,\"no error\""]
+    assert driver.next_error() is None
+    assert resource.buffer == [":SYST:ERR:NEXT?"]
 
-    def test_route_terminal(self):
-        self.resource.buffer = ['FRON']
-        self.assertEqual(self.driver.route_terminal, 'front')
-        self.assertEqual(self.resource.buffer, [':ROUT:TERM?'])
+    resource.buffer = ["42,\"test error\""]
+    error = driver.next_error()
+    assert error.code == 42
+    assert error.message == "test error"
 
-        self.resource.buffer = ['REAR']
-        self.assertEqual(self.driver.route_terminal, 'rear')
-        self.assertEqual(self.resource.buffer, [':ROUT:TERM?'])
 
-        self.resource.buffer = ['1']
-        self.driver.route_terminal = 'front'
-        self.assertEqual(self.resource.buffer, [':ROUT:TERM FRON', '*OPC?'])
+def test_route_terminal(driver, resource):
+    resource.buffer = ["FRON"]
+    assert driver.route_terminal == "front"
+    assert resource.buffer == [":ROUT:TERM?"]
 
-        self.resource.buffer = ['1']
-        self.driver.route_terminal = 'rear'
-        self.assertEqual(self.resource.buffer, [':ROUT:TERM REAR', '*OPC?'])
+    resource.buffer = ["REAR"]
+    assert driver.route_terminal == "rear"
+    assert resource.buffer == [":ROUT:TERM?"]
 
-    def test_output(self):
-        self.resource.buffer = ['0']
-        self.assertEqual(self.driver.output, self.driver.OUTPUT_OFF)
-        self.assertEqual(self.resource.buffer, [':OUTP:STAT?'])
+    resource.buffer = ["1"]
+    driver.route_terminal = "front"
+    assert resource.buffer == [":ROUT:TERM FRON", "*OPC?"]
 
-        self.resource.buffer = ['1']
-        self.assertEqual(self.driver.output, self.driver.OUTPUT_ON)
-        self.assertEqual(self.resource.buffer, [':OUTP:STAT?'])
+    resource.buffer = ["1"]
+    driver.route_terminal = "rear"
+    assert resource.buffer == [":ROUT:TERM REAR", "*OPC?"]
 
-        self.resource.buffer = ['1']
-        self.driver.output = self.driver.OUTPUT_OFF
-        self.assertEqual(self.resource.buffer, [':OUTP:STAT OFF', '*OPC?'])
 
-        self.resource.buffer = ['1']
-        self.driver.output = self.driver.OUTPUT_ON
-        self.assertEqual(self.resource.buffer, [':OUTP:STAT ON', '*OPC?'])
+def test_output(driver, resource):
+    resource.buffer = ["0"]
+    assert driver.output == driver.OUTPUT_OFF
+    assert resource.buffer == [":OUTP:STAT?"]
 
-    def test_function(self):
-        self.resource.buffer = ['VOLT']
-        self.assertEqual(self.driver.function, self.driver.FUNCTION_VOLTAGE)
-        self.assertEqual(self.resource.buffer, [':SOUR:FUNC:MODE?'])
+    resource.buffer = ["1"]
+    assert driver.output == driver.OUTPUT_ON
+    assert resource.buffer == [":OUTP:STAT?"]
 
-        self.resource.buffer = ['CURR']
-        self.assertEqual(self.driver.function, self.driver.FUNCTION_CURRENT)
-        self.assertEqual(self.resource.buffer, [':SOUR:FUNC:MODE?'])
+    resource.buffer = ["1"]
+    driver.output = driver.OUTPUT_OFF
+    assert resource.buffer == [":OUTP:STAT OFF", "*OPC?"]
 
-        self.resource.buffer = ['1', '1']
-        self.driver.function = self.driver.FUNCTION_VOLTAGE
-        self.assertEqual(self.resource.buffer, [':SOUR:FUNC:MODE VOLT', '*OPC?', ':SENS:FUNC \'CURR\'', '*OPC?'])
+    resource.buffer = ["1"]
+    driver.output = driver.OUTPUT_ON
+    assert resource.buffer == [":OUTP:STAT ON", "*OPC?"]
 
-        self.resource.buffer = ['1', '1']
-        self.driver.function = self.driver.FUNCTION_CURRENT
-        self.assertEqual(self.resource.buffer, [':SOUR:FUNC:MODE CURR', '*OPC?', ':SENS:FUNC \'VOLT\'', '*OPC?'])
 
-    def test_measure_voltage(self):
-        self.resource.buffer = ['+4.200000E-03']
-        self.assertEqual(self.driver.measure_voltage(), 4.2e-03)
-        self.assertEqual(self.resource.buffer, [':MEAS:VOLT?'])
+def test_function(driver, resource):
+    resource.buffer = ["VOLT"]
+    assert driver.function == driver.FUNCTION_VOLTAGE
+    assert resource.buffer == [":SOUR:FUNC:MODE?"]
 
-    def test_measure_voltage(self):
-        self.resource.buffer = ['+4.200000E-06']
-        self.assertEqual(self.driver.measure_current(), 4.2e-06)
-        self.assertEqual(self.resource.buffer, [':MEAS:CURR?'])
+    resource.buffer = ["CURR"]
+    assert driver.function == driver.FUNCTION_CURRENT
+    assert resource.buffer == [":SOUR:FUNC:MODE?"]
+
+    resource.buffer = ["1", "1"]
+    driver.function = driver.FUNCTION_VOLTAGE
+    assert resource.buffer == [":SOUR:FUNC:MODE VOLT", "*OPC?", ":SENS:FUNC 'CURR'", "*OPC?"]
+
+    resource.buffer = ["1", "1"]
+    driver.function = driver.FUNCTION_CURRENT
+    assert resource.buffer == [":SOUR:FUNC:MODE CURR", "*OPC?", ":SENS:FUNC 'VOLT'", "*OPC?"]
+
+
+def test_measure_voltage(driver, resource):
+    resource.buffer = ["+4.200000E-03"]
+    assert driver.measure_voltage() == 4.2e-03
+    assert resource.buffer == [":MEAS:VOLT?"]
+
+
+def test_measure_voltage(driver, resource):
+    resource.buffer = ["+4.200000E-06"]
+    assert driver.measure_current() == 4.2e-06
+    assert resource.buffer == [":MEAS:CURR?"]

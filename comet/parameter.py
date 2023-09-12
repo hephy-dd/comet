@@ -1,4 +1,4 @@
-from typing import Any, Dict, Type
+from typing import Any, Dict, Optional, Type
 
 from .utils import to_unit
 
@@ -32,8 +32,8 @@ def validate_parameters(cls: ParameterBaseType, values: ParameterValues) -> None
 class Parameter:
     """Class parameter specification."""
 
-    def __init__(self, default=None, *, type=None, minimum=None, maximum=None,
-                 choice=None, unit=None, constraint=None):
+    def __init__(self, default=None, *, type = None, minimum=None, maximum=None,
+                 choice=None, unit=None, constraint=None) -> None:
         self.type = type
         self.minimum = minimum
         self.maximum = maximum
@@ -45,10 +45,10 @@ class Parameter:
         self.default = default
 
     @property
-    def required(self):
+    def required(self) -> bool:
         return self.default is None
 
-    def validate(self, value):
+    def validate(self, value: Any) -> Any:
         if self.choice is not None:
             if value not in self.choice:
                 raise ValueError(f"value not allowed: {value!r}, musst be one of: {self.choice!r}")
@@ -77,7 +77,7 @@ class Parameter:
 class ParameterBase:
     """Base class for parameters."""
 
-    def __init__(self, values: ParameterValues = None) -> None:
+    def __init__(self, values: Optional[ParameterValues] = None) -> None:
         self.__values: Dict[str, Any] = {}
         self.update_parameters(values or {})
 

@@ -1,8 +1,11 @@
 import random
+from typing import Dict, List
 
 from comet.emulator import Emulator
 from comet.emulator import message, run
 from comet.utils import t_dew
+
+__all__ = ["EnvironBoxEmulator"]
 
 
 def format_error(code: int) -> str:
@@ -11,12 +14,12 @@ def format_error(code: int) -> str:
 
 class EnvironBoxEmulator(Emulator):
 
-    IDENTITY = "EnvironBox, v1.0 (Emulator)"
-    SUCCESS = "OK"
-    PC_DATA_SIZE = 39
-    SENSOR_ADRESSES = [40, 41, 42, 43, 44, 45]
+    IDENTITY: str = "EnvironBox, v1.0 (Emulator)"
+    SUCCESS: str = "OK"
+    PC_DATA_SIZE: int = 39
+    SENSOR_ADRESSES: List[int] = [40, 41, 42, 43, 44, 45]
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.sensor_address: int = 40
         self.discharge: str = "OFF"
@@ -29,7 +32,7 @@ class EnvironBoxEmulator(Emulator):
         self.microscope_camera: bool = False
         self.probecard_light: bool = False
         self.probecard_camera: bool = False
-        self.discharge_time: bool = 1000
+        self.discharge_time: int = 1000
 
         self.door_open: bool = False
         self.laser_enabled: bool = False
@@ -39,8 +42,8 @@ class EnvironBoxEmulator(Emulator):
         self.pt100_1_enabled: bool = True
         self.pt100_2_enabled: bool = False
         self.pid_control: bool = False
-        self.pid_control_mode = "HUM"
-        self.pid_setpoints = {"HUM": 30., "DEW": 30.}
+        self.pid_control_mode: str = "HUM"
+        self.pid_setpoints: Dict[str, float] = {"HUM": 30., "DEW": 30.}
         self.pid_kp: float = 0.25
         self.pid_ki: float = 0.01
         self.pid_kd: float = 1.23
@@ -129,8 +132,8 @@ class EnvironBoxEmulator(Emulator):
             power_relay_states |= 1 << 6
         return power_relay_states
 
-    def create_pc_data(self):
-        pc_data = ["0"] * type(self).PC_DATA_SIZE
+    def create_pc_data(self) -> List[str]:
+        pc_data: List[str] = ["0"] * type(self).PC_DATA_SIZE
         pc_data[0] = format(self.sensor_count, "d")
         pc_data[1] = format(self.box_humidity, ".1F")
         pc_data[2] = format(self.box_temperature, ".1F")

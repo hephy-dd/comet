@@ -1,27 +1,29 @@
-import unittest
+import pytest
 
 from comet.driver.keithley import K6517B
 
-from .test_driver import BaseDriverTest
+from .test_driver import resource
 
 
-class K6517BTest(BaseDriverTest):
+@pytest.fixture
+def driver(resource):
+    return K6517B(resource)
 
-    driver_cls = K6517B
 
-    def test_basic(self):
-        self.resource.buffer = ['Keithley Model 6517B', '1', '1']
-        self.assertEqual(self.driver.identify(), 'Keithley Model 6517B')
-        self.assertEqual(self.driver.reset(), None)
-        self.assertEqual(self.driver.clear(), None)
-        self.assertEqual(self.resource.buffer, ['*IDN?', '*RST', '*OPC?', '*CLS', '*OPC?'])
+def test_basic(driver, resource):
+    resource.buffer = ["Keithley Model 6517B", "1", "1"]
+    assert driver.identify() == "Keithley Model 6517B"
+    assert driver.reset() is None
+    assert driver.clear() is None
+    assert resource.buffer == ["*IDN?", "*RST", "*OPC?", "*CLS", "*OPC?"]
 
-    def test_errors(self):
-        self.resource.buffer = ['0,"no error"']
-        self.assertEqual(self.driver.next_error(), None)
-        self.assertEqual(self.resource.buffer, [':SYST:ERR:NEXT?'])
 
-        self.resource.buffer = ['42,"test error"']
-        error = self.driver.next_error()
-        self.assertEqual(error.code, 42)
-        self.assertEqual(error.message, 'test error')
+def test_errors(driver, resource):
+    resource.buffer = ["0,\"no error\""]
+    assert driver.next_error() is None
+    assert resource.buffer == [":SYST:ERR:NEXT?"]
+
+    resource.buffer = ["42,\"test error\""]
+    error = driver.next_error()
+    assert error.code == 42
+    assert error.message == "test error"

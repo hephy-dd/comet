@@ -27,6 +27,11 @@ class K2470Emulator(IEC60488Emulator):
         self.sense_average_count = {'VOLT': 10, 'CURR': 10}
         self.sense_average_state = {'VOLT': False, 'CURR': False}
         self.sense_nplc = 1.0
+        self.system_breakdown_protection = "OFF"
+
+    @property
+    def output_interlock_tripped(self):
+        return bool(self.options.get("interlock.tripped", True))
 
     @message(r'\*LANG\?')
     def get_lang(self):
@@ -48,6 +53,7 @@ class K2470Emulator(IEC60488Emulator):
         self.sense_average_count.update({'VOLT': 10, 'CURR': 10})
         self.sense_average_state.update({'VOLT': False, 'CURR': False})
         self.sense_nplc = 1.0
+        self.system_breakdown_protection = "OFF"
 
     @message(r'\*CLS')
     def set_cls(self):
@@ -59,6 +65,14 @@ class K2470Emulator(IEC60488Emulator):
             code, message = self.error_queue.pop(0)
             return f'{code}, "{message}"'
         return '0, "no error"'
+
+    @message(r':?SYST:BRE:PROT\?')
+    def get_system_breakdown_protection(self):
+        return self.system_breakdown_protection
+
+    @message(r':?SYST:BRE:PROT (AUTO|OFF|ON)')
+    def set_system_breakdown_protection(self, state):
+        self.system_breakdown_protection = state
 
     # Route terminal
 
@@ -82,6 +96,10 @@ class K2470Emulator(IEC60488Emulator):
             self.output_state = {'ON': True, 'OFF': False, '0': False, '1': True}[state]
         except KeyError:
             self.error_queue.append((101, "malformed command"))
+
+    @message(r':?OUTP:INT:TRIP\?')
+    def get_output_interlock_tripped(self):
+        return {False: '0', True: '1'}[self.output_interlock_tripped]
 
     # Source function mode
 

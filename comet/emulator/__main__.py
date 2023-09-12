@@ -30,6 +30,7 @@ Hit Ctrl+C to stop all emulator sockets.
 
 import argparse
 import logging
+import signal
 import socketserver
 import threading
 import time
@@ -91,10 +92,13 @@ def parse_args() -> argparse.Namespace:
 
 
 def event_loop() -> None:
-    try:
-        threading.Event().wait()
-    except KeyboardInterrupt:
-        ...
+    """Blocks execution until termination or interrupt from keyboard signal."""
+    e = threading.Event()
+    def handle_event(signum, frame):
+        e.set()
+    signal.signal(signal.SIGTERM, handle_event)
+    signal.signal(signal.SIGINT, handle_event)
+    e.wait()
 
 
 def main() -> None:
@@ -125,12 +129,14 @@ def main() -> None:
         thread.server.context.logger.info("starting... %s:%s", hostname, port)
         thread.start()
 
-    event_loop()
+    def handle_event(signum, frame):
+        for thread in threads:
+            hostname, port = thread.server.server_address
+            thread.server.context.logger.info("stopping... %s:%s", hostname, port)
+            thread.shutdown()
 
-    for thread in threads:
-        hostname, port = thread.server.server_address
-        thread.server.context.logger.info("stopping... %s:%s", hostname, port)
-        thread.shutdown()
+    signal.signal(signal.SIGTERM, handle_event)
+    signal.signal(signal.SIGINT, handle_event)
 
     for thread in threads:
         thread.join()

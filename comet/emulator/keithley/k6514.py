@@ -13,8 +13,8 @@ class K6514Emulator(IEC60488Emulator):
         self.error_queue = []
         self.zero_check = False
         self.zero_correction = False
-        self.sense_function = 'VOLT'
-        self.sense_average_tcontrol = 'REP'
+        self.sense_function = "VOLT"
+        self.sense_average_tcontrol = "REP"
         self.sense_average_count = 10
         self.sense_average_state = 0
         self.sense_current_range = 2.1e-4
@@ -26,8 +26,8 @@ class K6514Emulator(IEC60488Emulator):
         self.error_queue.clear()
         self.zero_check = False
         self.zero_correction = False
-        self.sense_function = 'VOLT'
-        self.sense_average_tcontrol = 'REP'
+        self.sense_function = "VOLT"
+        self.sense_average_tcontrol = "REP"
         self.sense_average_count = 10
         self.sense_average_state = 0
         self.sense_current_range = 2.1e-4
@@ -62,11 +62,11 @@ class K6514Emulator(IEC60488Emulator):
         time.sleep(random.uniform(.5, 1.0))
 
     def _reading(self):
-        if self.sense_function == 'CURR':
+        if self.sense_function == "CURR":
             curr_min = float(self.options.get("curr.min", 2.5e-10))
             curr_max = float(self.options.get("curr.max", 2.5e-9))
             return random.uniform(curr_min, curr_max)
-        elif self.sense_function == 'VOLT':
+        elif self.sense_function == "VOLT":
             volt_min = float(self.options.get("volt.min", -5))
             volt_max = float(self.options.get("volt.max", +5))
             return random.uniform(volt_min, volt_max)
@@ -74,28 +74,28 @@ class K6514Emulator(IEC60488Emulator):
 
     @message(r':?FETC[H]?\?')
     def get_fetch(self):
-        return format(self._reading(), 'E')
+        return format(self._reading(), "E")
 
     @message(r':?READ\?')
     def get_read(self):
         time.sleep(random.uniform(.25, 1.0))
-        return format(self._reading(), 'E')
+        return format(self._reading(), "E")
 
     @message(r':?SYST:ZCH\s+(0|1|ON|OFF)')
     def set_zero_check(self, value):
-        self.zero_check = {'0': False, '1': True, 'OFF': False, 'ON': True}[value]
+        self.zero_check = {"0": False, "1": True, "OFF": False, "ON": True}[value]
 
     @message(r':?SYST:ZCH\?')
     def get_zero_check(self):
-        return {False: '0', True: '1'}[self.zero_check]
+        return {False: "0", True: "1"}[self.zero_check]
 
     @message(r':?SYST:ZCOR\s+(0|1|ON|OFF)')
     def set_zero_correction(self, value):
-        self.zero_correction = {'0': False, '1': True, 'OFF': False, 'ON': True}[value]
+        self.zero_correction = {"0": False, "1": True, "OFF": False, "ON": True}[value]
 
     @message(r':?SYST:ZCOR\?')
     def get_zero_correction(self):
-        return {False: '0', True: '1'}[self.zero_correction]
+        return {False: "0", True: "1"}[self.zero_correction]
 
     @message(r':?SENS:FUNC \'(VOLT|CURR|RES|CHAR)(?:\:DC)?\'')
     def set_sense_function(self, value: str):
@@ -129,13 +129,13 @@ class K6514Emulator(IEC60488Emulator):
 
     @message(r'(?::?SENS)?:AVER(?::STAT)? (OFF|ON|0|1)')
     def set_sense_average_state(self, state: str):
-        self.sense_average_state = {'OFF': 0, 'ON': 1, '0': 0, '1': 1}[state]
+        self.sense_average_state = {"OFF": 0, "ON": 1, "0": 0, "1": 1}[state]
 
     # Current range
 
     @message(r'(?::?SENS)?:CURR:RANG\?')
     def get_sense_current_range(self):
-        return format(self.sense_current_range, 'E')
+        return format(self.sense_current_range, "E")
 
     @message(r'(?::?SENS)?:CURR:RANG(?::UPP)?\s+(.+)')
     def set_sense_current_range(self, value: str):
@@ -150,7 +150,7 @@ class K6514Emulator(IEC60488Emulator):
 
     @message(r'(?::?SENS)?:CURR:RANG:AUTO\s+(OFF|ON|0|1)')
     def set_sense_current_range_auto(self, state: str):
-        self.sense_current_range_auto = {'OFF': 0, 'ON': 1, '0': 0, '1': 1}[state]
+        self.sense_current_range_auto = {"OFF": 0, "ON": 1, "0": 0, "1": 1}[state]
 
     @message(r'(?::?SENS)?:CURR:RANG:AUTO:ULIM\s+(.+)')
     def set_sense_current_range_auto_ulimit(self, value: str):
@@ -178,5 +178,5 @@ class K6514Emulator(IEC60488Emulator):
         self.error_queue.append((101, "malformed command"))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     run(K6514Emulator())

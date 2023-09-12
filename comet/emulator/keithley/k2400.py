@@ -13,42 +13,48 @@ class K2400Emulator(IEC60488Emulator):
         self.error_queue = []
         self.system_beeper_state = True
         self.system_rsense = False
-        self.route_terminals = 'FRON'
+        self.route_terminals = "FRON"
         self.output_state = False
-        self.source_function_mode = 'VOLT'
-        self.source_level = {'VOLT': 0., 'CURR': 0.}
-        self.source_range = {'VOLT': 0., 'CURR': 0.}
-        self.source_range_auto = {'VOLT': True, 'CURR': True}
+        self.source_function_mode = "VOLT"
+        self.source_level = {"VOLT": 0., "CURR": 0.}
+        self.source_range = {"VOLT": 0., "CURR": 0.}
+        self.source_range_auto = {"VOLT": True, "CURR": True}
         self.source_voltage_protection_level = self.DEFAULT_VOLTAGE_PROTECTION_LEVEL
         self.sense_voltage_protection_level = 2.1e+1
         self.sense_current_protection_level = 1.05e-5
-        self.sense_function = 'CURR'
+        self.sense_function = SenseFunction()
+        self.sense_function.add("CURR")
         self.sense_function_concurrent = False
-        self.sense_average_tcontrol = 'REP'
+        self.sense_average_tcontrol = "REP"
         self.sense_average_count = 10
         self.sense_average_state = False
         self.sense_nplc = 1.0
-        self.format_elements = ['VOLT', 'CURR', 'RES', 'TIME', 'STAT']
+        self.system_rsense = False
+        self.format_elements = FormatElements()
+        self.format_elements.update(["VOLT", "CURR", "RES", "TIME", "STAT"])
 
     @message(r'\*RST')
     def set_rst(self):
         self.error_queue.clear()
         self.system_beeper_state = True
         self.system_rsense = False
-        self.route_terminals = 'FRON'
+        self.route_terminals = "FRON"
         self.output_state = False
-        self.source_function_mode = 'VOLT'
-        self.source_level.update({'VOLT': 0., 'CURR': 0.})
-        self.source_range.update({'VOLT': 0., 'CURR': 0.})
-        self.source_range_auto.update({'VOLT': True, 'CURR': True})
+        self.source_function_mode = "VOLT"
+        self.source_level.update({"VOLT": 0., "CURR": 0.})
+        self.source_range.update({"VOLT": 0., "CURR": 0.})
+        self.source_range_auto.update({"VOLT": True, "CURR": True})
         self.source_voltage_protection_level = self.DEFAULT_VOLTAGE_PROTECTION_LEVEL
-        self.sense_function = 'CURR'
+        self.sense_function.clear()
+        self.sense_function.add("CURR")
         self.sense_function_concurrent = False
-        self.sense_average_tcontrol = 'REP'
+        self.sense_average_tcontrol = "REP"
         self.sense_average_count = 10
         self.sense_average_state = False
         self.sense_nplc = 1.0
-        self.format_elements = ['VOLT', 'CURR', 'RES', 'TIME', 'STAT']
+        self.system_rsense = False
+        self.format_elements.clear()
+        self.format_elements.update(["VOLT", "CURR", "RES", "TIME", "STAT"])
 
     @message(r'\*CLS')
     def set_cls(self):
@@ -73,7 +79,7 @@ class K2400Emulator(IEC60488Emulator):
 
     @message(r':?SYST(?:em)?:BEEP(?:er)?(?::STAT(?:e)?)? (OFF|ON|0|1)')
     def set_system_beeper_state(self, state):
-        self.system_beeper_state = {'OFF': False, 'ON': True, '0': False, '1': True}[state]
+        self.system_beeper_state = {"OFF": False, "ON": True, "0": False, "1": True}[state]
 
     # Remote sensing
 
@@ -104,7 +110,7 @@ class K2400Emulator(IEC60488Emulator):
     @message(r':?OUTP(?:ut)?(?::STAT(?:e)?)? (.+)')
     def set_output_state(self, state):
         try:
-            self.output_state = {'ON': True, 'OFF': False, '0': False, '1': True}[state]
+            self.output_state = {"ON": True, "OFF": False, "0": False, "1": True}[state]
         except KeyError:
             self.error_queue.append((101, "malformed command"))
 
@@ -138,7 +144,7 @@ class K2400Emulator(IEC60488Emulator):
 
     @message(r':?SOUR:(VOLT|CURR):RANG\?')
     def get_source_range_level(self, function):
-        return format(self.source_range[function], 'E')
+        return format(self.source_range[function], "E")
 
     @message(r':?SOUR:(VOLT|CURR):RANG (.+)')
     def set_source_range_level(self, function, level):
@@ -157,7 +163,7 @@ class K2400Emulator(IEC60488Emulator):
     @message(r':?SOUR:(VOLT|CURR):RANG:AUTO (.+)')
     def set_source_range_auto(self, function, state):
         try:
-            self.source_range_auto[function] = {'ON': True, 'OFF': False, '0': False, '1': True}[state]
+            self.source_range_auto[function] = {"ON": True, "OFF": False, "0": False, "1": True}[state]
         except ValueError:
             self.error_queue.append((101, "malformed command"))
 
@@ -165,7 +171,7 @@ class K2400Emulator(IEC60488Emulator):
 
     @message(r':?SOUR:VOLT:PROT(?::LEV)?\?')
     def get_source_voltage_protection_level(self):
-        return format(self.source_voltage_protection_level, 'E')
+        return format(self.source_voltage_protection_level, "E")
 
     @message(r':?SOUR:VOLT:PROT(?::LEV)? (.+)')
     def set_source_voltage_protection_level(self, level):
@@ -178,7 +184,7 @@ class K2400Emulator(IEC60488Emulator):
 
     @message(r'(?::?SENS)?:VOLT:PROT(?::LEV)?\?')
     def get_sense_voltage_protection_level(self):
-        return format(self.sense_voltage_protection_level, 'E')
+        return format(self.sense_voltage_protection_level, "E")
 
     @message(r'(?::?SENS)?:VOLT:PROT(?::LEV)? (.+)')
     def set_sense_voltage_protection_level(self, level):
@@ -193,7 +199,7 @@ class K2400Emulator(IEC60488Emulator):
 
     @message(r'(?::?SENS)?:CURR:PROT(?::LEV)?\?')
     def get_sense_current_protection_level(self):
-        return format(self.sense_current_protection_level, 'E')
+        return format(self.sense_current_protection_level, "E")
 
     @message(r'(?::?SENS)?:CURR:PROT(?::LEV)? (.+)')
     def set_sense_current_protection_level(self, level):
@@ -210,19 +216,27 @@ class K2400Emulator(IEC60488Emulator):
 
     @message(r'^(?::?SENS)?:FUNC(?::ON)?\?$')
     def get_sense_function_on(self):
-        return f'\'{self.sense_function}:DC\''
+        return format(self.sense_function)
 
-    @message(r'^(?::?SENS)?:FUNC(?::ON)?\s+\'(VOLT|CURR)\'$')
-    def set_sense_function_on(self, function):
-        self.sense_function = function
+    @message(r'(?::?SENS)?:FUNC(?::ON)? \'(VOLT|CURR|RES|TIME|STAT)\'')
+    def set_sense_function_on(self, value):
+        self.sense_function.add(value)
+
+    # TODO
+    @message(r'(?::?SENS)?:FUNC(?::ON)? \'VOLT\',\s*\'CURR\'')
+    def set_sense_function_on_2(self):
+        self.sense_function.add("VOLT")
+        self.sense_function.add("CURR")
+
+    # Concurrent function
 
     @message(r'^(?::?SENS)?:FUNC:CONC\?$')
     def get_sense_function_concurrent(self):
-        return f'\'{self.sense_function_concurrent}:DC\''
+        return int(self.sense_function_concurrent)
 
-    @message(r'^(?::?SENS)?:FUNC:CONC\s+(OFF|ON|0|1)$')
-    def set_sense_function_concurrent(self, enabled):
-        self.sense_function_concurrent = {'OFF': False, 'ON': True, '0': False, '1': True}[enabled]
+    @message(r'^(?::?SENS)?:FUNC:CONC (OFF|ON|0|1)$')
+    def set_sense_function_concurrent(self, state):
+        self.sense_function_concurrent = {"OFF": False, "ON": True, "0": False, "1": True}[state]
 
     # Average
 
@@ -248,28 +262,39 @@ class K2400Emulator(IEC60488Emulator):
 
     @message(r'(?::?SENS)?:AVER(?::STAT)? (OFF|ON|0|1)')
     def set_sense_average_state(self, state):
-        self.sense_average_state = {'OFF': False, 'ON': True, '0': False, '1': True}[state]
+        self.sense_average_state = {"OFF": False, "ON": True, "0": False, "1": True}[state]
 
     # Integration time
 
     @message(r'(?::?SENS)?:(?:VOLT|CURR|RES):NPLC\?')
     def get_sense_nplc(self):
-        return format(self.sense_nplc, 'E')
+        return format(self.sense_nplc, "E")
 
     @message(r'(?::?SENS)?:(?:VOLT|CURR|RES):NPLC (.+)')
     def set_sense_nplc(self, nplc: str):
         self.sense_nplc = round(float(nplc), 2)
 
+    # 2/4-wire remote sense
+
+    @message(r'(?::?SYST):RSEN\?')
+    def get_system_rsense(self):
+        return int(self.system_rsense)
+
+    @message(r'(?::?SYST):RSEN (OFF|ON|0|1)')
+    def set_system_rsense(self, state: str):
+        self.system_rsense = {"OFF": False, "ON": True, "0": False, "1": True}[state]
+
     # Format
 
     @message(r':?FORM:ELEM\?')
     def get_format_elements(self):
-        return ','.join(self.format_elements)
+        return format(self.format_elements)
 
     @message(r':?FORM:ELEM (.+)')
     def set_format_elements(self, elements):
         elements = [element.strip() for element in elements.split(',') if element.strip()]
-        self.format_elements = elements
+        self.format_elements.clear()
+        self.format_elements.update(elements)
 
     # Measure
 
@@ -279,20 +304,92 @@ class K2400Emulator(IEC60488Emulator):
 
     @message(r':?READ\?')
     def get_read(self):
-        curr_min = float(self.options.get("curr.min", 1e6))
-        curr_max = float(self.options.get("curr.max", 1e7))
-        return format(random.uniform(curr_min, curr_max), 'E')
+        result = []
+        if "VOLT" in self.format_elements._values:
+            curr_min = float(self.options.get("volt.min", self.source_level.get("VOLT")))
+            curr_max = float(self.options.get("volt.max", self.source_level.get("VOLT")))
+            result.append(format(random.uniform(curr_min, curr_max), "E"))
+        if "CURR" in self.format_elements._values:
+            curr_min = float(self.options.get("curr.min", 1e6))
+            curr_max = float(self.options.get("curr.max", 1e7))
+            result.append(format(random.uniform(curr_min, curr_max), "E"))
+        if "RES" in self.format_elements._values:
+            result.append(format(float("nan")))
+        if "TIME" in self.format_elements._values:
+            result.append(format(float("nan")))
+        if "STAT" in self.format_elements._values:
+            result.append(format(0))
+        return ",".join(result)
 
     @message(r':?FETC[H]?\?')
     def get_fetch(self):
         curr_min = float(self.options.get("curr.min", 1e6))
         curr_max = float(self.options.get("curr.max", 1e7))
-        return format(random.uniform(curr_min, curr_max), 'E')
+        return format(random.uniform(curr_min, curr_max), "E")
 
     @message(r'(.*)')
     def unknown_message(self, request):
         self.error_queue.append((101, "malformed command"))
 
 
-if __name__ == '__main__':
+class SenseFunction:
+
+    ALLOWED_VALUES = ["VOLT:DC", "CURR:DC", "RES"]
+    ALIAS_VALUES = {"VOLT": "VOLT:DC", "CURR": "CURR:DC"}
+
+    def __init__(self) -> None:
+        self._values: set = set()
+
+    def add(self, value) -> None:
+        if value in self.ALIAS_VALUES:
+            value = self.ALIAS_VALUES.get(value)
+        if value in self.ALLOWED_VALUES:
+            self._values.add(value)
+
+    def remove(self, value) -> None:
+        if value in self.ALIAS_VALUES:
+            value = self.ALIAS_VALUES.get(value)
+        if value in self._values:
+            self._values.remove(value)
+
+    def clear(self) -> None:
+        self._values.clear()
+
+    def update(self, values) -> None:
+        for value in values:
+            self.add(value)
+
+    def __str__(self) -> str:
+        values = sorted(self._values, key=lambda value: self.ALLOWED_VALUES.index(value))
+        return ",".join([f"'{value}'" for value in values])
+
+
+class FormatElements:
+
+    ALLOWED_VALUES = ["VOLT", "CURR", "RES", "TIME", "STAT"]
+
+    def __init__(self) -> None:
+        self._values: set = set()
+
+    def add(self, value) -> None:
+        if value in self.ALLOWED_VALUES:
+            self._values.add(value)
+
+    def remove(self, value) -> None:
+        if value in self._values:
+            self._values.remove(value)
+
+    def clear(self) -> None:
+        self._values.clear()
+
+    def update(self, values) -> None:
+        for value in values:
+            self.add(value)
+
+    def __str__(self) -> str:
+        values = sorted(self._values, key=lambda value: self.ALLOWED_VALUES.index(value))
+        return ",".join(values)
+
+
+if __name__ == "__main__":
     run(K2400Emulator())

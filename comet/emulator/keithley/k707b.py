@@ -8,9 +8,9 @@ from comet.utils import combine_matrix
 class K707BEmulator(IEC60488Emulator):
 
     IDENTITY = "Keithley Inc., Model 707B, 43768438, v1.0 (Emulator)"
-    CHANNELS = combine_matrix('1234', 'ABCDEFGH', (format(i, '02d') for i in range(1, 13)))
+    CHANNELS = combine_matrix("1234", "ABCDEFGH", (format(i, "02d") for i in range(1, 13)))
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.error_queue: list = []
         self.closed_channels: Set[str] = set()
@@ -41,8 +41,8 @@ class K707BEmulator(IEC60488Emulator):
     @message(tsp_print(r'channel\.getclose\(([^\)]+)\)'))
     def get_channel_getclose(self, channels):
         if not self.closed_channels:
-            return 'nil'
-        return ';'.join(sorted(self.closed_channels))
+            return "nil"
+        return ";".join(sorted(self.closed_channels))
 
     @message(r'channel\.close\(([^\)]+)\)')
     def set_channel_close(self, channels):
@@ -52,7 +52,7 @@ class K707BEmulator(IEC60488Emulator):
     @message(r'channel\.open\(([^\)]+)\)')
     def set_channel_open(self, channels):
         channels = channels.strip('"').split(',')
-        if 'allslots' in channels:
+        if "allslots" in channels:
             self.closed_channels.clear()
         else:
             for channel in channels:
@@ -64,5 +64,5 @@ class K707BEmulator(IEC60488Emulator):
         self.error_queue.append((101, "malformed command"))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     run(K707BEmulator())

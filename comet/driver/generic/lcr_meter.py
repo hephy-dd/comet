@@ -39,5 +39,5 @@ class LCRMeter(Instrument):
         ...
 
     @abstractmethod
-    def measure_pair(self) -> Tuple[float, float]:
+    def measure_impedance(self) -> Tuple[float, float]:
         ...

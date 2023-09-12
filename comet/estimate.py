@@ -1,13 +1,13 @@
 """Estimate remaining time."""
 
 from datetime import datetime, timedelta
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 __all__ = ["Estimate"]
 
 
 class Estimate:
-    """Estiamte remaining time.
+    """Estimate remaining time and progress.
 
     >>> e = Estimate(42)
     >>> for i in range(42):
@@ -18,18 +18,11 @@ class Estimate:
     ...     print(e.progress)
     """
 
-    def __init__(self, count: int) -> None:
-        self._count: int = count
+    def __init__(self, total: int) -> None:
+        self._total: int = total
         self._deltas: List[timedelta] = []
         self._start: datetime = datetime.now()
         self._prev: datetime = datetime.now()
-
-    def reset(self, count: int = None) -> None:
-        if count is not None:
-            self._count = count
-        self._deltas = []
-        self._start = datetime.now()
-        self._prev = datetime.now()
 
     def advance(self) -> None:
         now = datetime.now()
@@ -37,8 +30,8 @@ class Estimate:
         self._prev = now
 
     @property
-    def count(self) -> int:
-        return self._count
+    def total(self) -> int:
+        return self._total
 
     @property
     def passed(self) -> int:
@@ -54,8 +47,8 @@ class Estimate:
 
     @property
     def remaining(self) -> timedelta:
-        return max(timedelta(0), (self.average * self.count) - self.elapsed)
+        return max(timedelta(0), (self.average * self.total) - self.elapsed)
 
     @property
     def progress(self) -> Tuple[int, int]:
-        return self.passed, self.count
+        return self.passed, self.total

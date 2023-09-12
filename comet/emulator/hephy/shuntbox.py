@@ -6,22 +6,23 @@ import time
 from comet.emulator import Emulator
 from comet.emulator import message, run
 
-
-__all__ = ['ShuntBoxEmulator']
-
-start_time = time.time()
-
-
-def uptime():
-    return int(round(time.time() - start_time))
+__all__ = ["ShuntBoxEmulator"]
 
 
 class ShuntBoxEmulator(Emulator):
 
-    IDENTITY = 'ShuntBox, v1.0 (Emulator)'
-    MEMORY_BYTES = 4200
-    CHANNELS = 10
-    SUCCESS = 'OK'
+    IDENTITY: str = "ShuntBox, v1.0 (Emulator)"
+    MEMORY_BYTES: int = 4200
+    CHANNELS: int = 10
+    SUCCESS: str = "OK"
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.start_time: float = time.time()
+
+    @property
+    def uptime(self) -> int:
+        return int(round(time.time() - self.start_time))
 
     @message(r'\*IDN\?')
     def get_idn(self):
@@ -29,7 +30,7 @@ class ShuntBoxEmulator(Emulator):
 
     @message(r'GET:UP \?')
     def get_up(self):
-        return format(uptime())
+        return format(self.uptime)
 
     @message(r'GET:RAM \?')
     def get_ram(self):
@@ -39,12 +40,12 @@ class ShuntBoxEmulator(Emulator):
     def get_temp_all(self):
         values = []
         for i in range(self.CHANNELS):
-            values.append(format(random.uniform(22.0, 26.0), '.1f'))
+            values.append(format(random.uniform(22.0, 26.0), ".1f"))
         return ",".join(values)
 
     @message(r'GET:TEMP (\d+)')
     def get_temp(self, value):
-        return format(random.uniform(22.0, 26.0), '.1f')
+        return format(random.uniform(22.0, 26.0), ".1f")
 
     @message(r'SET:REL_(ON|OFF) (\d+|ALL)')
     def set_rel(self, state, value):
@@ -60,8 +61,8 @@ class ShuntBoxEmulator(Emulator):
 
     @message(r'.*')
     def unknown_message(self):
-        return 'Err99'
+        return "Err99"
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     run(ShuntBoxEmulator())
