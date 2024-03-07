@@ -24,7 +24,7 @@ def emulator_factory(module_name: str) -> Type:
             module = importlib.import_module(module_name)
         except ModuleNotFoundError:
             # If does not exist, try to load from comet.emulator package
-            module_name = f"comet.emulator.{module_name}"
+            module_name = f"{__package__}.{module_name}"
             module = importlib.import_module(module_name)
         # Iterate over all module class members (local and imported).
         cls_members = inspect.getmembers(module, inspect.isclass)
@@ -97,12 +97,19 @@ class Emulator:
         return None
 
 
+def option_type(value: str) -> tuple[str, str]:
+    m = re.match(r"^([\w_][\w\d_]*)=(.*)$", value)
+    if m:
+        return m.group(1), m.group(2)
+    raise ValueError()
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--hostname", default="")
     parser.add_argument("-p", "--port", type=int, default=10000)
     parser.add_argument("-t", "--termination", default="\r\n")
     parser.add_argument("-d", "--request_delay", type=float, default=0.1)
+    parser.add_argument("-o", "--option", type=option_type, action="append", default=[])
     return parser.parse_args()
 
 
@@ -111,7 +118,9 @@ def run(emulator: Emulator) -> int:
     args = parse_args()
 
     if not isinstance(emulator, Emulator):
-        raise TypeError("Emulator must inherit from class 'Emulator'")
+        raise TypeError(f"Emulator must inherit from {Emulator}")
+
+    emulator.options.update({key: value for key, value in args.option})
 
     logging.basicConfig(level=logging.INFO)
 

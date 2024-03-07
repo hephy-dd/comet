@@ -18,7 +18,7 @@ emulators:
     port: 12001
 ```
 
-Executing a configuration filename (default filename is `emulators.yaml`).
+Loading a configuration filename (default filenames are `emulators.yaml` and `emulators.yml`).
 
 ```
 python -m comet.emulator [-f emulators.yaml]
@@ -30,6 +30,7 @@ Hit Ctrl+C to stop all emulator sockets.
 
 import argparse
 import logging
+import os
 import signal
 import socketserver
 import threading
@@ -41,7 +42,7 @@ import yaml
 from .emulator import emulator_factory
 from .tcpserver import TCPServer, TCPServerThread, TCPServerContext
 
-default_config_filename = "emulators.yaml"
+default_config_filenames = ["emulators.yaml", "emulators.yml"]
 default_hostname: str = ""
 default_termination: str = "\r\n"
 default_request_delay: float = 0.1
@@ -65,14 +66,15 @@ config_schema = schema.Schema({
 
 def load_config(filename: str) -> dict:
     with open(filename) as fp:
-        config = yaml.safe_load(fp)
+        data = yaml.safe_load(fp)
+    config = validate_config(data or {})
     # Set defaults
     for params in config.get("emulators", {}).values():
         params.setdefault("hostname", default_hostname)
         params.setdefault("termination", default_termination)
         params.setdefault("request_delay", default_request_delay)
         params.setdefault("options", {})
-    return validate_config(config)
+    return config
 
 
 def validate_config(config: dict) -> dict:
@@ -85,10 +87,16 @@ def parse_args() -> argparse.Namespace:
         "-f",
         "--file",
         dest="filename",
-        metavar="string",
-        default=default_config_filename,
+        metavar="filename",
     )
     return parser.parse_args()
+
+
+def locate_config_filename() -> str:
+    for filename in default_config_filenames:
+        if os.path.isfile(filename):
+            return filename
+    raise RuntimeError("No config file found.")
 
 
 def event_loop() -> None:
@@ -106,7 +114,7 @@ def main() -> None:
 
     logging.basicConfig(level=logging.INFO)
 
-    config = load_config(args.filename)
+    config = load_config(args.filename or locate_config_filename())
 
     threads = []
 
