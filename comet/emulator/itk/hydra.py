@@ -21,8 +21,6 @@ class HydraEmulator(Emulator):
         self.pos = {"1": 0.0, "2": 0.0}
         self.calibrate = {"1": 3, "2": 3}
 
-        self.cpu_temp = 24.0
-
         self.axes_moving = 0
         self.manual_move = 0
 
@@ -48,7 +46,7 @@ class HydraEmulator(Emulator):
 
     @message(r'^getcputemp$')
     def get_cputemp(self):
-        return self.cpu_temp
+        return float(self.options.get("cputemp", 40.0))
 
     @message(r'^reset$')
     def set_reset(self):
