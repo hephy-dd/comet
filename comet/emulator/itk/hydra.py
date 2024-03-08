@@ -1,5 +1,7 @@
 """Hydra (Venus-3) emulator."""
 
+import random
+
 from comet.emulator import Emulator, message, run
 
 __all__ = ["HydraEmulator"]
