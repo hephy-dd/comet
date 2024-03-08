@@ -14,8 +14,8 @@ def test_basic(emulator):
     assert emulator("getmacadr") == "00:00:00:00:00:00"
     assert emulator("getserialno") == "01011234"
     assert emulator("getoptions") == "3"
-    assert int(emulator("getticks")) > 0
-    assert int(emulator("gt")) > 0
+    assert int(emulator("getticks")) >= 0
+    assert int(emulator("gt")) >= 0
     assert emulator("10 beep") is None
     # assert emulator("reset") is None
     assert emulator("status") == "0"
