@@ -10,9 +10,16 @@ def emulator():
 
 def test_basic(emulator):
     assert emulator("identify") == "Corvus 0 0 0 0"
-    assert emulator("getmacadr") == "00:00:00:00:00:00"
     assert emulator("version") == "1.0"
+    assert emulator("getmacadr") == "00:00:00:00:00:00"
     assert emulator("getserialno") == "01011234"
+    assert emulator("getoptions") == "3"
+    assert int(emulator("getticks")) > 0
+    assert int(emulator("gt")) > 0
+    assert emulator("10 beep") is None
+    # assert emulator("reset") is None
+    assert emulator("status") == "0"
+    assert emulator("st") == "0"
 
 
 def test_position(emulator):
@@ -21,6 +28,8 @@ def test_position(emulator):
     assert emulator("pos") == "1.000000 2.000000 3.000000"
     assert emulator("2 0 -2 rmove") is None
     assert emulator("pos") == "3.000000 2.000000 1.000000"
+    assert emulator("randmove") is None
+    assert emulator("pos") != "3.000000 2.000000 1.000000"
 
 
 def test_limits(emulator):
@@ -44,14 +53,16 @@ def test_calibration(emulator):
 
 def test_errors(emulator):
     assert emulator("geterror") == "0"
+    assert emulator("ge") == "0"
     assert emulator("getmerror") == "0"
+    assert emulator("gme") == "0"
 
 
 def test_joystick(emulator):
     assert emulator("getjoystick") == "0"
     assert emulator("1 joystick") is None
-    assert emulator("getjoystick") == "1"
-    assert emulator("0 joystick") is None
+    assert emulator("gj") == "1"
+    assert emulator("0 j") is None
     assert emulator("getjoystick") == "0"
 
 
@@ -67,3 +78,19 @@ def test_units(emulator):
     assert emulator("1 getunit") == "2"
     assert emulator("2 getunit") == "3"
     assert emulator("3 getunit") == "4"
+
+
+def test_calibrate_range_measure(emulator):
+    assert emulator("-1 getcaldone") == "3 3 3"
+    assert emulator("1 ncal") is None
+    assert emulator("-1 getcaldone") == "1 3 3"
+    assert emulator("2 ncal") is None
+    assert emulator("-1 getcaldone") == "1 1 3"
+    assert emulator("3 ncal") is None
+    assert emulator("-1 getcaldone") == "1 1 1"
+    assert emulator("1 nrm") is None
+    assert emulator("-1 getcaldone") == "3 1 1"
+    assert emulator("2 nrm") is None
+    assert emulator("-1 getcaldone") == "3 3 1"
+    assert emulator("3 nrm") is None
+    assert emulator("-1 getcaldone") == "3 3 3"

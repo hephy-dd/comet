@@ -116,11 +116,11 @@ class CorvusTTEmulator(Emulator):
             a1, a2, a3 = self.getcaldone
             return f"{a1} {a2} {a3}"
         if axis == "1":
-            self.getcaldone[0]
+            return self.getcaldone[0]
         if axis == "2":
-            self.getcaldone[0]
+            return self.getcaldone[0]
         if axis == "3":
-            self.getcaldone[0]
+            return self.getcaldone[0]
 
     @message(r'^(-1|1|2|3)\s+getaxis$')
     def get_axis(self, axis):
