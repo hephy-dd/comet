@@ -1,6 +1,5 @@
 include README.md
 include LICENSE
-include pyproject.toml
 include tox.ini
 include mkdocs.yml
 

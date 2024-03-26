@@ -1,8 +1,16 @@
+import warnings
 from typing import Tuple
 
 from comet.driver import Driver
 
 __all__ = ["Venus1"]
+
+warnings.warn(
+    "'comet.driver.corvus.venus1' is deprecated and will be removed in a future version. "
+    "Use 'comet.driver.itk.corvustt' or 'comet.driver.smc.corvus' instead.",
+    DeprecationWarning,
+    stacklevel=1
+)
 
 
 class Axis(Driver):

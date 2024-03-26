@@ -28,7 +28,7 @@ class LinearRange:
         "step"
     )
 
-    def __init__(self, begin: float, end: float, step: float):
+    def __init__(self, begin: float, end: float, step: float) -> None:
         self.begin: float = begin
         self.end: float = end
         self.step: float = abs(step) if begin < end else -abs(step)
