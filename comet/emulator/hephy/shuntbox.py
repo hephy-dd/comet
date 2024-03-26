@@ -9,6 +9,10 @@ from comet.emulator import message, run
 __all__ = ["ShuntBoxEmulator"]
 
 
+def format_error(code: int) -> str:
+    return f"Err{abs(code):d}"
+
+
 class ShuntBoxEmulator(Emulator):
 
     IDENTITY: str = "ShuntBox, v1.0 (Emulator)"
@@ -26,7 +30,7 @@ class ShuntBoxEmulator(Emulator):
 
     @message(r'\*IDN\?')
     def get_idn(self):
-        return self.IDENTITY
+        return self.options.get("identity", self.IDENTITY)
 
     @message(r'GET:UP \?')
     def get_up(self):
@@ -61,7 +65,7 @@ class ShuntBoxEmulator(Emulator):
 
     @message(r'.*')
     def unknown_message(self):
-        return "Err99"
+        return format_error(99)
 
 
 if __name__ == "__main__":

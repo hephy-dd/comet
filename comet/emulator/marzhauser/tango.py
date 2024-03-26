@@ -1,5 +1,7 @@
 """TANGO emulator."""
 
+from typing import Dict
+
 from comet.emulator import Emulator, message, run
 
 __all__ = ["TangoEmulator"]
@@ -8,32 +10,32 @@ __all__ = ["TangoEmulator"]
 class TangoEmulator(Emulator):
     """TANGO emulator."""
 
-    version_string = "TANGO-MINI3-EMULATOR, Version 1.00, Mar 11 2022, 13:51:01"
+    VERSION: str = "TANGO-MINI3-EMULATOR, Version 1.00, Mar 11 2022, 13:51:01"
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
-        self.position = {"x": 0.0, "y": 0.0, "z": 0.0}
-        self.calst = {"x": 3, "y": 3, "z": 3}
-        self.statusaxis = {"x": "@", "y": "@", "z": "@"}
-        self.velocity = {"x": 10.0, "y": 10.0, "z": 10.0}
-        self.autostatus = True
+        self.position: Dict[str, float] = {"x": 0.0, "y": 0.0, "z": 0.0}
+        self.calst: Dict[str, int] = {"x": 3, "y": 3, "z": 3}
+        self.statusaxis: Dict[str, str] = {"x": "@", "y": "@", "z": "@"}
+        self.velocity: Dict[str, float] = {"x": 10.0, "y": 10.0, "z": 10.0}
+        self.autostatus: bool = True
 
     # Controller informations
 
     @message(r'^\??version$')
-    def get_version(self):
-        return type(self).version_string
+    def get_version(self) -> str:
+        return format(self.options.get("version", self.VERSION))
 
     @message(r'^\?autostatus$')
-    def get_autostatus(self):
-        return f"{self.autostatus:d}"
+    def get_autostatus(self) -> str:
+        return format(self.autostatus, "d")
 
     @message(r'^\!autostatus (0|1)$')
-    def set_autostatus(self, value):
+    def set_autostatus(self, value) -> None:
         self.autostatus = {"0": False, "1": True}[value]
 
     @message(r'^\??err$')
-    def get_error(self):
+    def get_error(self) -> str:
         return "0"
 
     # Calibration
@@ -67,14 +69,14 @@ class TangoEmulator(Emulator):
             return "D"
 
     @message(r'^\??calst$')
-    def get_calst(self):
+    def get_calst(self) -> str:
         x = self.calst.get("x", 0)
         y = self.calst.get("y", 0)
         z = self.calst.get("z", 0)
         return f"{x:d} {y:d} {z:d}"
 
     @message(r'^\?calst (x|y|z)$')
-    def get_calst_xyz(self, axis):
+    def get_calst_xyz(self, axis) -> str:
         value = self.calst.get(axis, 0)
         return f"{value:d}"
 

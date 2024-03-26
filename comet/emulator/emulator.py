@@ -106,7 +106,7 @@ def option_type(value: str) -> Tuple[str, str]:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--hostname", default="", help="hostname, default is localhost")
+    parser.add_argument("--hostname", default="", help="hostname, default is 'localhost'")
     parser.add_argument("-p", "--port", type=int, default=10000, help="port, default is 10000")
     parser.add_argument("-t", "--termination", default="\r\n", help="message termination, default is '\\r\\n'")
     parser.add_argument("-d", "--request-delay", type=float, default=0.1, help="delay between requests in seconds, default is 0.1 sec")

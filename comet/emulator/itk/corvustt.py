@@ -2,6 +2,7 @@
 
 import random
 import time
+from typing import List
 
 from comet.emulator import Emulator, message, run
 
@@ -11,34 +12,34 @@ __all__ = ["CorvusTTEmulator"]
 class CorvusTTEmulator(Emulator):
     """Corvus TT (Venus-1) emulator."""
 
-    IDENTITY = "Corvus 0 0 0 0"
-    VERSION = "1.0"
-    MAC_ADDR = "00:00:00:00:00:00"
-    SERIAL_NO = "01011234"
+    IDENTITY: str = "Corvus 0 0 0 0"
+    VERSION: str = "1.0"
+    MAC_ADDR: str = "00:00:00:00:00:00"
+    SERIAL_NO: str = "01011234"
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
-        self.x_pos = 0.0
-        self.y_pos = 0.0
-        self.z_pos = 0.0
+        self.x_pos: float = 0.0
+        self.y_pos: float = 0.0
+        self.z_pos: float = 0.0
 
-        self.x_unit = 1
-        self.y_unit = 1
-        self.z_unit = 1
+        self.x_unit: int = 1
+        self.y_unit: int = 1
+        self.z_unit: int = 1
 
         self.table_limits = [0.0, 0.0, 0.0, 1000000.0, 100000.0, 25000.0]
 
-        self.getcaldone = [3, 3, 3]
-        self.getaxis = [1, 1, 1]
-        self.geterror = 0
-        self.getmerror = 0
+        self.getcaldone: List[int] = [3, 3, 3]
+        self.getaxis: List[int] = [1, 1, 1]
+        self.geterror: int = 0
+        self.getmerror: int = 0
 
-        self.joystick = False
+        self.joystick: bool = False
 
-        self.status = 0
+        self.status: int = 0
 
-        self.ticks_t0 = time.monotonic()
+        self.ticks_t0: float = time.monotonic()
 
     @message(r'^identify$')
     def get_identify(self):
@@ -62,7 +63,9 @@ class CorvusTTEmulator(Emulator):
 
     @message(r'^getticks|gt$')
     def get_ticks(self):
-        return int((time.monotonic() - self.ticks_t0) * (1 / 250e-6))  # 250us ticks
+        dt = time.monotonic() - self.ticks_t0
+        ticks = int(dt * (1 / 250e-6))  # 250us ticks
+        return f"{ticks:d}"
 
     @message(r'^(\d)\s+beep$')
     def set_beep(self, millisec):
@@ -75,7 +78,7 @@ class CorvusTTEmulator(Emulator):
 
     @message(r'^status|st$')
     def get_status(self):
-        return self.status
+        return f"{self.status:d}"
 
     @message(r'^pos|p$')
     def get_pos(self):
@@ -148,18 +151,18 @@ class CorvusTTEmulator(Emulator):
 
     @message(r'^getjoystick|gj$')
     def get_joystick(self):
-        return int(self.joystick)
+        return f"{self.joystick:d}"
 
     @message(r'^(-1|1|2|3)\s+getunit$')
     def get_unit(self, axis):
         if axis == "-1":
-            return f'{self.x_unit} {self.y_unit} {self.z_unit} 1'
+            return f"{self.x_unit} {self.y_unit} {self.z_unit} 1"
         if axis == "1":
-            return f'{self.x_unit}'
+            return f"{self.x_unit}"
         if axis == "2":
-            return f'{self.y_unit}'
+            return f"{self.y_unit}"
         if axis == "3":
-            return f'{self.z_unit}'
+            return f"{self.z_unit}"
 
     @message(r'^(\d)\s+(1|2|3)\s+setunit$')
     def set_unit(self, value, axis):

@@ -10,19 +10,19 @@ __all__ = ["HydraEmulator"]
 class HydraEmulator(Emulator):
     """Hydra (Venus-3) emulator."""
 
-    IDENTITY = "Hydra 0 0 0 0"
-    VERSION = "1.0"
-    MAC_ADDR = "00:00:00:00:00:00"
-    SERIAL_NO = "01010042"
+    IDENTITY: str = "Hydra 0 0 0 0"
+    VERSION: str = "1.0"
+    MAC_ADDR: str = "00:00:00:00:00:00"
+    SERIAL_NO: str = "01010042"
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
         self.pos = {"1": 0.0, "2": 0.0}
         self.calibrate = {"1": 3, "2": 3}
 
-        self.axes_moving = 0
-        self.manual_move = 0
+        self.axes_moving: int = 0
+        self.manual_move: int = 0
 
     @message(r'^identify$')
     def get_identify(self):

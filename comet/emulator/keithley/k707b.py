@@ -1,18 +1,18 @@
-from typing import Set
+from typing import List, Set
 
 from comet.emulator import IEC60488Emulator, message, run
-from comet.emulator.utils import tsp_print
+from comet.emulator.utils import tsp_print, Error
 from comet.utils import combine_matrix
 
 
 class K707BEmulator(IEC60488Emulator):
 
-    IDENTITY = "Keithley Inc., Model 707B, 43768438, v1.0 (Emulator)"
+    IDENTITY: str = "Keithley Inc., Model 707B, 43768438, v1.0 (Emulator)"
     CHANNELS = combine_matrix("1234", "ABCDEFGH", (format(i, "02d") for i in range(1, 13)))
 
     def __init__(self) -> None:
         super().__init__()
-        self.error_queue: list = []
+        self.error_queue: List[Error] = []
         self.closed_channels: Set[str] = set()
 
     @message(r'^reset\(\)|\*RST$')
@@ -29,14 +29,15 @@ class K707BEmulator(IEC60488Emulator):
 
     @message(tsp_print(r'errorqueue\.count'))
     def get_errorqueue_count(self):
-        return len(self.error_queue)
+        return format(len(self.error_queue), "d")
 
     @message(tsp_print(r'errorqueue\.next\(\)'))
     def get_errorqueue_next(self):
         if self.error_queue:
-            code, message = self.error_queue.pop(0)
-            return f"{code}, \"{message}\", 0, 0"
-        return "0, \"Queue is Empty\", 0, 0"
+            error = self.error_queue.pop(0)
+        else:
+            error = Error(0, "Queue is Empty")
+        return f"{error.code}, \"{error.message}\", 0, 0"
 
     @message(tsp_print(r'channel\.getclose\(([^\)]+)\)'))
     def get_channel_getclose(self, channels):
@@ -61,7 +62,7 @@ class K707BEmulator(IEC60488Emulator):
 
     @message(r'^(.*)$')
     def unknown_message(self, v):
-        self.error_queue.append((101, "malformed command"))
+        self.error_queue.append(Error(101, "malformed command"))
 
 
 if __name__ == "__main__":

@@ -14,7 +14,8 @@ def format_error(code: int) -> str:
 
 class EnvironBoxEmulator(Emulator):
 
-    IDENTITY: str = "EnvironBox, v1.0 (Emulator)"
+    IDENTITY: str = "EnvironBox, v2.0 (Emulator)"
+    VERSION: str = "V2.0"
     SUCCESS: str = "OK"
     PC_DATA_SIZE: int = 39
     SENSOR_ADRESSES: List[int] = [40, 41, 42, 43, 44, 45]
@@ -172,7 +173,7 @@ class EnvironBoxEmulator(Emulator):
 
     @message(r"\*IDN\?")
     def get_idn(self):
-        return type(self).IDENTITY
+        return self.options.get("identity", self.IDENTITY)
 
     # @message(r"\*RST")
     # def set_reset(self):
@@ -537,7 +538,7 @@ class EnvironBoxEmulator(Emulator):
 
     @message(r"GET:VERSION \?")
     def get_version(self):
-        return "V2.0"
+        return self.options.get("version", self.VERSION)
 
     @message(r".*")
     def unknown_message(self):

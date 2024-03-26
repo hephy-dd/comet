@@ -20,7 +20,7 @@ def emulator():
 
 
 def test_basic(emulator):
-    assert emulator("*IDN?") == "EnvironBox, v1.0 (Emulator)"
+    assert emulator("*IDN?") == "EnvironBox, v2.0 (Emulator)"
     # assert emulator("*RST") == "OK"
 
 

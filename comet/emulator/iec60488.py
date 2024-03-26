@@ -8,11 +8,11 @@ __all__ = ["IEC60488Emulator"]
 
 class IEC60488Emulator(Emulator):
 
-    IDENTITY = "Generic IEC60488 Instrument (Emulator)"
+    IDENTITY: str = "Generic IEC60488 Instrument (Emulator)"
 
     @message(r"\*IDN\?")
     def get_idn(self):
-        return type(self).IDENTITY
+        return self.options.get("identity", self.IDENTITY)
 
     @message(r"\*ESR\?")
     def get_esr(self):
