@@ -66,7 +66,7 @@ with rm.open_resource("TCPIP::0.0.0.0::11001::SOCKET") as res:
     smu = smu_drivers.get(driver_name)(res)
 ```
 
-See [comet/driver](comet/driver) for available instrument drivers.
+See [comet/driver](src/comet/driver) for available instrument drivers.
 
 ## Helpers
 
@@ -198,7 +198,7 @@ Use command line argument `-f` to use a custom configuration file.
 python -m comet.emulator -f custom_emulators.yaml
 ```
 
-See [comet/emulator](comet/emulator) for available instrument emulators.
+See [comet/emulator](src/comet/emulator) for available instrument emulators.
 
 ## License
 
