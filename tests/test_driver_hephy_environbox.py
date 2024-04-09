@@ -47,6 +47,42 @@ def test_discharge(driver, resource):
     assert resource.buffer == ["SET:DISCHARGE OFF"]
 
 
+def test_pid_control(driver, resource):
+    resource.buffer = ["OK"]
+    assert driver.set_pid_control(driver.PID_CONTROL_ON) is None
+    assert resource.buffer == ["SET:CTRL ON"]
+
+    resource.buffer = ["OK"]
+    assert driver.set_pid_control(driver.PID_CONTROL_OFF) is None
+    assert resource.buffer == ["SET:CTRL OFF"]
+
+    resource.buffer = ["0"]
+    assert driver.get_pid_control() == driver.PID_CONTROL_OFF
+    assert resource.buffer == ["GET:CTRL ?"]
+
+    resource.buffer = ["1"]
+    assert driver.get_pid_control() == driver.PID_CONTROL_ON
+    assert resource.buffer == ["GET:CTRL ?"]
+
+
+def test_pid_control_mode(driver, resource):
+    resource.buffer = ["OK"]
+    assert driver.set_pid_control_mode(driver.PID_CONTROL_MODE_HUM) is None
+    assert resource.buffer == ["SET:CTRL_MODE HUM"]
+
+    resource.buffer = ["OK"]
+    assert driver.set_pid_control_mode(driver.PID_CONTROL_MODE_DEW) is None
+    assert resource.buffer == ["SET:CTRL_MODE DEW"]
+
+    resource.buffer = ["0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"]
+    assert driver.get_pid_control_mode() == driver.PID_CONTROL_MODE_HUM
+    assert resource.buffer == ["GET:PC_DATA ?"]
+
+    resource.buffer = ["0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"]
+    assert driver.get_pid_control_mode() == driver.PID_CONTROL_MODE_DEW
+    assert resource.buffer == ["GET:PC_DATA ?"]
+
+
 def test_environment(driver, resource):
     resource.buffer = ["30.1"]
     assert driver.get_box_humidity() == 30.1
@@ -97,6 +133,48 @@ def test_box_light(driver, resource):
     assert resource.buffer == ["SET:BOX_LIGHT OFF"]
 
 
+def test_pid_door_stop(driver, resource):
+    resource.buffer = ["OK"]
+    assert driver.set_pid_door_stop(driver.PID_DOOR_STOP_ON) is None
+    assert resource.buffer == ["SET:PID_DOOR_STOP ON"]
+
+    resource.buffer = ["OK"]
+    assert driver.set_pid_door_stop(driver.PID_DOOR_STOP_OFF) is None
+    assert resource.buffer == ["SET:PID_DOOR_STOP OFF"]
+
+    resource.buffer = ["1"]
+    assert driver.get_pid_door_stop() == driver.PID_DOOR_STOP_OFF
+    assert resource.buffer == ["GET:PID_DOOR_STOP ?"]
+
+    resource.buffer = ["2"]
+    assert driver.get_pid_door_stop() == driver.PID_DOOR_STOP_ON
+    assert resource.buffer == ["GET:PID_DOOR_STOP ?"]
+
+
+def test_door_auto_light(driver, resource):
+    resource.buffer = ["OK"]
+    assert driver.set_door_auto_light(driver.DOOR_AUTO_LIGHT_ON) is None
+    assert resource.buffer == ["SET:DOOR_AUTO_LIGHT ON"]
+
+    resource.buffer = ["OK"]
+    assert driver.set_door_auto_light(driver.DOOR_AUTO_LIGHT_OFF) is None
+    assert resource.buffer == ["SET:DOOR_AUTO_LIGHT OFF"]
+
+    resource.buffer = ["1"]
+    assert driver.get_door_auto_light() == driver.DOOR_AUTO_LIGHT_OFF
+    assert resource.buffer == ["GET:DOOR_AUTO_LIGHT ?"]
+
+    resource.buffer = ["2"]
+    assert driver.get_door_auto_light() == driver.DOOR_AUTO_LIGHT_ON
+    assert resource.buffer == ["GET:DOOR_AUTO_LIGHT ?"]
+
+
+def test_uptime(driver, resource):
+    resource.buffer = ["00,08,42,01"]
+    assert driver.get_uptime() == 31321.0
+    assert resource.buffer == ["GET:UPTIME ?"]
+
+
 def test_parse_pc_data():
     response = "2,1.23,2.34,11.1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,85,1,0,0,0,0,0,0,3.45,0.21,0.23,0.34,0,1,1,0"
     data = parse_pc_data(response)
@@ -113,7 +191,7 @@ def test_parse_pc_data():
     assert data["pid_kd_1"] == 0.
     assert data["pid_min"] == 0
     assert data["pid_max"] == 0
-    assert data["pid_control_mode"] == "1"
+    assert data["pid_control_mode"] == 1
     assert data["pid_kp_2"] == 0.
     assert data["pid_ki_2"] == 0.
     assert data["pid_kd_2"] == 0.
@@ -142,6 +220,6 @@ def test_parse_pc_data():
     assert data["pt100_1"] == 0.23
     assert data["pt100_2"] == 0.34
     assert data["pid_sample_time"] == 0.
-    assert data["pid_drop_mode"] == "1"
+    assert data["pid_prop_mode"] == 1
     assert data["pt100_1_enabled"] == True
     assert data["pt100_2_enabled"] == False

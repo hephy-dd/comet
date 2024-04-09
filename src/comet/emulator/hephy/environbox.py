@@ -1,5 +1,6 @@
 import random
-from typing import Dict, List
+import time
+from typing import Dict, List, Tuple
 
 from comet.emulator import Emulator
 from comet.emulator import message, run
@@ -12,6 +13,13 @@ def format_error(code: int) -> str:
     return f"Err{abs(code):d}"
 
 
+def split_seconds(delta_seconds: float) -> Tuple[int, int, int, int]:
+    days, remainder = divmod(delta_seconds, 60 * 60 * 24)
+    hours, remainder = divmod(remainder, 60 * 60)
+    minutes, seconds = divmod(remainder, 60)
+    return int(days), int(hours), int(minutes), int(seconds)
+
+
 class EnvironBoxEmulator(Emulator):
 
     IDENTITY: str = "EnvironBox, v2.0 (Emulator)"
@@ -22,7 +30,11 @@ class EnvironBoxEmulator(Emulator):
 
     def __init__(self) -> None:
         super().__init__()
-        self.sensor_address: int = 40
+        self.boot_timestamp: float = time.time()
+
+        self.sensor_address: List[int] = [40, 41, 42]
+        self.free_memory: int = 1081
+        self.debug_mode: bool = False
         self.discharge: str = "OFF"
         self.sensor_count: int = 2
 
@@ -37,6 +49,7 @@ class EnvironBoxEmulator(Emulator):
 
         self.door_open: bool = False
         self.laser_enabled: bool = False
+        self.laser_power: bool = True
         self.safety_alert: bool = False
 
         self.test_led: bool = False
@@ -54,15 +67,30 @@ class EnvironBoxEmulator(Emulator):
         self.pid_min: int = 10
         self.pid_max: int = 560
         self.pid_sample_time: int = 100
-        self.pid_drop_mode: str = "M"
+        self.pid_prop_mode: str = "M"
         self.pid_threshold: int = 0
         self.parameter_set: int = 1
         self.parameter_threshold: float = 25.5
         self.dac: int = 25
 
-        # self.env_ii_pcb = False
-        # self.factory_default = False
-        # self.clear_log = False
+        self.hum_flow_direction: int = 0
+        self.stepper_motor_control: bool = False
+        self.air_flow_sensor: bool = False
+        self.vac_flow_sensor: bool = False
+        self.flow_rate: float = 0.0
+        self.valve_current: float = 2.25  # mA
+        self.valve_on: int = 1  # 1...7
+        self.env_ii_pcb: bool = True
+        self.pid_door_stop: bool = False
+        self.door_auto_light: bool = False
+
+    @property
+    def pid_control_mode_index(self) -> int:
+        return {"HUM": 1, "DEW": 2}[self.pid_control_mode]
+
+    @property
+    def pid_prop_mode_index(self) -> int:
+        return {"M": 0, "E": 1}[self.pid_prop_mode]
 
     @property
     def box_temperature(self) -> float:
@@ -141,32 +169,37 @@ class EnvironBoxEmulator(Emulator):
         pc_data[3] = format(self.box_dewpoint, ".2F")
         pc_data[4] = format(self.pid_control, "d")
         pc_data[5] = format(self.pid_setpoint, ".1F")
-        pc_data[6] = format(0, ".1F")
-        pc_data[7] = format(0, ".2F")
+        pc_data[6] = format(9.2, ".1F")
+        pc_data[7] = format(49.0, ".2F")
         pc_data[8] = format(self.pid_kp, ".6F")
         pc_data[9] = format(self.pid_ki, ".6F")
         pc_data[10] = format(self.pid_kd, ".6F")
-        pc_data[11] = format(0, ".2F")
-        pc_data[12] = format(0, ".2F")
-        pc_data[13] = "1"  # format(self.pid_control_mode)  # TODO
+        pc_data[11] = format(1700, ".2F")
+        pc_data[12] = format(10, ".2F")
+        pc_data[13] = format(self.pid_control_mode_index, "d")
         pc_data[14] = format(self.pid_kp2, ".6F")
         pc_data[15] = format(self.pid_ki2, ".6F")
         pc_data[16] = format(self.pid_kd2, ".6F")
-        pc_data[17] = "1"
-        pc_data[18] = format(0, ".2F")
-        pc_data[20] = format(0, ".2F")
-        pc_data[21] = format(0, ".2F")
+        pc_data[17] = format(self.parameter_set, "d")
+        pc_data[18] = format(self.parameter_threshold, ".2F")
+        pc_data[19] = format(self.hum_flow_direction, "d")
+        pc_data[20] = format(self.pid_threshold, ".2F")
+        pc_data[21] = format(self.valve_current, ".2F")
+        pc_data[22] = format(self.valve_on, "d")
         pc_data[23] = format(self.power_relay_states(), "d")
         pc_data[24] = format(self.box_light, "d")
         pc_data[25] = format(self.door_open, "d")
         pc_data[26] = format(self.safety_alert, "d")
+        pc_data[27] = format(self.stepper_motor_control, "d")
+        pc_data[28] = format(self.air_flow_sensor, "d")
+        pc_data[29] = format(self.vac_flow_sensor, "d")
         pc_data[30] = format(self.test_led, "d")
         pc_data[31] = format(self.discharge_time, "d")
         pc_data[32] = format(self.box_lux, ".1F")
         pc_data[33] = format(self.pt100_1, ".2F")
         pc_data[34] = format(self.pt100_2, ".2F")
-        pc_data[36] = format(self.pid_sample_time, "d")
-        pc_data[36] = "1"  # format(self.pid_drop_mode)  # TODO
+        pc_data[35] = format(self.pid_sample_time, "d")
+        pc_data[36] = format(self.pid_prop_mode_index, "d")
         pc_data[37] = format(self.pt100_1_enabled, "d")
         pc_data[38] = format(self.pt100_2_enabled, "d")
         return pc_data
@@ -175,20 +208,12 @@ class EnvironBoxEmulator(Emulator):
     def get_idn(self):
         return self.options.get("identity", self.IDENTITY)
 
-    # @message(r"\*RST")
-    # def set_reset(self):
-    #     return self.SUCCESS
-
-    # @message(r"\*CLS")
-    # def set_clear(self):
-    #     return self.SUCCESS
-
     @message(r"SET:NEW_ADDR (\d+)")
     def set_new_addr(self, address):
         value = int(address)
         if value not in type(self).SENSOR_ADRESSES:
             return format_error(14)
-        self.sensor_address = value
+        self.sensor_address[0] = value
         return self.SUCCESS
 
     @message(r"SET:TEST_LED (ON|OFF)")
@@ -242,7 +267,7 @@ class EnvironBoxEmulator(Emulator):
 
     @message(r"GET:CTRL \?")
     def get_ctrl(self):
-        return "1" if self.pid_control else "0"
+        return format(self.pid_control, "d")
 
     @message(r"SET:CTRL_MODE (HUM|DEW)")
     def set_ctrl_mode(self, mode):
@@ -361,13 +386,13 @@ class EnvironBoxEmulator(Emulator):
         return format(self.pid_sample_time, "d")
 
     @message(r"SET:PID_PROP_MODE (M|E)")
-    def set_pid_drop_mode(self, mode):
-        self.pid_drop_mode = mode
+    def set_pid_prop_mode(self, mode):
+        self.pid_prop_mode = mode
         return self.SUCCESS
 
     @message(r"GET:PID_PROP_MODE \?")
-    def get_pid_drop_mode(self):
-        return "1"  # self.pid_drop_mode  # TODO
+    def get_pid_prop_mode(self):
+        return self.pid_prop_mode_index
 
     @message(r"SET:PID_THRESHOLD (\d+)")
     def set_pid_threshold(self, value):
@@ -394,6 +419,10 @@ class EnvironBoxEmulator(Emulator):
         except Exception:
             return format_error(38)
         return self.SUCCESS
+
+    @message(r"GET:PARA_THRESHOLD \?")
+    def get_parameter_threshold(self):
+        return format(self.parameter_threshold, ".2F")
 
     @message(r"SET:DAC (\d+)")
     def set_dac(self, value):
@@ -443,7 +472,7 @@ class EnvironBoxEmulator(Emulator):
 
     @message(r"GET:PROBCARD_CAM \?")
     def get_probecard_camera(self):
-        return format(int(self.probecard_camera))
+        return format(self.probecard_camera, "d")
 
     @message(r"SET:LASER_SENSOR (ON|OFF)")
     def set_laser_sensor(self, value):
@@ -459,36 +488,50 @@ class EnvironBoxEmulator(Emulator):
     def get_box_light(self):
         return format(self.box_light, "d")
 
-    # @message(r'SET:ENV_II_PCB (YES|NO)')
-    # def set_env_ii_pcb(self, value):
-    #     self.env_ii_pcb = value == 'YES'
-    #     return self.SUCCESS
+    @message(r'SET:ENV_II_PCB (YES|NO)')
+    def set_env_ii_pcb(self, value):
+        self.env_ii_pcb = value == "YES"
+        return self.SUCCESS
 
-    # @message(r'SET:FACTORY_DEFAULT (YES|NO)')
-    # def set_factory_default(self, value):
-    #     self.factory_default = value == 'YES'
-    #     return self.SUCCESS
+    @message(r"SET:PID_DOOR_STOP (ON|OFF)")
+    def set_pid_door_stop(self, value):
+        self.pid_door_stop = value == "ON"
+        return self.SUCCESS
 
-    # @message(r'SET:CLEAR_LOG (YES|NO)')
-    # def set_clear_log(self, value):
-    #     self.clear_log = value == 'YES'
-    #     return self.SUCCESS
+    @message(r"GET:PID_DOOR_STOP \?")
+    def get_pid_door_stop(self):
+        return format(int(self.pid_door_stop) + 1, "d")  # [1=OFF,2=ON]
 
-    # @message(r'SET:CLOCK \d\d:\d\d:\d\d_\d\d\.\d\d\.\d\d\d\d')
-    # def set_clock(self):
-    #     return self.SUCCESS
+    @message(r"SET:DOOR_AUTO_LIGHT (ON|OFF)")
+    def set_door_auto_light(self, value):
+        self.door_auto_light = value == "ON"
+        return self.SUCCESS
 
-    @message(r'GET:CHIP_ADDR (1|2)')
-    def get_chip_addr(self):
-        return format(self.sensor_address, "d")
+    @message(r"GET:DOOR_AUTO_LIGHT \?")
+    def get_door_auto_light(self):
+        return format(int(self.door_auto_light) + 1, "d")  # [1=OFF,2=ON]
 
-    # @message(r'GET:DATA \d')
-    # def get_data(self):
-    #     return self.SUCCESS
+    @message(r'SET:DEBUG_MODE (ON|OFF)\?')
+    def set_debug_mode(self, value):
+        self.debug_mode = value == "ON"
 
-    # @message(r'GET:DATA_BOX \?')
-    # def get_data_box(self):
-    #     return 'TODO'
+    @message(r'GET:DEBUG_MODE \?')
+    def get_debug_mode(self):
+        return format(int(self.debug_mode) + 1, "d")  # [1=Off/2=On]
+
+    @message(r'GET:FREE_MEMORY \?')
+    def get_free_memory(self):
+        return format(self.free_memory, "d")
+
+    @message(r'GET:UPTIME \?')
+    def get_uptime(self):
+        delta_seconds = time.time() - self.boot_timestamp
+        days, hours, minutes, seconds = split_seconds(delta_seconds)
+        return f"{days:02d},{hours:02d},{minutes:02d},{seconds:02d}"
+
+    @message(r'GET:CHIP_ADDR (1|2|3)')
+    def get_chip_addr(self, value):
+        return format(self.sensor_address[int(value) - 1], "d")
 
     @message(r'GET:CHIP_NBR \?')
     def get_chip_nbr(self):
@@ -496,19 +539,23 @@ class EnvironBoxEmulator(Emulator):
 
     @message(r"GET:TEMP \?")
     def get_temp(self):
-        return format(self.box_temperature, ".1F")
+        return format(self.box_temperature, ".2F")
 
     @message(r"GET:HUM \?")
     def get_hum(self):
-        return format(self.box_humidity, ".1F")
+        return format(self.box_humidity, ".2F")
 
     @message(r"GET:LUX \?")
     def get_lux(self):
         return format(self.box_lux, ".1F")
 
+    @message(r"GET:FLOW_RATE \?")
+    def get_flow_rate(self):
+        return format(self.flow_rate, ".1F")
+
     @message(r"GET:VALVE_ON \?")
     def get_valve_on(self):
-        return "0"
+        return format(self.valve_on, "d")
 
     @message(r"GET:DOOR \?")
     def get_door(self):
@@ -517,6 +564,10 @@ class EnvironBoxEmulator(Emulator):
     @message(r"GET:LASER \?")
     def get_laser(self):
         return format(int(self.laser_enabled))
+
+    @message(r"GET:LASER_POWER \?")
+    def get_laser_power(self):
+        return format(self.laser_power, "d")
 
     @message(r"GET:PC_DATA \?")
     def get_pc_data(self):

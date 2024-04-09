@@ -49,7 +49,7 @@ def parse_pc_data(response: str) -> Dict[str, Any]:
         "pid_kd_1": float(values[10]),
         "pid_min": float(values[11]),
         "pid_max": float(values[12]),
-        "pid_control_mode": values[13],
+        "pid_control_mode": int(values[13]),
         "pid_kp_2": float(values[14]),
         "pid_ki_2": float(values[15]),
         "pid_kd_2": float(values[16]),
@@ -78,7 +78,7 @@ def parse_pc_data(response: str) -> Dict[str, Any]:
         "pt100_1": float(values[33]),
         "pt100_2": float(values[34]),
         "pid_sample_time": float(values[35]),
-        "pid_drop_mode": values[36],
+        "pid_prop_mode": int(values[36]),
         "pt100_1_enabled": bool(int(values[37])),
         "pt100_2_enabled": bool(int(values[38])),
     }
@@ -112,6 +112,38 @@ class EnvironBox(Instrument):
     def set_discharge(self, state: bool) -> None:
         value = {self.DISCARGE_OFF: "OFF", self.DISCARGE_ON: "ON"}[state]
         self.write(f"SET:DISCHARGE {value}")
+
+    PID_CONTROL_OFF: bool = False
+    PID_CONTROL_ON: bool = True
+
+    def get_pid_control(self) -> bool:
+        return bool(int(self.query("GET:CTRL ?")))
+
+    def set_pid_control(self, state: bool) -> None:
+        value = {self.PID_CONTROL_OFF: "OFF", self.PID_CONTROL_ON: "ON"}[state]
+        self.write(f"SET:CTRL {value}")
+
+    PID_CONTROL_MODE_HUM: str = "HUM"
+    PID_CONTROL_MODE_DEW: str = "DEW"
+
+    def get_pid_control_mode(self) -> str:
+        value = self.get_data()["pid_control_mode"]
+        return {1: self.PID_CONTROL_MODE_HUM, 2: self.PID_CONTROL_MODE_DEW}[value]
+
+    def set_pid_control_mode(self, mode: str) -> None:
+        value = {self.PID_CONTROL_MODE_HUM: "HUM", self.PID_CONTROL_MODE_DEW: "DEW"}[mode]
+        self.write(f"SET:CTRL_MODE {value}")
+
+    PID_DOOR_STOP_OFF: bool = False
+    PID_DOOR_STOP_ON: bool = True
+
+    def get_pid_door_stop(self) -> bool:
+        value = self.query("GET:PID_DOOR_STOP ?")
+        return {"1": self.PID_DOOR_STOP_OFF, "2": self.PID_DOOR_STOP_ON}[value]  # [1=OFF,2=ON]
+
+    def set_pid_door_stop(self, state: bool) -> None:
+        value = {self.PID_DOOR_STOP_OFF: "OFF", self.PID_DOOR_STOP_ON: "ON"}[state]
+        self.write(f"SET:PID_DOOR_STOP {value}")
 
     def get_box_humidity(self) -> float:
         return float(self.query("GET:HUM ?"))
@@ -149,8 +181,8 @@ class EnvironBox(Instrument):
     MICROSCOPE_LIGHT_ON: bool = True
 
     def get_microscope_light(self) -> bool:
-        value = self.get_data().get("power_microscope_light")
-        return {"0": self.BOX_LIGHT_OFF, "1": self.BOX_LIGHT_ON}[value]
+        value = self.get_data()["power_microscope_light"]
+        return {False: self.BOX_LIGHT_OFF, True: self.BOX_LIGHT_ON}[value]
 
     def set_microscope_light(self, state: bool) -> None:
         value = {self.BOX_LIGHT_OFF: "OFF", self.BOX_LIGHT_ON: "ON"}[state]
@@ -160,8 +192,8 @@ class EnvironBox(Instrument):
     PROBECARD_LIGHT_ON: bool = True
 
     def get_probecard_light(self) -> bool:
-        value = self.get_data().get("power_probecard_light")
-        return {"0": self.BOX_LIGHT_OFF, "1": self.BOX_LIGHT_ON}[value]
+        value = self.get_data()["power_probecard_light"]
+        return {False: self.BOX_LIGHT_OFF, True: self.BOX_LIGHT_ON}[value]
 
     def set_probecard_light(self, state: bool) -> None:
         value = {self.BOX_LIGHT_OFF: "OFF", self.BOX_LIGHT_ON: "ON"}[state]
@@ -171,15 +203,38 @@ class EnvironBox(Instrument):
     TEST_LED_ON: bool = True
 
     def get_test_led(self) -> bool:
+        """Get state of test LED."""
         value = self.query("GET:TEST_LED ?")
         return {"0": self.TEST_LED_OFF, "1": self.TEST_LED_ON}[value]
 
     def set_test_led(self, state: bool) -> None:
+        """Set test LED state."""
         value = {self.TEST_LED_OFF: "OFF", self.TEST_LED_ON: "ON"}[state]
         self.write(f"SET:TEST_LED {value}")
 
-    def get_data(self):
+    DOOR_AUTO_LIGHT_OFF: bool = False
+    DOOR_AUTO_LIGHT_ON: bool = True
+
+    def get_door_auto_light(self) -> bool:
+        """Get state of door automatic light switch."""
+        value = self.query("GET:DOOR_AUTO_LIGHT ?")
+        return {"1": self.DOOR_AUTO_LIGHT_OFF, "2": self.DOOR_AUTO_LIGHT_ON}[value]  # [1=OFF,2=ON]
+
+    def set_door_auto_light(self, state: bool) -> None:
+        """Set door automatic light switch state."""
+        value = {self.DOOR_AUTO_LIGHT_OFF: "OFF", self.DOOR_AUTO_LIGHT_ON: "ON"}[state]
+        self.write(f"SET:DOOR_AUTO_LIGHT {value}")
+
+    def get_data(self) -> Dict[str, Any]:
+        """Return dictionary of PC_DATA."""
         return parse_pc_data(self.query("GET:PC_DATA ?"))
+
+    def get_uptime(self) -> float:
+        """Return Arduino uptime in seconds."""
+        value = self.query("GET:UPTIME ?")
+        days, hours, minutes, seconds = map(int, value.split(","))
+        total_seconds = (days * 24 * 60 * 60) + (hours * 60 * 60) + (minutes * 60) + seconds
+        return float(total_seconds)
 
     # Helper
 
