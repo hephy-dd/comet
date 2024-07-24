@@ -7,6 +7,12 @@ from typing import Callable, Iterable, List, Optional, Tuple, Union
 __all__ = ["TCPRequestHandler", "TCPServer", "TCPServerThread", "TCPServerContext"]
 
 
+def split_data(data: str, terminator: str) -> List[str]:
+    if terminator:
+        return data.split(terminator)
+    return [data]
+
+
 class TCPRequestHandler(socketserver.BaseRequestHandler):
 
     def read_messages(self) -> Optional[List[str]]:
@@ -14,7 +20,7 @@ class TCPRequestHandler(socketserver.BaseRequestHandler):
         if not data:
             return None
         self.server.context.logger.info("recv %s", bytes(data, "ascii"))  # type: ignore
-        return [line for line in data.split(self.server.context.termination) if line]  # type: ignore
+        return [line for line in split_data(data, self.server.context.termination) if line]  # type: ignore
 
     def send_messages(self, response: Union[str, Iterable[str]]) -> None:
         if isinstance(response, (list, tuple)):
