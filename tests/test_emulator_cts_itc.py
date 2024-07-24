@@ -38,6 +38,10 @@ def test_channels(emulator):
     assert re.match(r"A\? \-?\d+\.\d \-?\d+\.\d", emulator("A?"))
 
 
+def test_digital_channels(emulator):
+    assert emulator("O") == "O1000000000000"  # TODO
+
+
 def test_program(emulator):
     assert emulator("P") == "P000"
     assert emulator("P004") == "P004"
