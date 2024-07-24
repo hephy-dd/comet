@@ -105,6 +105,10 @@ class ITCEmulator(Emulator):
     def set_a(self):
         return "a"
 
+    @message(r'^O$')
+    def get_o(self):
+        return "O1000000000000"
+
     @message(r'^S$')
     def get_s(self):
         return "S11110100\x06"
