@@ -1,19 +1,16 @@
-from comet.driver import Driver
+from comet.driver.generic.light_source import LightSource
 
 __all__ = ["F3000"]
 
 
-class F3000Driver(Driver):
-    """Photonic LED light source base class"""
+class F3000(LightSource):
+    """Class for controlling Photonics F3000 LED light sources"""
 
     def __init__(self, resource):
+        super().__init__(resource)
         self.resource = resource
         self.resource.write_termination = "\r"
         self.resource.read_termination = "\r"
-
-
-class F3000(F3000Driver):
-    """Class for controlling Photonics F3000 LED light sources"""
 
     @property
     def brightness(self) -> int:
