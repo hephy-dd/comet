@@ -13,3 +13,4 @@ from .motion_controller import (
     MotionController,
     MotionControllerAxis,
 )
+from .light_source import LightSource
