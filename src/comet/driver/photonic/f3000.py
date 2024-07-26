@@ -35,13 +35,8 @@ class F3000(F3000Driver):
 
         Args:
             brightness (int): Brightness to set in percent
-
-        Raises:
-            ValueError: Brightness outside of range [0,100]
         """
-        brightness = int(brightness)
-        if brightness < 0 or brightness > 100:
-            raise ValueError("Brightness must be between 0 and 100")
+        brightness = max(0, min(100, brightness))
 
         self.resource.write(f"B{brightness}")
         self.resource.read()
