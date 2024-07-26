@@ -67,3 +67,8 @@ class F3000(LightSource):
             self.resource.write("S1")
 
         self.resource.read()
+
+    def identify(self):
+        """Acquire identification string"""
+        self.resource.write("V?")
+        return self.resource.read()

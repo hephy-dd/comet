@@ -22,3 +22,6 @@ class LightSource(Driver):
     @light_enabled.setter
     @abstractmethod
     def light_enabled(self, light_enabled: bool) -> None: ...
+
+    @abstractmethod
+    def identify(self) -> str: ...
