@@ -53,10 +53,7 @@ class Photonic(PhotonicDriver):
         Returns:
             str: State of light source (1 on, 0 off)
         """
-        # self.ser.write(b"s\r")
-        # response = self.ser.readline().decode("ascii").strip()
-        # response = int(response.replace("S", ""))
-
+        
         self.resource.write("S?")
         response = self.resource.read().replace("S", "")
 
