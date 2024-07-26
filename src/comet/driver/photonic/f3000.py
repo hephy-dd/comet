@@ -1,9 +1,9 @@
 from comet.driver import Driver
 
-__all__ = ["Photonic"]
+__all__ = ["F3000"]
 
 
-class PhotonicDriver(Driver):
+class F3000Driver(Driver):
     """Photonic LED light source base class"""
 
     def __init__(self, resource):
@@ -12,7 +12,7 @@ class PhotonicDriver(Driver):
         self.resource.read_termination = "\r"
 
 
-class Photonic(PhotonicDriver):
+class F3000(F3000Driver):
     """Class for controlling Photonics F3000 LED light sources"""
 
     @property
@@ -53,7 +53,7 @@ class Photonic(PhotonicDriver):
         Returns:
             str: State of light source (1 on, 0 off)
         """
-        
+
         self.resource.write("S?")
         response = self.resource.read().replace("S", "")
 
