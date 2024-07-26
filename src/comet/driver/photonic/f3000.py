@@ -43,10 +43,7 @@ class F3000(LightSource):
         self.resource.write("S?")
         response = self.resource.read().replace("S", "")
 
-        if int(response) == 1:
-            return 0
-        elif int(response) == 0:
-            return 1
+        return int(response) == 0
 
     @light_enabled.setter
     def light_enabled(self, light_enabled: bool):

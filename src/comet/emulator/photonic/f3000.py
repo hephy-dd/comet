@@ -20,7 +20,7 @@ class F3000Emulator(Emulator):
         return self.IDENTITY
 
     @message(r"^B(\d{1,3})$")
-    def set_brightness(self, brightness: str) -> None:
+    def set_brightness(self, brightness: int) -> None:
         brightness = max(0, min(int(brightness), 100))
         self.current_brightness = int(brightness)
 
