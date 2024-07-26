@@ -6,12 +6,6 @@ __all__ = ["F3000"]
 class F3000(LightSource):
     """Class for controlling Photonics F3000 LED light sources"""
 
-    def __init__(self, resource):
-        super().__init__(resource)
-        self.resource = resource
-        self.resource.write_termination = "\r"
-        self.resource.read_termination = "\r"
-
     @property
     def brightness(self) -> int:
         """Returns current brightness of light source
