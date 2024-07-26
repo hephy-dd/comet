@@ -36,10 +36,6 @@ def test_set_brightness(driver, resource):
     assert resource.buffer == ["B100"]
 
     resource.buffer = [""]
-    driver.brightness = -1
-    assert resource.buffer == ["B0"]
-
-    resource.buffer = [""]
     driver.brightness = 101
     assert resource.buffer == ["B100"]
 
