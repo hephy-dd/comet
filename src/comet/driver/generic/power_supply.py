@@ -1,5 +1,7 @@
 from abc import abstractmethod
 
+from typing import Iterator
+
 from .instrument import Driver, Instrument
 
 __all__ = ["PowerSupply", "PowerSupplyChannel"]
@@ -57,4 +59,4 @@ class PowerSupply(Instrument):
     def __getitem__(self, channel: int) -> PowerSupplyChannel: ...
 
     @abstractmethod
-    def __iter__(self) -> PowerSupplyChannel: ...
+    def __iter__(self) -> Iterator[PowerSupplyChannel]: ...
