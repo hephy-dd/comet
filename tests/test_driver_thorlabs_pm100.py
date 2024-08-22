@@ -11,8 +11,8 @@ def driver(resource):
 
 
 def test_basic(driver, resource):
-    resource.buffer = ["Keithley Model 6517B", "1", "1"]
-    assert driver.identify() == "Keithley Model 6517B"
+    resource.buffer = ["Thorlabs,PM100USB,P2004525,1.4.0", "1", "1"]
+    assert driver.identify() == "Thorlabs,PM100USB,P2004525,1.4.0"
     assert driver.reset() is None
     assert driver.clear() is None
 

@@ -52,20 +52,20 @@ class PM100(Instrument):
         self.write(f"SENSe:AVERage:COUNt {value}")
 
     @property
-    def wavelength(self) -> float:
+    def wavelength(self) -> int:
         """Get calibration wavelength
 
         Returns:
-            float: Calibration wavelength in nm
+            int: Calibration wavelength in nm
         """
-        return float(self.query("SENSe:CORRection:WAVelength?"))
+        return int(self.query("SENSe:CORRection:WAVelength?"))
 
     @wavelength.setter
-    def wavelength(self, value: float) -> None:
+    def wavelength(self, value: int) -> None:
         """Set calibration wavelength
 
         Args:
-            wavelength (float): Wavelength in nm
+            wavelength (int): Wavelength in nm
         """
 
         if value > 1100 or value < 350:
