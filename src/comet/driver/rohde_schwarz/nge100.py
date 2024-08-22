@@ -10,15 +10,6 @@ __all__ = ["NGE100", "NGE100Channel"]
 class NGE100Channel(PowerSupplyChannel):
     """Single channel of the NGE100 power supply"""
 
-    def identify(self) -> str:
-        return self.query("*IDN?") + ", Channel " + str(self.channel)
-
-    def reset(self) -> None:
-        self.write("*RST")
-
-    def clear(self) -> None:
-        self.write("*CLS")
-
     def next_error(self) -> Optional[InstrumentError]:
         code, message = self.query("SYSTem:ERRor?").split(", ")
         if int(code):
