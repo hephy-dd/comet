@@ -10,12 +10,6 @@ __all__ = ["NGE100", "NGE100Channel"]
 class NGE100Channel(PowerSupplyChannel):
     """Single channel of the NGE100 power supply"""
 
-    def next_error(self) -> Optional[InstrumentError]:
-        code, message = self.query("SYSTem:ERRor?").split(", ")
-        if int(code):
-            return InstrumentError(int(code), message.strip("'"))
-        return None
-
     @property
     def enabled(self) -> bool:
         value = int(self.query("OUTPut?"))
