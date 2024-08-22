@@ -46,11 +46,11 @@ class NGE100Channel(PowerSupplyChannel):
         self.write(f"SOURce:VOLTage:LEVel:IMMediate:AMPLitude {level}")
 
     @property
-    def current_compliance(self) -> float:
+    def current_limit(self) -> float:
         return float(self.query("SOURce:CURRent:LEVel:IMMediate:AMPLitude?"))
 
-    @current_compliance.setter
-    def current_compliance(self, level: float) -> None:
+    @current_limit.setter
+    def current_limit(self, level: float) -> None:
         self.write(f"SOURce:CURRent:LEVel:IMMediate:AMPLitude {level}")
 
     def measure_voltage(self) -> float:
@@ -69,11 +69,8 @@ class NGE100Channel(PowerSupplyChannel):
 
     def write(self, message: str) -> None:
         self.resource.write(f"INSTrument {self.channel + 1}")
-        print(self.resource.buffer)
         self.resource.write(message)
-        print(self.resource.buffer)
-        self.query("*OPC?")
-        print(self.resource.buffer)
+        self.resource.query("*OPC?")
 
 
 class NGE100(PowerSupply):
@@ -102,7 +99,17 @@ class NGE100(PowerSupply):
         self.query("*OPC?")
 
     def __getitem__(self, channel: int) -> NGE100Channel:
+
+        if not isinstance(channel, int):
+            raise TypeError("Channel index must be an integer")
+
+        if channel not in range(3):
+            raise IndexError("Channel index out of range")
+
         return NGE100Channel(self.resource, channel)
 
     def __iter__(self) -> Iterator[NGE100Channel]:
         return iter([NGE100Channel(self.resource, channel) for channel in range(3)])
+
+    def __len__(self) -> int:
+        return 3

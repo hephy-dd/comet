@@ -7,7 +7,7 @@ from .instrument import Driver, Instrument
 __all__ = ["PowerSupply", "PowerSupplyChannel"]
 
 
-class PowerSupplyChannel(Instrument):
+class PowerSupplyChannel(Driver):
 
     def __init__(self, resource, channel: int) -> None:
         super().__init__(resource)
@@ -36,11 +36,11 @@ class PowerSupplyChannel(Instrument):
 
     # Current source
     @property  # type: ignore
-    def current_compliance(self) -> float: ...
+    def current_limit(self) -> float: ...
 
-    @current_compliance.setter  # type: ignore
+    @current_limit.setter  # type: ignore
     @abstractmethod
-    def current_compliance(self, level: float) -> None: ...
+    def current_limit(self, level: float) -> None: ...
 
     # Measurements
 
@@ -60,3 +60,7 @@ class PowerSupply(Instrument):
 
     @abstractmethod
     def __iter__(self) -> Iterator[PowerSupplyChannel]: ...
+
+
+    @abstractmethod
+    def __len__(self) -> int: ... 
