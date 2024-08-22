@@ -43,6 +43,11 @@ class NGE100Channel(PowerSupplyChannel):
 
     @voltage_level.setter
     def voltage_level(self, level: float) -> None:
+        if level < 0:
+            raise ValueError("Voltage level must be non-negative")
+        if level > 32:
+            raise ValueError("Voltage level must be less than 32 V")
+
         self.write(f"SOURce:VOLTage:LEVel:IMMediate:AMPLitude {level}")
 
     @property
@@ -51,6 +56,11 @@ class NGE100Channel(PowerSupplyChannel):
 
     @current_limit.setter
     def current_limit(self, level: float) -> None:
+        if level < 0:
+            raise ValueError("Current limit must be non-negative")
+        if level > 3:
+            raise ValueError("Current limit must be less than 3 A")
+
         self.write(f"SOURce:CURRent:LEVel:IMMediate:AMPLitude {level}")
 
     def measure_voltage(self) -> float:
