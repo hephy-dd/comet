@@ -71,6 +71,12 @@ def test_set_voltage_level(driver, resource):
         "*OPC?",
     ]
 
+    with pytest.raises(ValueError):
+        driver[0].voltage_level = -1
+
+    with pytest.raises(ValueError):
+        driver[0].voltage_level = 33
+
 
 def test_read_current_limit(driver, resource):
     resource.buffer = ["0.0"]
@@ -89,6 +95,12 @@ def test_set_current_limit(driver, resource):
         "SOURce:CURRent:LEVel:IMMediate:AMPLitude 0.0",
         "*OPC?",
     ]
+
+    with pytest.raises(ValueError):
+        driver[0].current_limit = -1
+
+    with pytest.raises(ValueError):
+        driver[0].current_limit = 3.1
 
 
 def test_measure_voltage(driver, resource):
