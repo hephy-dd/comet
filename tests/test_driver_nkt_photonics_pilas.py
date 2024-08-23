@@ -77,7 +77,7 @@ def test_tune_mode(driver, resource):
 
 def test_tune(driver, resource):
     resource.buffer = [
-        "tune value:\t\t     37.00 %\r",
+        "tune value:\t\t     37.00 %",
     ]
     assert driver.tune == 37.0
     assert resource.buffer == ["tune?"]
