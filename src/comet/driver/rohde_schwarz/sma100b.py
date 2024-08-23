@@ -68,6 +68,10 @@ class SMA100B(Instrument):
         Args:
             frequency (float): Frequency in Hz
         """
+
+        if frequency < 8e3 or frequency > 12.75e9:
+            raise ValueError("Frequency must be in range 8 kHz to 12.75 GHz")
+
         self.write(f"SOUR1:FREQuency:FIXed {frequency:.4f}")
 
     @property
@@ -86,6 +90,9 @@ class SMA100B(Instrument):
         Args:
             power (float): Output power in dBm
         """
+        if power < -145 or power > 40:
+            raise ValueError("Power must be in range -145 dBm to 40 dBm")
+
         self.write(f"SOUR1:POWer:POWer {power}")
 
     @property
