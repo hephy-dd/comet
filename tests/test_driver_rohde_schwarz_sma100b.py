@@ -52,8 +52,24 @@ def test_frequency(driver, resource):
     assert resource.buffer == ["SOUR1:FREQuency:FIXed?"]
 
     resource.buffer = ["1"]
-    driver.frequency = 1e9
-    assert resource.buffer == ["SOUR1:FREQuency:FIXed 1000000000.0000", "*OPC?"]
+    driver.frequency = 1e10
+    assert resource.buffer == ["SOUR1:FREQuency:FIXed 10000000000.0000", "*OPC?"]
+
+    with pytest.raises(ValueError):
+        driver.frequency = 1e11
+
+    with pytest.raises(ValueError):
+        driver.frequency = 1e3
+
+
+def test_power(driver, resource):
+    resource.buffer = ["-30"]
+    assert driver.output_power == -30
+    assert resource.buffer == ["SOUR1:POWer:POWer?"]
+
+    resource.buffer = ["1"]
+    driver.output_power = -20
+    assert resource.buffer == ["SOUR1:POWer:POWer -20", "*OPC?"]
 
 
 def test_output(driver, resource):
