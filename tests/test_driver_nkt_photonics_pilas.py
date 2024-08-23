@@ -23,7 +23,14 @@ def driver(resource):
 
 def test_identify(driver, resource):
     resource.buffer = [
-        "controller serial: PLC1060CW0F00000715\nlaser head serial: PLH1060CW0F00000715\ncenter wavelength: 1060 nm\nCW laser option: no\nCW laser power: fixed\nsoftware version: SW.PiLas.V1.1.AEb\ncontroller hardware version: PiLas_Control_PCB_Rev.2.1\nlaser head hardware version: PiLas_Laser_Head_PCB_Rev.2.0"
+        "controller serial: PLC1060CW0F00000715",
+        "laser head serial: PLH1060CW0F00000715",
+        "center wavelength: 1060 nm",
+        "CW laser option: no",
+        "CW laser power: fixed",
+        "software version: SW.PiLas.V1.1.AEb",
+        "controller hardware version: PiLas_Control_PCB_Rev.2.1",
+        "laser head hardware version: PiLas_Laser_Head_PCB_Rev.2.0",
     ]
     assert (
         driver.identify()
@@ -69,7 +76,9 @@ def test_tune_mode(driver, resource):
 
 
 def test_tune(driver, resource):
-    resource.buffer = ["tune value:\t\t     37.00 %\r\n"]
+    resource.buffer = [
+        "tune value:\t\t     37.00 %\r",
+    ]
     assert driver.tune == 37.0
     assert resource.buffer == ["tune?"]
 
@@ -108,15 +117,15 @@ def test_frequency(driver, resource):
 
 def test_laser_diode_temperature(driver, resource):
     resource.buffer = ["LD temp.:\t\tgood"]
-    assert driver.laser_diode_temperature == driver.DIODE_TEMPERATURE_GOOD
+    assert driver.get_laser_diode_temperature() == driver.DIODE_TEMPERATURE_GOOD
     assert resource.buffer == ["ldtemp?"]
 
     resource.buffer = ["LD temp.:\t\tbad"]
-    assert driver.laser_diode_temperature == driver.DIODE_TEMPERATURE_BAD
+    assert driver.get_laser_diode_temperature() == driver.DIODE_TEMPERATURE_BAD
     assert resource.buffer == ["ldtemp?"]
 
 
 def test_laser_head_temperature(driver, resource):
     resource.buffer = ["laser head temp.:\t     26.12 °C"]
-    assert driver.laser_head_temperature == 26.12
+    assert driver.get_laser_head_temperature() == 26.12
     assert resource.buffer == ["lht?"]

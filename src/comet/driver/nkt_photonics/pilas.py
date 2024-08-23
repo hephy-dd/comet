@@ -19,7 +19,9 @@ class PILAS(Driver):
     DIODE_TEMPERATURE_BAD: bool = False
 
     def identify(self) -> str:
-        return self.resource.query("version?")
+        self.resource.write("version?")
+        # read 8 lines
+        return "\n".join([self.resource.read().strip() for _ in range(8)])
 
     @property
     def output(self) -> bool:
@@ -67,20 +69,18 @@ class PILAS(Driver):
             raise ValueError("Frequency must be between 25Hz and 40MHz")
         self.write_and_check(f"f={frequency}")
 
-    @property
-    def laser_diode_temperature(self) -> bool:
+    def get_laser_head_temperature(self) -> float:
+        response = self.query_value("lht?")
+
+        return float(response.replace("°C", ""))
+
+    def get_laser_diode_temperature(self) -> bool:
         response = self.query_value("ldtemp?")
         return (
             self.DIODE_TEMPERATURE_GOOD
             if response == "good"
             else self.DIODE_TEMPERATURE_BAD
         )
-
-    @property
-    def laser_head_temperature(self) -> float:
-        response = self.query_value("lht?")
-
-        return float(response.replace("°C", ""))
 
     # helper
     def query_value(self, command: str) -> str:
@@ -89,6 +89,8 @@ class PILAS(Driver):
 
     def write_and_check(self, command: str) -> None:
         self.resource.write(command)
-        response = self.resource.read()
+        response = self.resource.read().strip()
         if response != "done":
-            raise RuntimeError(f"Error sending command: {command}")
+            raise RuntimeError(
+                f"Error sending command: {command}, received response {response}"
+            )
