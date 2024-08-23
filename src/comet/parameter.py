@@ -23,7 +23,7 @@ def validate_parameters(cls: ParameterBaseType, values: ParameterValues) -> None
     """Validates a dictionary containing parameter values."""
     for key, parameter in inspect_parameters(cls).items():
         if parameter.required:
-            if not key in values:
+            if key not in values:
                 raise KeyError(f"missing required parameter: {key!r}")
         if key in values:
             parameter.validate(values.get(key))
