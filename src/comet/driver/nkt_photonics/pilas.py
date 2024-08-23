@@ -15,30 +15,37 @@ class PILAS(Driver):
     TUNE_MANUAL: bool = False
     TUNE_AUTO: bool = True
 
+    DIODE_TEMPERATURE_GOOD: bool = True
+    DIODE_TEMPERATURE_BAD: bool = False
+
     def identify(self) -> str:
         return self.resource.query("version?")
 
     @property
     def output(self) -> bool:
-        return bool(int(self.resource.query("ld?")))
+        response = self.query_value("ld?")
+
+        return True if response == "on" else False
 
     @output.setter
     def output(self, state: bool) -> None:
         value = {False: 0, True: 1}[state]
-        self.resource.write(f"ld={value}")
+        self.write_and_check(f"ld={value}")
 
     @property
     def tune_mode(self) -> bool:
-        return bool(int(self.resource.query("tm?")))
+        response = self.query_value("tm?")
+
+        return True if response == "auto" else False
 
     @tune_mode.setter
     def tune_mode(self, state: bool) -> None:
         value = {False: 0, True: 1}[state]
-        self.resource.write(f"tm={value}")
+        self.write_and_check(f"tm={value}")
 
     @property
     def tune(self) -> float:
-        return int(self.resource.query("tune?")) / 10
+        return float(self.query_value("tune?").replace("%", ""))
 
     @tune.setter
     def tune(self, value: float) -> None:
@@ -48,22 +55,40 @@ class PILAS(Driver):
         if self.tune_mode != self.TUNE_MANUAL:
             self.tune_mode = self.TUNE_MANUAL
 
-        self.resource.write(f"tune={int(value*10)}")
+        self.write_and_check(f"tune={int(value*10)}")
 
     @property
     def frequency(self) -> int:
-        return int(self.resource.query("f?"))
+        return int(self.query_value("f?").replace("Hz", ""))
 
     @frequency.setter
     def frequency(self, frequency: int) -> None:
         if frequency < 25 or frequency > 40e6:
             raise ValueError("Frequency must be between 25Hz and 40MHz")
-        self.resource.write(f"f={frequency}")
+        self.write_and_check(f"f={frequency}")
 
     @property
-    def laser_diode_temperature(self) -> str:
-        return float(self.resource.query("ldtemp?")) / 100
+    def laser_diode_temperature(self) -> bool:
+        response = self.query_value("ldtemp?")
+        return (
+            self.DIODE_TEMPERATURE_GOOD
+            if response == "good"
+            else self.DIODE_TEMPERATURE_BAD
+        )
 
     @property
     def laser_head_temperature(self) -> float:
-        return float(self.resource.query("lht?")) / 100
+        response = self.query_value("lht?")
+
+        return float(response.replace("°C", ""))
+
+    # helper
+    def query_value(self, command: str) -> str:
+        self.resource.write(command)
+        return self.resource.read(encoding="latin1").split(":")[1].strip()
+
+    def write_and_check(self, command: str) -> None:
+        self.resource.write(command)
+        response = self.resource.read()
+        if response != "done":
+            raise RuntimeError(f"Error sending command: {command}")
