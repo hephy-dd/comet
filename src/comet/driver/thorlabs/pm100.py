@@ -58,7 +58,7 @@ class PM100(Instrument):
         Returns:
             int: Calibration wavelength in nm
         """
-        return int(self.query("SENSe:CORRection:WAVelength?"))
+        return int(float(self.query("SENSe:CORRection:WAVelength?")))
 
     @wavelength.setter
     def wavelength(self, value: int) -> None:
