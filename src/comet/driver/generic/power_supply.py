@@ -16,29 +16,31 @@ class PowerSupplyChannel(Driver):
     OUTPUT_ON: bool = True
     OUTPUT_OFF: bool = False
 
-    @property  # type: ignore
+    @property
     @abstractmethod
     def enabled(self) -> bool: ...
 
-    @enabled.setter  # type: ignore
+    @enabled.setter
     @abstractmethod
     def enabled(self, state: bool) -> None: ...
 
     # Voltage source
 
-    @property  # type: ignore
+    @property
     @abstractmethod
     def voltage_level(self) -> float: ...
 
-    @voltage_level.setter  # type: ignore
+    @voltage_level.setter
     @abstractmethod
     def voltage_level(self, level: float) -> None: ...
 
     # Current source
-    @property  # type: ignore
+
+    @property
+    @abstractmethod
     def current_limit(self) -> float: ...
 
-    @current_limit.setter  # type: ignore
+    @current_limit.setter
     @abstractmethod
     def current_limit(self, level: float) -> None: ...
 
@@ -55,6 +57,7 @@ class PowerSupplyChannel(Driver):
 
 
 class PowerSupply(Instrument):
+
     @abstractmethod
     def __getitem__(self, channel: int) -> PowerSupplyChannel: ...
 

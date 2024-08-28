@@ -94,7 +94,7 @@ class Hydra(MotionController):
     @property
     def is_calibrated(self) -> bool:
         """Return True if all active axes are calibrated and range measured."""
-        status = int(self.resource.query(f"st"))
+        status = int(self.resource.query("st"))
         return bool(int(status & 0x18))
 
     def move_absolute(self, position: Position) -> None:
