@@ -1,3 +1,32 @@
+[project]
+name = "comet"
+description = "Control and Measurement Toolkit"
+authors = [
+  {name = "Bernhard Arnold", email = "bernhard.arnold@oeaw.ac.at"},
+]
+readme = "README.md"
+license = {text = "GPLv3"}
+requires-python = ">=3.9"
+dependencies = [
+    "PyVISA",
+    "PyVISA-py",
+    "PyVISA-sim",
+    "pyserial",
+    "pyusb",
+    "numpy",
+    "pint",
+    "schema",
+    "PyYAML",
+]
+dynamic = ["version"]
+
+[project.urls]
+Homepage = "https://github.com/hephy-dd/comet/"
+Source = "https://github.com/hephy-dd/comet/"
+
 [build-system]
-requires = ["setuptools"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+path = "src/comet/__init__.py"

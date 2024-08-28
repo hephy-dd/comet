@@ -158,7 +158,7 @@ class Tango(MotionController):
 
     @property
     def joystick_enabled(self) -> bool:
-        result = self.resource.query(f"?joy")
+        result = self.resource.query("?joy")
         return bool(int(result))
 
     @joystick_enabled.setter

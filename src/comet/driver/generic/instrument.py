@@ -1,12 +1,15 @@
 from abc import ABC, abstractmethod
-from typing import List, Iterable, Optional, Tuple
+from typing import Optional
 
 from ..driver import Driver
 
 __all__ = [
     "InstrumentError",
-    "BeeperMixin",
+    "IdentifyMixin",
+    "ResetMixin",
+    "ClearMixin",
     "ErrorQueueMixin",
+    "BeeperMixin",
     "RouteTerminalMixin",
     "Instrument",
 ]
@@ -23,27 +26,42 @@ class InstrumentError:
         return f"{cls_name}({self.code}, {self.message!r})"
 
 
-class BeeperMixin(ABC):
+class IdentifyMixin(ABC):
 
-    BEEPER_ON: bool = True
-    BEEPER_OFF: bool = False
-
-    @property  # type: ignore
     @abstractmethod
-    def beeper(self) -> bool:
-        ...
+    def identify(self) -> str: ...
 
-    @beeper.setter  # type: ignore
+
+class ResetMixin(ABC):
+
     @abstractmethod
-    def beeper(self, value: bool) -> None:
-        ...
+    def reset(self) -> None: ...
+
+
+class ClearMixin(ABC):
+
+    @abstractmethod
+    def clear(self) -> None: ...
 
 
 class ErrorQueueMixin(ABC):
 
     @abstractmethod
-    def next_error(self) -> Optional[InstrumentError]:
-        ...
+    def next_error(self) -> Optional[InstrumentError]: ...
+
+
+class BeeperMixin(ABC):
+
+    BEEPER_ON: bool = True
+    BEEPER_OFF: bool = False
+
+    @property
+    @abstractmethod
+    def beeper(self) -> bool: ...
+
+    @beeper.setter
+    @abstractmethod
+    def beeper(self, value: bool) -> None: ...
 
 
 class RouteTerminalMixin(ABC):
@@ -51,27 +69,13 @@ class RouteTerminalMixin(ABC):
     ROUTE_TERMINAL_FRONT: str = "front"
     ROUTE_TERMINAL_REAR: str = "rear"
 
-    @property  # type: ignore
+    @property
     @abstractmethod
-    def route_terminal(self) -> str:
-        ...
+    def route_terminal(self) -> str: ...
 
-    @route_terminal.setter  # type: ignore
+    @route_terminal.setter
     @abstractmethod
-    def route_terminal(self, route_terminal: str) -> None:
-        ...
+    def route_terminal(self, route_terminal: str) -> None: ...
 
 
-class Instrument(ErrorQueueMixin, Driver):
-
-    @abstractmethod
-    def identify(self) -> str:
-        ...
-
-    @abstractmethod
-    def reset(self) -> None:
-        ...
-
-    @abstractmethod
-    def clear(self) -> None:
-        ...
+class Instrument(IdentifyMixin, ResetMixin, ClearMixin, ErrorQueueMixin, Driver): ...

@@ -8,36 +8,29 @@ __all__ = ["LCRMeter"]
 
 class LCRMeter(Instrument):
 
-    @property  # type: ignore
+    @property
     @abstractmethod
-    def function(self) -> str:
-        ...
+    def function(self) -> str: ...
 
-    @function.setter  # type: ignore
+    @function.setter
     @abstractmethod
-    def function(self, function: str) -> None:
-        ...
+    def function(self, function: str) -> None: ...
 
-    @property  # type: ignore
+    @property
     @abstractmethod
-    def amplitude(self) -> float:
-        ...
+    def amplitude(self) -> float: ...
 
-    @amplitude.setter  # type: ignore
+    @amplitude.setter
     @abstractmethod
-    def amplitude(self, level: float) -> None:
-        ...
+    def amplitude(self, level: float) -> None: ...
 
-    @property  # type: ignore
+    @property
     @abstractmethod
-    def frequency(self) -> float:
-        ...
+    def frequency(self) -> float: ...
 
-    @frequency.setter  # type: ignore
+    @frequency.setter
     @abstractmethod
-    def frequency(self, frequency: float) -> None:
-        ...
+    def frequency(self, frequency: float) -> None: ...
 
     @abstractmethod
-    def measure_impedance(self) -> Tuple[float, float]:
-        ...
+    def measure_impedance(self) -> Tuple[float, float]: ...
