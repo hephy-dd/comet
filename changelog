@@ -8,9 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Base classes `PowerSupply` and `PowerSupplyChannel`.
+- Generic base classes `PowerSupply` and `PowerSupplyChannel` and `LightSource`.
 - Rhode&Schwarz NGE100 power supply (#77).
 - Photonic F3000 LED light source (#75).
+
+### Removed
+- Dropped support for Python 3.8
 
 ## [1.0.0] - 2024-03-26
 

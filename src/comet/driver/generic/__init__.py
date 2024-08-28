@@ -1,8 +1,8 @@
 from .instrument import (
-    InstrumentError,
     BeeperMixin,
     ErrorQueueMixin,
     RouteTerminalMixin,
+    InstrumentError,
     Instrument,
 )
 from .source_meter_unit import SourceMeterUnit
@@ -14,3 +14,18 @@ from .motion_controller import (
     MotionControllerAxis,
 )
 from .light_source import LightSource
+
+__all__ = [
+    "BeeperMixin",
+    "ErrorQueueMixin",
+    "RouteTerminalMixin",
+    "InstrumentError",
+    "Instrument",
+    "SourceMeterUnit",
+    "Electrometer",
+    "LCRMeter",
+    "SwitchingMatrix",
+    "MotionController",
+    "MotionControllerAxis",
+    "LightSource",
+]

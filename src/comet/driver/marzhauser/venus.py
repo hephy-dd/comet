@@ -120,7 +120,7 @@ class Venus(MotionController):
     @property
     def is_calibrated(self) -> bool:
         """Return True if all active axes are calibrated and range measured."""
-        values = self.resource.query(f"getcaldone").split()
+        values = self.resource.query("getcaldone").split()
         return [int(value) for value in values].count(0x3) == len(values)
 
     def move_absolute(self, position: Position) -> None:
