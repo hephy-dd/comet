@@ -44,23 +44,23 @@ class PM100Emulator(Emulator):
             error = Error(0, "no error")
         return f'{error.code}, "{error.message}"'
 
-    @message(r"(?:^SENS(?:e)?)?:AVER(?:age)?:COUN(?:t)?\?$")
+    @message(r"^(?:SENS(?:e)?)?:AVER(?:age)?:COUN(?:t)?\?$")
     def get_average_count(self):
         return self.average_count
 
-    @message(r"(?:^SENS(?:e)?)?:AVER(?:age)?:COUN(?:t)? (\d+)$")
+    @message(r"^(?:SENS(?:e)?)?:AVER(?:age)?:COUN(?:t)? (\d+)$")
     def set_average_count(self, average_count):
         self.average_count = average_count
 
-    @message(r"(?:^SENS(?:e)?)?:CORR(?:ection)?:WAV(?:elength)?\?$")
+    @message(r"^(?:SENS(?:e)?)?:CORR(?:ection)?:WAV(?:elength)?\?$")
     def get_wavelength(self):
         return self.wavelength
 
-    @message(r"(?:^SENS(?:e)?)?:CORR(?:ection)?:WAV(?:elength)? (\d+)$")
+    @message(r"^(?:SENS(?:e)?)?:CORR(?:ection)?:WAV(?:elength)? (\d+)$")
     def set_wavelength(self, wavelength):
         self.wavelength = wavelength
 
-    @message(r"MEAS(?:ure)?(?::SCAL(?:ar)?)?(?::POW(?:er)?)?")
+    @message(r"^MEAS(?:ure)?(?::SCAL(?:ar)?)?(?::POW(?:er)?)?")
     def measure_power(self):
         power = random.uniform(1e-9, 2e-9)
         return format(power, "E")
