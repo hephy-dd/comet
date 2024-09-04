@@ -20,8 +20,8 @@ class PM100Emulator(Emulator):
 
         self.error_queue: List[Error] = []
 
-        self.average_count = 100
-        self.wavelength = 370
+        self.average_count: int = 100
+        self.wavelength: int = 370
 
     @message(r"^\*IDN\?$")
     def identify(self):
@@ -29,8 +29,8 @@ class PM100Emulator(Emulator):
 
     @message(r"^\*RST$")
     def set_reset(self):
-        self.average_count = 100
-        self.wavelength = 370
+        self.average_count: int = 100
+        self.wavelength: int = 370
 
     @message(r"^\*CLS$")
     def set_clear(self):

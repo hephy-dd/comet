@@ -12,8 +12,8 @@ def parse_error(response: str):
 class PM100(Instrument):
     """Class for controlling Thorlabs PM100 USB power meters"""
 
-    WAVELENGTH_UV = 370
-    WAVELENGTH_IR = 1060
+    WAVELENGTH_UV: int = 370
+    WAVELENGTH_IR: int = 1060
 
     def identify(self) -> str:
         return self.query("*IDN?")
