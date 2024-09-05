@@ -7,7 +7,7 @@ __all__ = ["PILAS"]
 
 
 class PILAS(Driver):
-    """Class for controllingNKT Photonics PILAS picosecond pulsed diode laser"""
+    """Class for controlling NKT Photonics PILAS picosecond pulsed diode laser"""
 
     OUTPUT_ON: bool = True
     OUTPUT_OFF: bool = False
@@ -27,7 +27,7 @@ class PILAS(Driver):
     def output(self) -> bool:
         response = self.query_value("ld?")
 
-        return True if response == "on" else False
+        return response == "on"
 
     @output.setter
     def output(self, state: bool) -> None:
@@ -38,7 +38,7 @@ class PILAS(Driver):
     def tune_mode(self) -> bool:
         response = self.query_value("tm?")
 
-        return True if response == "auto" else False
+        return response == "auto"
 
     @tune_mode.setter
     def tune_mode(self, state: bool) -> None:
@@ -54,8 +54,7 @@ class PILAS(Driver):
         if value < 0 or value > 100:
             raise ValueError("Tune value must be between 0 and 100")
 
-        if self.tune_mode != self.TUNE_MANUAL:
-            self.tune_mode = self.TUNE_MANUAL
+        self.tune_mode = self.TUNE_MANUAL
 
         self.write_and_check(f"tune={int(value*10)}")
 
@@ -76,11 +75,7 @@ class PILAS(Driver):
 
     def get_laser_diode_temperature(self) -> bool:
         response = self.query_value("ldtemp?")
-        return (
-            self.DIODE_TEMPERATURE_GOOD
-            if response == "good"
-            else self.DIODE_TEMPERATURE_BAD
-        )
+        return response == "good"
 
     # helper
     def query_value(self, command: str) -> str:
