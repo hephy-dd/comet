@@ -6,107 +6,92 @@ __all__ = ["SourceMeterUnit"]
 
 
 class SourceMeterUnit(Instrument):
+    # Output
 
     OUTPUT_ON: bool = True
     OUTPUT_OFF: bool = False
 
-    @property  # type: ignore
+    @property
     @abstractmethod
-    def output(self) -> bool:
-        ...
+    def output(self) -> bool: ...
 
-    @output.setter  # type: ignore
+    @output.setter
     @abstractmethod
-    def output(self, state: bool) -> None:
-        ...
+    def output(self, state: bool) -> None: ...
+
+    # Function
 
     FUNCTION_VOLTAGE: str = "voltage"
     FUNCTION_CURRENT: str = "current"
 
-    @property  # type: ignore
+    @property
     @abstractmethod
-    def function(self) -> str:
-        ...
+    def function(self) -> str: ...
 
-    @function.setter  # type: ignore
+    @function.setter
     @abstractmethod
-    def function(self, function: str) -> None:
-        ...
+    def function(self, function: str) -> None: ...
 
     # Voltage source
 
-    @property  # type: ignore
+    @property
     @abstractmethod
-    def voltage_level(self) -> float:
-        ...
+    def voltage_level(self) -> float: ...
 
-    @voltage_level.setter  # type: ignore
+    @voltage_level.setter
     @abstractmethod
-    def voltage_level(self, level: float) -> None:
-        ...
-
-    @property  # type: ignore
-    @abstractmethod
-    def voltage_range(self) -> float:
-        ...
-
-    @voltage_range.setter  # type: ignore
-    @abstractmethod
-    def voltage_range(self, level: float) -> None:
-        ...
-
-    @property  # type: ignore
-    @abstractmethod
-    def voltage_compliance(self) -> float:
-        ...
-
-    @voltage_compliance.setter  # type: ignore
-    @abstractmethod
-    def voltage_compliance(self, level: float) -> None:
-        ...
-
-    # Current source
-
-    @property  # type: ignore
-    @abstractmethod
-    def current_level(self) -> float:
-        ...
-
-    @current_level.setter  # type: ignore
-    @abstractmethod
-    def current_level(self, level: float) -> None:
-        ...
-
-    @property  # type: ignore
-    @abstractmethod
-    def current_range(self) -> float:
-        ...
-
-    @current_range.setter  # type: ignore
-    @abstractmethod
-    def current_range(self, level: float) -> None:
-        ...
-
-    @property  # type: ignore
-    def current_compliance(self) -> float:
-        ...
-
-    @current_compliance.setter  # type: ignore
-    @abstractmethod
-    def current_compliance(self, level: float) -> None:
-        ...
+    def voltage_level(self, level: float) -> None: ...
 
     @property
     @abstractmethod
-    def compliance_tripped(self) -> bool:
-        ...
+    def voltage_range(self) -> float: ...
+
+    @voltage_range.setter
+    @abstractmethod
+    def voltage_range(self, level: float) -> None: ...
+
+    @property
+    @abstractmethod
+    def voltage_compliance(self) -> float: ...
+
+    @voltage_compliance.setter
+    @abstractmethod
+    def voltage_compliance(self, level: float) -> None: ...
+
+    # Current source
+
+    @property
+    @abstractmethod
+    def current_level(self) -> float: ...
+
+    @current_level.setter
+    @abstractmethod
+    def current_level(self, level: float) -> None: ...
+
+    @property
+    @abstractmethod
+    def current_range(self) -> float: ...
+
+    @current_range.setter
+    @abstractmethod
+    def current_range(self, level: float) -> None: ...
+
+    @property
+    @abstractmethod
+    def current_compliance(self) -> float: ...
+
+    @current_compliance.setter
+    @abstractmethod
+    def current_compliance(self, level: float) -> None: ...
+
+    @property
+    @abstractmethod
+    def compliance_tripped(self) -> bool: ...
 
     # Measurements
 
     @abstractmethod
-    def measure_voltage(self) -> float:
-        ...
+    def measure_voltage(self) -> float: ...
 
     @abstractmethod
-    def measure_current(self) -> float:
-        ...
+    def measure_current(self) -> float: ...
