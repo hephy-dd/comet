@@ -82,15 +82,15 @@ def test_tune(driver, resource):
     assert driver.tune == 37.0
     assert resource.buffer == ["tune?"]
 
-    resource.buffer = ["tune mode:\t\tmanual", "done"]
+    resource.buffer = ["done", "done"]
     driver.tune = 50.0
-    assert resource.buffer == ["tm?", "tune=500"]
+    assert resource.buffer == ["tm=0", "tune=500"]
 
-    resource.buffer = ["tune mode:\t\tmanual", "done"]
+    resource.buffer = ["done", "done"]
     with pytest.raises(ValueError):
         driver.tune = -1
 
-    resource.buffer = ["tune mode:\t\tmanual", "done"]
+    resource.buffer = ["done", "done"]
     with pytest.raises(ValueError):
 
         driver.tune = 101
