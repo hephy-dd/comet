@@ -7,13 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.1.0] - 2024-08-28
+## [1.1.0] - 2024-09-11
 
 ### Added
 - Additional HEPHY EnvironBox commands for driver and emulator (#74).
 - Generic base classes `PowerSupply` and `PowerSupplyChannel` and `LightSource`.
 - Rhode&Schwarz NGE100 power supply (#77).
 - Photonic F3000 LED light source (#75).
+- Thorlabs PM100 USB optical power meter (#78).
+- Rohde&Schwarz SMA100B (#79).
+- NKT Photonics PILAS laser (#80).
+
+### Changed
+- Restructured driver mixins (#81).
 
 ### Removed
 - Dropped support for Python 3.8
