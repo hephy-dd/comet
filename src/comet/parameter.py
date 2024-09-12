@@ -1,14 +1,14 @@
-from typing import Any, Dict, Optional, Type
+from typing import Any, Optional, Type
 
 from .utils import to_unit
 
 __all__ = ["inspect_parameters", "Parameter", "ParameterBase"]
 
 ParameterBaseType = Type["ParameterBase"]
-ParameterValues = Dict[str, Any]
+ParameterValues = dict[str, Any]
 
 
-def inspect_parameters(cls: ParameterBaseType) -> Dict[str, "Parameter"]:
+def inspect_parameters(cls: ParameterBaseType) -> dict[str, "Parameter"]:
     """Retrun dictionary of assigned class parameters."""
     parameters = {}
     for mro_cls in cls.__mro__:
@@ -78,7 +78,7 @@ class ParameterBase:
     """Base class for parameters."""
 
     def __init__(self, values: Optional[ParameterValues] = None) -> None:
-        self.__values: Dict[str, Any] = {}
+        self.__values: dict[str, Any] = {}
         self.update_parameters(values or {})
 
     def __getattribute__(self, name):

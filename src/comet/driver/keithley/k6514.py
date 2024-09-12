@@ -3,29 +3,28 @@ from typing import Optional
 from comet.driver.generic import InstrumentError
 from comet.driver.generic.electrometer import Electrometer
 
-__all__ = ['K6514']
+__all__ = ["K6514"]
 
 
-def parse_error(response: str):
-    code, message = [token.strip() for token in response.split(',')][:2]
-    return int(code), message.strip('\"')
+def parse_error(response: str) -> tuple[int, str]:
+    code, message = [token.strip() for token in response.split(",")][:2]
+    return int(code), message.strip('"')
 
 
 class K6514(Electrometer):
-
     def identify(self) -> str:
-        return self.query('*IDN?')
+        return self.query("*IDN?")
 
     def reset(self) -> None:
-        self.write('*RST')
+        self.write("*RST")
 
     def clear(self) -> None:
-        self.write('*CLS')
+        self.write("*CLS")
 
     # Error queue
 
     def next_error(self) -> Optional[InstrumentError]:
-        code, message = parse_error(self.query(':SYST:ERR:NEXT?'))
+        code, message = parse_error(self.query(":SYST:ERR:NEXT?"))
         if code:
             return InstrumentError(code, message)
         return None
@@ -33,16 +32,16 @@ class K6514(Electrometer):
     # Electrometer
 
     def measure_voltage(self) -> float:
-        return float(self.query(':MEAS:VOLT?'))
+        return float(self.query(":MEAS:VOLT?"))
 
     def measure_current(self) -> float:
-        return float(self.query(':MEAS:CURR?'))
+        return float(self.query(":MEAS:CURR?"))
 
     def measure_resistance(self) -> float:
-        return float(self.query(':MEAS:RES?'))
+        return float(self.query(":MEAS:RES?"))
 
     def measure_charge(self) -> float:
-        return float(self.query(':MEAS:CHAR?'))
+        return float(self.query(":MEAS:CHAR?"))
 
     # Zero check
 
@@ -50,8 +49,11 @@ class K6514(Electrometer):
         return bool(int(self.query(":SYST:ZCH?")))
 
     def set_zero_check(self, enabled: bool):
-        value = {False: 'OFF', True: 'ON'}[enabled]
-        self.write(f':SYST:ZCH {value}')
+        value = {
+            False: "OFF",
+            True: "ON",
+        }[enabled]
+        self.write(f":SYST:ZCH {value}")
 
     # Helper
 
@@ -60,4 +62,4 @@ class K6514(Electrometer):
 
     def write(self, message: str) -> None:
         self.resource.write(message)
-        self.query('*OPC?')
+        self.query("*OPC?")

@@ -1,12 +1,12 @@
 import re
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Optional
 
 from comet.driver.generic import Instrument
 from comet.driver.generic import InstrumentError
 
 __all__ = ["EnvironBox"]
 
-ERROR_MESSAGES: Dict[int, str] = {
+ERROR_MESSAGES: dict[int, str] = {
     1: "RTC not running",
     2: "RTC read error",
     80: "DAC not found",
@@ -32,7 +32,7 @@ def parse_error(response: str) -> Optional[InstrumentError]:
     return None
 
 
-def parse_pc_data(response: str) -> Dict[str, Any]:
+def parse_pc_data(response: str) -> dict[str, Any]:
     values = response.split(",")
     relay_status = int(values[23])
     return {
@@ -85,8 +85,7 @@ def parse_pc_data(response: str) -> Dict[str, Any]:
 
 
 class EnvironBox(Instrument):
-
-    _error_queue: List[InstrumentError] = []
+    _error_queue: list[InstrumentError] = []
 
     def identify(self) -> str:
         return self.query("*IDN?")
@@ -225,7 +224,7 @@ class EnvironBox(Instrument):
         value = {self.DOOR_AUTO_LIGHT_OFF: "OFF", self.DOOR_AUTO_LIGHT_ON: "ON"}[state]
         self.write(f"SET:DOOR_AUTO_LIGHT {value}")
 
-    def get_data(self) -> Dict[str, Any]:
+    def get_data(self) -> dict[str, Any]:
         """Return dictionary of PC_DATA."""
         return parse_pc_data(self.query("GET:PC_DATA ?"))
 

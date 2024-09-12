@@ -1,6 +1,5 @@
 """Rohde&Schwarz NGE100 power supply emulator"""
 
-from typing import List
 import math
 
 from comet.emulator import Emulator
@@ -16,23 +15,20 @@ class NGE100Emulator(Emulator):
     def __init__(self) -> None:
         super().__init__()
 
-        self.voltage_levels: List[float] = [0.0, 0.0, 0.0]
-        self.current_limits: List[float] = [0.0, 00.0, 0.0]
-        self.enabled_channels: List[bool] = [False, False, False]
+        self.voltage_levels: list[float] = [0.0, 0.0, 0.0]
+        self.current_limits: list[float] = [0.0, 00.0, 0.0]
+        self.enabled_channels: list[bool] = [False, False, False]
 
         self.selected_channel: int = 0
 
-        self.resistances: List[float] = [1, 1e3, math.inf]  # 1 Ohm, 1 kOhm, infinite
+        self.resistances: list[float] = [1, 1e3, math.inf]  # 1 Ohm, 1 kOhm, infinite
 
     def get_voltage(self) -> float:
-
         voltage_from_current_limit = (
             self.current_limits[self.selected_channel]
             * self.resistances[self.selected_channel]
         )
-
         voltage_from_voltage_level = self.voltage_levels[self.selected_channel]
-
         return min(voltage_from_current_limit, voltage_from_voltage_level)
 
     def get_current(self) -> float:
@@ -41,7 +37,6 @@ class NGE100Emulator(Emulator):
             / self.resistances[self.selected_channel]
         )
         current_from_current_limit = self.current_limits[self.selected_channel]
-
         return min(current_from_voltage_level, current_from_current_limit)
 
     @message(r"^\*IDN\?$")
@@ -64,29 +59,21 @@ class NGE100Emulator(Emulator):
     def get_enabled(self) -> str:
         return str(int(self.enabled_channels[self.selected_channel]))
 
-    @message(
-        r"(?:SOUR(?:ce)?:)?VOLT(?:age)?(?::LEV(?:el)?)?(?::IMM(?:ediate)?)?(?::AMPL(?:itude)?)? (\d+\.?\d*)$"
-    )
+    @message(r"(?:SOUR(?:ce)?:)?VOLT(?:age)?(?::LEV(?:el)?)?(?::IMM(?:ediate)?)?(?::AMPL(?:itude)?)? (\d+\.?\d*)$")
     def set_voltage_level(self, voltage_level: float) -> None:
         voltage_level = min(max(0, float(voltage_level)), 32)
         self.voltage_levels[self.selected_channel] = voltage_level
 
-    @message(
-        r"(?:SOUR(?:ce)?:)?VOLT(?:age)?(?::LEV(?:el)?)?(?::IMM(?:ediate)?)?(?::AMPL(?:itude)?)?\?$"
-    )
+    @message(r"(?:SOUR(?:ce)?:)?VOLT(?:age)?(?::LEV(?:el)?)?(?::IMM(?:ediate)?)?(?::AMPL(?:itude)?)?\?$")
     def get_voltage_level(self) -> str:
         return str(self.voltage_levels[self.selected_channel])
 
-    @message(
-        r"(?:SOUR(?:ce)?:)?CURR(?:ent)?(?::LEV(?:el)?)?(?::IMM(?:ediate)?)?(?::AMPL(?:itude)?)? (\d+\.?\d*)$"
-    )
+    @message(r"(?:SOUR(?:ce)?:)?CURR(?:ent)?(?::LEV(?:el)?)?(?::IMM(?:ediate)?)?(?::AMPL(?:itude)?)? (\d+\.?\d*)$")
     def set_current_limit(self, current_limit: float) -> None:
         current_limit = min(max(0, float(current_limit)), 3)
         self.current_limits[self.selected_channel] = current_limit
 
-    @message(
-        r"(?:SOUR(?:ce)?:)?CURR(?:ent)?(?::LEV(?:el)?)?(?::IMM(?:ediate)?)?(?::AMPL(?:itude)?)?\?$"
-    )
+    @message(r"(?:SOUR(?:ce)?:)?CURR(?:ent)?(?::LEV(?:el)?)?(?::IMM(?:ediate)?)?(?::AMPL(?:itude)?)?\?$")
     def get_current_limit(self) -> str:
         return str(self.current_limits[self.selected_channel])
 

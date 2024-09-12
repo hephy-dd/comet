@@ -1,11 +1,15 @@
-from typing import Dict, Optional
+from typing import Optional
 
 from comet.driver.generic import InstrumentError
-from comet.driver.generic.motion_controller import Position, MotionControllerAxis, MotionController
+from comet.driver.generic.motion_controller import (
+    Position,
+    MotionControllerAxis,
+    MotionController,
+)
 
 __all__ = ["Hydra"]
 
-ERROR_MESSAGES: Dict[int, str] = {
+ERROR_MESSAGES: dict[int, str] = {
     0: "no error",
     4: "internal error",
     100: "devicenumber out of range",
@@ -31,7 +35,6 @@ def parse_error(response: str) -> Optional[InstrumentError]:
 
 
 class HydraAxis(MotionControllerAxis):
-
     def calibrate(self) -> None:
         self.resource.write(f"{self.index:d} ncal")
 
@@ -62,17 +65,14 @@ class HydraAxis(MotionControllerAxis):
 
 
 class Hydra(MotionController):
-
-    AXES = (1, 2)
+    AXES: list[int] = [1, 2]
 
     def identify(self) -> str:
         return self.resource.query("identify").strip()
 
-    def reset(self) -> None:
-        ...
+    def reset(self) -> None: ...
 
-    def clear(self) -> None:
-        ...
+    def clear(self) -> None: ...
 
     def next_error(self) -> Optional[InstrumentError]:
         response = self.resource.query("ge")
@@ -98,18 +98,18 @@ class Hydra(MotionController):
         return bool(int(status & 0x18))
 
     def move_absolute(self, position: Position) -> None:
-        values = [format(value, '.3f') for value in position]
+        values = [format(value, ".3f") for value in position]
         self.resource.write(f"{values[0]} {values[1]} m")
 
     def move_relative(self, position: Position) -> None:
-        values = [format(value, '.3f') for value in position]
+        values = [format(value, ".3f") for value in position]
         self.resource.write(f"{values[0]} {values[1]} r")
 
-    def abort(self):
+    def abort(self) -> None:
         for index in type(self).AXES:
             self.resource.write(f"{index:d} nabort")
 
-    def force_abort(self):
+    def force_abort(self) -> None:
         self.resource.write(chr(0x03))  # Ctrl+C
 
     @property
@@ -132,6 +132,6 @@ class Hydra(MotionController):
 
     @joystick_enabled.setter
     def joystick_enabled(self, value: bool) -> None:
-        states = 0xf if value else 0x0
+        states = 0xF if value else 0x0
         for index in type(self).AXES:
             self.resource.write(f"{states:d} {index:d} setmanctrl")

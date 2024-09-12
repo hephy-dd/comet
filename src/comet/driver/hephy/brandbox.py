@@ -1,27 +1,25 @@
 import re
-from typing import Dict, List, Optional, Tuple
+from typing import Optional
 
 from comet.driver.generic import InstrumentError
 from comet.driver.generic.switching_matrix import SwitchingMatrix
 from comet.utils import combine_matrix
 
-__all__ = ['BrandBox']
+__all__ = ["BrandBox"]
 
-ERROR_MESSAGES: Dict[int, str] = {
-    99: "Invalid command"
-}
+ERROR_MESSAGES: dict[int, str] = {99: "Invalid command"}
 
 
-def split_channels(channels: str) -> List[str]:
-    return [channel.strip() for channel in channels.split(',') if channel.strip()]
+def split_channels(channels: str) -> list[str]:
+    return [channel.strip() for channel in channels.split(",") if channel.strip()]
 
 
-def join_channels(channels: List[str]) -> str:
-    return ','.join([format(channel).strip() for channel in channels])
+def join_channels(channels: list[str]) -> str:
+    return ",".join([format(channel).strip() for channel in channels])
 
 
 def parse_error(response: str) -> Optional[InstrumentError]:
-    m = re.match(r'^err(\d+)', response.lower())
+    m = re.match(r"^err(\d+)", response.lower())
     if m:
         code = int(m.group(1))
         message = ERROR_MESSAGES.get(code, "")
@@ -30,21 +28,20 @@ def parse_error(response: str) -> Optional[InstrumentError]:
 
 
 class BrandBox(SwitchingMatrix):
+    CHANNELS: list[str] = combine_matrix("ABC", "12")
 
-    CHANNELS = combine_matrix('ABC', '12')
-
-    _error_queue: List[InstrumentError] = []
+    _error_queue: list[InstrumentError] = []
 
     def identify(self) -> str:
-        return self.query('*IDN?')
+        return self.query("*IDN?")
 
     def reset(self) -> None:
         self._error_queue.clear()
-        self.write('*RST')
+        self.write("*RST")
 
     def clear(self) -> None:
         self._error_queue.clear()
-        self.write('*CLS')
+        self.write("*CLS")
 
     # Error queue
 
@@ -56,21 +53,21 @@ class BrandBox(SwitchingMatrix):
     # Switching matrix
 
     @property
-    def closed_channels(self) -> List[str]:
-        channels = self.query(':CLOS:STAT?')
+    def closed_channels(self) -> list[str]:
+        channels = self.query(":CLOS:STAT?")
         return split_channels(channels)
 
-    def close_channels(self, channels: List[str]) -> None:
+    def close_channels(self, channels: list[str]) -> None:
         channel_list = join_channels(sorted(channels))
-        self.write(f':CLOS {channel_list}')
+        self.write(f":CLOS {channel_list}")
 
-    def open_channels(self, channels: List[str]) -> None:
+    def open_channels(self, channels: list[str]) -> None:
         channel_list = join_channels(sorted(channels))
-        self.write(f':OPEN {channel_list}')
+        self.write(f":OPEN {channel_list}")
 
     def open_all_channels(self) -> None:
         channel_list = join_channels(type(self).CHANNELS)
-        self.write(f':OPEN {channel_list}')
+        self.write(f":OPEN {channel_list}")
 
     # Helper
 
@@ -79,7 +76,7 @@ class BrandBox(SwitchingMatrix):
         error = parse_error(response)
         if error:
             self._error_queue.append(error)
-            return ''
+            return ""
         return response
 
     def write(self, message: str) -> None:

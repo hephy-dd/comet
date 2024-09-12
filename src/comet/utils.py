@@ -1,7 +1,7 @@
 import datetime
 import re
 from math import log
-from typing import Iterable, List, Tuple, Optional, Union
+from typing import Iterable, Optional, Union
 
 from pint import UnitRegistry, Quantity
 
@@ -29,7 +29,7 @@ def to_unit(value: Union[float, str, Quantity], unit: str) -> float:
     return (ureg(unit) * value).to(unit).m
 
 
-def auto_scale(value: float) -> Tuple[float, str, str]:
+def auto_scale(value: float) -> tuple[float, str, str]:
     scales = [
         (1e24, "Y", "yotta"),
         (1e21, "Z", "zetta"),
@@ -55,7 +55,7 @@ def auto_scale(value: float) -> Tuple[float, str, str]:
     return 1e0, "", ""
 
 
-def combine_matrix(a: Iterable, b: Iterable, *args: Iterable) -> List[str]:
+def combine_matrix(a: Iterable, b: Iterable, *args: Iterable) -> list[str]:
     c = ["".join((x, y)) for x in a for y in b]
     if args:
         return combine_matrix(c, *args)

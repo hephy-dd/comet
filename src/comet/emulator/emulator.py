@@ -4,8 +4,7 @@ import inspect
 import logging
 import re
 import signal
-import threading
-from typing import Any, Callable, Dict, List, Optional, Tuple, Type, Union
+from typing import Any, Callable, Type, Union
 
 from .tcpserver import TCPServer, TCPServerThread, TCPServerContext
 
@@ -13,7 +12,7 @@ __all__ = ["Emulator", "message", "emulator_factory", "run"]
 
 logger = logging.getLogger(__name__)
 
-emulator_registry: Dict[str, Type] = {}
+emulator_registry: dict[str, Type] = {}
 
 
 def emulator_factory(module_name: str) -> Type:
@@ -60,7 +59,7 @@ class Route:
         return self.method(*args, **kwargs)
 
 
-def get_routes(cls: type) -> List[Route]:
+def get_routes(cls: type) -> list[Route]:
     """Return sorted list of routes defined by method decorator."""
     routes = []
     for cls_ in cls.__mro__:
@@ -74,9 +73,8 @@ def get_routes(cls: type) -> List[Route]:
 
 
 class Emulator:
-
     def __init__(self) -> None:
-        self.options: Dict[str, Any] = {}
+        self.options: dict[str, Any] = {}
 
     def __call__(self, message: str) -> Union[None, str, list]:
         logging.debug("handle message: %s", message)
@@ -97,7 +95,7 @@ class Emulator:
         return None
 
 
-def option_type(value: str) -> Tuple[str, str]:
+def option_type(value: str) -> tuple[str, str]:
     m = re.match(r"^([\w_][\w\d_]*)=(.*)$", value)
     if m:
         return m.group(1), m.group(2)
@@ -106,11 +104,33 @@ def option_type(value: str) -> Tuple[str, str]:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--hostname", default="", help="hostname, default is 'localhost'")
-    parser.add_argument("-p", "--port", type=int, default=10000, help="port, default is 10000")
-    parser.add_argument("-t", "--termination", default="\r\n", help="message termination, default is '\\r\\n'")
-    parser.add_argument("-d", "--request-delay", type=float, default=0.1, help="delay between requests in seconds, default is 0.1 sec")
-    parser.add_argument("-o", "--option", type=option_type, action="append", default=[], help="set emulator specific option(s), e.g. '-o version=2.1'")
+    parser.add_argument(
+        "--hostname", default="", help="hostname, default is 'localhost'"
+    )
+    parser.add_argument(
+        "-p", "--port", type=int, default=10000, help="port, default is 10000"
+    )
+    parser.add_argument(
+        "-t",
+        "--termination",
+        default="\r\n",
+        help="message termination, default is '\\r\\n'",
+    )
+    parser.add_argument(
+        "-d",
+        "--request-delay",
+        type=float,
+        default=0.1,
+        help="delay between requests in seconds, default is 0.1 sec",
+    )
+    parser.add_argument(
+        "-o",
+        "--option",
+        type=option_type,
+        action="append",
+        default=[],
+        help="set emulator specific option(s), e.g. '-o version=2.1'",
+    )
     return parser.parse_args()
 
 
@@ -150,4 +170,4 @@ def run(emulator: Emulator) -> int:
 
     thread.join()
 
-    return 0
+    return 0  # TODO

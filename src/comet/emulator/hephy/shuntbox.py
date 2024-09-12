@@ -29,42 +29,42 @@ class ShuntBoxEmulator(Emulator):
         return int(round(time.time() - self.start_time))
 
     @message(r'\*IDN\?')
-    def get_idn(self):
+    def get_idn(self) -> str:
         return self.options.get("identity", self.IDENTITY)
 
     @message(r'GET:UP \?')
-    def get_up(self):
+    def get_up(self) -> str:
         return format(self.uptime)
 
     @message(r'GET:RAM \?')
-    def get_ram(self):
+    def get_ram(self) -> str:
         return format(self.MEMORY_BYTES)
 
     @message(r'GET:TEMP ALL')
-    def get_temp_all(self):
+    def get_temp_all(self) -> str:
         values = []
         for i in range(self.CHANNELS):
             values.append(format(random.uniform(22.0, 26.0), ".1f"))
         return ",".join(values)
 
     @message(r'GET:TEMP (\d+)')
-    def get_temp(self, value):
+    def get_temp(self, value) -> str:
         return format(random.uniform(22.0, 26.0), ".1f")
 
     @message(r'SET:REL_(ON|OFF) (\d+|ALL)')
-    def set_rel(self, state, value):
+    def set_rel(self, state, value) -> str:
         return self.SUCCESS
 
     @message(r'GET:REL (\d+)')
-    def get_rel(self, value):
+    def get_rel(self, value) -> str:
         return "0"
 
     @message(r'GET:REL ALL')
-    def get_rel_all(self):
+    def get_rel_all(self) -> str:
         return ",".join(["0"] * (self.CHANNELS + 4))
 
     @message(r'.*')
-    def unknown_message(self):
+    def unknown_message(self) -> str:
         return format_error(99)
 
 

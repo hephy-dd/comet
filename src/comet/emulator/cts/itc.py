@@ -2,7 +2,6 @@
 
 import datetime
 import random
-import time
 
 from comet.emulator import Emulator
 from comet.emulator import message, run
@@ -33,92 +32,92 @@ class ITCEmulator(Emulator):
         self.program: int = 0
 
     @message(r'^T$')
-    def get_t(self):
+    def get_t(self) -> str:
         return datetime.datetime.now().strftime("T%d%m%y%H%M%S")
 
     @message(r'^(t\d{6}\d{6})$')
-    def set_t(self, value):
+    def set_t(self, value) -> str:
         t = datetime.datetime.strptime(value, "t%d%m%y%H%M%S")
         return t.strftime("T%d%m%y%H%M%S")
 
     @message(r'^(A0)$')
-    def get_a0(self, channel):
+    def get_a0(self, channel) -> str:
         self.current_temp += random.uniform(-.25, +.25)
         self.current_temp = min(60., max(20., self.current_temp))
         return f"{channel} {self.current_temp:05.1f} {self.target_temp:05.1f}"
 
     @message(r'^(A[34])$')
-    def get_a3(self, channel):
+    def get_a3(self, channel) -> str:
         return fake_analog_channel(channel, -45., +185.)
 
     @message(r'^(A1)$')
-    def get_a1(self, channel):
+    def get_a1(self, channel) -> str:
         self.current_humid += random.uniform(-.25, +.25)
         self.current_humid = min(95., max(15., self.current_humid))
         return f"{channel} {self.current_humid:05.1f} {self.target_humid:05.1f}"
 
     @message(r'^(A2)$')
-    def get_a2(self, channel):
+    def get_a2(self, channel) -> str:
         return fake_analog_channel(channel, +0., +15.)
 
     @message(r'^(A[56])$')
-    def get_a5(self, channel):
+    def get_a5(self, channel) -> str:
         return fake_analog_channel(channel, +5., +98.)
 
     @message(r'^(A7)$')
-    def get_a7(self, channel):
+    def get_a7(self, channel) -> str:
         return fake_analog_channel(channel, -50., +150.)
 
     @message(r'^(A8)$')
-    def get_a8(self, channel):
+    def get_a8(self, channel) -> str:
         return fake_analog_channel(channel, -80., +190.)
 
     @message(r'^(A9)$')
-    def get_a9(self, channel):
+    def get_a9(self, channel) -> str:
         return fake_analog_channel(channel, -0., +25.)
 
     @message(r'^(A\:)$')
-    def get_a10(self, channel):
+    def get_a10(self, channel) -> str:
         return fake_analog_channel(channel, -50., +100.)
 
     @message(r'^(A\;)$')
-    def get_a11(self, channel):
+    def get_a11(self, channel) -> str:
         return fake_analog_channel(channel, -0., +25.)
 
     @message(r'^(A\<)$')
-    def get_a12(self, channel):
+    def get_a12(self, channel) -> str:
         return fake_analog_channel(channel, +2., +5.)
 
     @message(r'^(A[\=\>])$')
-    def get_a13(self, channel):
+    def get_a13(self, channel) -> str:
         return fake_analog_channel(channel, -100., +200.)
 
     @message(r'^(A\?)$')
-    def get_a14(self, channel):
+    def get_a14(self, channel) -> str:
         return fake_analog_channel(channel, -80., +200.)
 
     @message(r'^a[1-7]\s(-?\d+.\d)$')
-    def set_a15(self, value):
+    def set_a15(self, value) -> str:
         return "a"
 
     @message(r'^a[0-6]\s+\d+\.\d+$')
-    def set_a(self):
+    def set_a(self) -> str:
         return "a"
 
     @message(r'^O$')
-    def get_o(self):
+    def get_o(self) -> str:
         return "O1000000000000"
 
     @message(r'^S$')
-    def get_s(self):
+    def get_s(self) -> str:
         return "S11110100\x06"
 
     @message(r'^P$')
-    def get_p(self):
+    def get_p(self) -> str:
         return f"P{self.program:03d}"
 
     @message(r'^P(\d{3})$')
-    def set_p(self, program):
+    def set_p(self, program) -> str:
         self.program = int(program)
         return f"P{self.program:03d}"
 

@@ -1,7 +1,6 @@
-""" Driver for NKT Photonics PILAS picosecond pulsed diode laser """
+"""Driver for NKT Photonics PILAS picosecond pulsed diode laser."""
 
 from comet.driver import Driver
-from typing import Optional
 
 __all__ = ["PILAS"]
 

@@ -1,11 +1,15 @@
-from typing import Dict, Optional
+from typing import Optional
 
 from comet.driver.generic import InstrumentError
-from comet.driver.generic.motion_controller import Position, MotionControllerAxis, MotionController
+from comet.driver.generic.motion_controller import (
+    Position,
+    MotionControllerAxis,
+    MotionController,
+)
 
 __all__ = ["Venus"]
 
-ERROR_MESSAGES: Dict[int, str] = {
+ERROR_MESSAGES: dict[int, str] = {
     1: "no valid axis name",
     2: "no executable instruction",
     3: "too many characters in command line",
@@ -45,7 +49,7 @@ ERROR_MESSAGES: Dict[int, str] = {
     85: "overload on AUX I/O +12V supply or AUX mini +24V supply",
     86: "low brake output voltage",
     87: "overload on motor 4 connector +5V",
-    88: "overload on a supply output pin (latched overload state), clear by \"!err\"",
+    88: 'overload on a supply output pin (latched overload state), clear by "!err"',
     89: "not executable while in standby mode",
     90: "temperature error",
     91: "encoder error",
@@ -61,7 +65,6 @@ def parse_error(response: str) -> Optional[InstrumentError]:
 
 
 class VenusAxis(MotionControllerAxis):
-
     def calibrate(self) -> None:
         self.resource.write(f"{self.index:d} ncal")
 
@@ -92,17 +95,14 @@ class VenusAxis(MotionControllerAxis):
 
 
 class Venus(MotionController):
-
     def identify(self) -> str:
         result = self.resource.query("tango").strip()
         self.resource.read()  # 2nd line
         return result
 
-    def reset(self) -> None:
-        ...
+    def reset(self) -> None: ...
 
-    def clear(self) -> None:
-        ...
+    def clear(self) -> None: ...
 
     def next_error(self) -> Optional[InstrumentError]:
         response = self.resource.query("geterror")
@@ -124,11 +124,11 @@ class Venus(MotionController):
         return [int(value) for value in values].count(0x3) == len(values)
 
     def move_absolute(self, position: Position) -> None:
-        values = " ".join([format(value, '.3f') for value in position])
+        values = " ".join([format(value, ".3f") for value in position])
         self.resource.write(f"{values} move")
 
     def move_relative(self, position: Position) -> None:
-        values = " ".join([format(value, '.3f') for value in position])
+        values = " ".join([format(value, ".3f") for value in position])
         self.resource.write(f"{values} rmove")
 
     def abort(self):
