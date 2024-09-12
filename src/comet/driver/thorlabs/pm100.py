@@ -4,7 +4,7 @@ from typing import Optional
 __all__ = ["PM100"]
 
 
-def parse_error(response: str):
+def parse_error(response: str) -> tuple[int, str]:
     code, message = [token.strip() for token in response.split(",")][:2]
     return int(code), message.strip('"')
 
@@ -67,10 +67,8 @@ class PM100(Instrument):
         Args:
             wavelength (int): Wavelength in nm
         """
-
         if value > 1100 or value < 350:
             raise ValueError("Wavelength must be between 350 and 1100 nm")
-
         self.write(f"SENSe:CORRection:WAVelength {value}")
 
     def measure_power(self) -> float:
@@ -79,7 +77,6 @@ class PM100(Instrument):
         Returns:
             float: Power in W
         """
-
         return float(self.query("MEASure:POWer?").strip())
 
     # Helpers

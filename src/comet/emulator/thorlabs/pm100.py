@@ -2,8 +2,6 @@
 
 import random
 
-from typing import List
-
 from comet.emulator import Emulator
 from comet.emulator import message, run
 from comet.emulator.utils import Error
@@ -18,26 +16,26 @@ class PM100Emulator(Emulator):
     def __init__(self) -> None:
         super().__init__()
 
-        self.error_queue: List[Error] = []
+        self.error_queue: list[Error] = []
 
         self.average_count: int = 100
         self.wavelength: int = 370
 
     @message(r"^\*IDN\?$")
-    def identify(self):
+    def identify(self) -> str:
         return self.IDENTITY
 
     @message(r"^\*RST$")
-    def set_reset(self):
-        self.average_count: int = 100
-        self.wavelength: int = 370
+    def set_reset(self) -> None:
+        self.average_count = 100
+        self.wavelength = 370
 
     @message(r"^\*CLS$")
-    def set_clear(self):
+    def set_clear(self) -> None:
         self.error_queue.clear()
 
     @message(r"^:?SYST:ERR(?::NEXT)?\?$")
-    def get_system_error_next(self):
+    def get_system_error_next(self) -> str:
         if self.error_queue:
             error = self.error_queue.pop(0)
         else:
@@ -45,23 +43,23 @@ class PM100Emulator(Emulator):
         return f'{error.code}, "{error.message}"'
 
     @message(r"^(?:SENS(?:e)?)?:AVER(?:age)?:COUN(?:t)?\?$")
-    def get_average_count(self):
+    def get_average_count(self) -> int:
         return self.average_count
 
     @message(r"^(?:SENS(?:e)?)?:AVER(?:age)?:COUN(?:t)? (\d+)$")
-    def set_average_count(self, average_count):
+    def set_average_count(self, average_count) -> None:
         self.average_count = average_count
 
     @message(r"^(?:SENS(?:e)?)?:CORR(?:ection)?:WAV(?:elength)?\?$")
-    def get_wavelength(self):
+    def get_wavelength(self) -> int:
         return self.wavelength
 
     @message(r"^(?:SENS(?:e)?)?:CORR(?:ection)?:WAV(?:elength)? (\d+)$")
-    def set_wavelength(self, wavelength):
+    def set_wavelength(self, wavelength) -> None:
         self.wavelength = wavelength
 
     @message(r"^MEAS(?:ure)?(?::SCAL(?:ar)?)?(?::POW(?:er)?)?")
-    def measure_power(self):
+    def measure_power(self) -> str:
         power = random.uniform(1e-9, 2e-9)
         return format(power, "E")
 

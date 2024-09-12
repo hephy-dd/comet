@@ -25,35 +25,34 @@ class HydraEmulator(Emulator):
         self.manual_move: int = 0
 
     @message(r'^identify$')
-    def get_identify(self):
+    def get_identify(self) -> str:
         return self.options.get("identity", self.IDENTITY)
 
     @message(r'^getversion|version$')
-    def get_version(self):
-        return float(self.options.get("version", self.VERSION))  # double
+    def get_version(self) -> float:
+        return float(self.options.get("version", self.VERSION))  # double!
 
     @message(r'^getmacadr$')
-    def get_macadr(self):
+    def get_macadr(self) -> str:
         return self.options.get("macaddr", self.MAC_ADDR)
 
     @message(r'^getserialno$')
-    def get_serialno(self):
+    def get_serialno(self) -> str:
         return self.options.get("serialno", self.SERIAL_NO)
 
     @message(r'^getproductid$')
-    def get_productid(self):
+    def get_productid(self) -> str:
         return "hydra"
 
     @message(r'^getcputemp$')
-    def get_cputemp(self):
+    def get_cputemp(self) -> float:
         return float(self.options.get("cputemp", 40.0))
 
     @message(r'^reset$')
-    def set_reset(self):
-        ...
+    def set_reset(self) -> None: ...
 
     @message(r'^status|st$')
-    def get_status(self):
+    def get_status(self) -> int:
         status = 0
         all_cal = int(all([value & 0x1 for value in self.calibrate.values()]))
         all_rm = int(all([value & 0x2 for value in self.calibrate.values()]))
@@ -64,7 +63,7 @@ class HydraEmulator(Emulator):
         return status
 
     @message(r'^(1|2)\s+(?:nstatus|nst|est|ast)$')
-    def get_nstatus(self, device):
+    def get_nstatus(self, device) -> int:
         status = 0
         cal = int(self.calibrate[device] & 0x1 == 0x1)
         rm = int(self.calibrate[device] & 0x2 == 0x2)
@@ -75,28 +74,28 @@ class HydraEmulator(Emulator):
         return status
 
     @message(r'^(1|2)\s+np$')
-    def get_np(self, device):
+    def get_np(self, device) -> float:
         return self.pos[device]
 
     @message(r'^([+-]?\d+(?:\.\d+)?)\s+([+-]?\d+(?:\.\d+)?)\s+m$')
-    def set_move(self, x, y):
+    def set_move(self, x, y) -> None:
         self.pos.update({"1": float(x), "2": float(y)})
 
     @message(r'^([+-]?\d+(?:\.\d+)?)\s+([+-]?\d+(?:\.\d+)?)\s+r$')
-    def set_rmove(self, x, y):
+    def set_rmove(self, x, y) -> None:
         self.pos["1"] += float(x)
         self.pos["2"] += float(y)
 
     @message(r'^(1|2)\s+nrandmove$')
-    def set_nrandmove(self, device):
+    def set_nrandmove(self, device) -> None:
         self.pos[device] = random.uniform(0, 100)
 
     @message(r'^(1|2)\s+(?:ncalibrate|ncal)$')
-    def set_ncalibrate(self, device):
+    def set_ncalibrate(self, device) -> None:
         self.calibrate[device] = 0x1
 
     @message(r'^(1|2)\s+(?:nrangemeasure|nrm)$')
-    def set_nrangemeasure(self, device):
+    def set_nrangemeasure(self, device) -> None:
         self.calibrate[device] |= 0x2
 
 

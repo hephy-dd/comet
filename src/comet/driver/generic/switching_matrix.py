@@ -1,5 +1,4 @@
 from abc import abstractmethod
-from typing import List
 
 from .instrument import Instrument
 
@@ -7,17 +6,17 @@ __all__ = ["SwitchingMatrix"]
 
 
 class SwitchingMatrix(Instrument):
-    CHANNELS: List[str] = []
+    CHANNELS: list[str] = []
 
     @property
     @abstractmethod
-    def closed_channels(self) -> List[str]: ...
+    def closed_channels(self) -> list[str]: ...
 
     @abstractmethod
-    def close_channels(self, channels: List[str]) -> None: ...
+    def close_channels(self, channels: list[str]) -> None: ...
 
     @abstractmethod
-    def open_channels(self, channels: List[str]) -> None: ...
+    def open_channels(self, channels: list[str]) -> None: ...
 
     @abstractmethod
     def open_all_channels(self) -> None: ...

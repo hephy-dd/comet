@@ -1,11 +1,15 @@
-from typing import Dict, Optional
+from typing import Optional
 
 from comet.driver.generic import InstrumentError
-from comet.driver.generic.motion_controller import Position, MotionControllerAxis, MotionController
+from comet.driver.generic.motion_controller import (
+    Position,
+    MotionControllerAxis,
+    MotionController,
+)
 
 __all__ = ["CorvusTT"]
 
-ERROR_MESSAGES: Dict[int, str] = {
+ERROR_MESSAGES: dict[int, str] = {
     1: "internal error",
     2: "internal error",
     3: "internal error",
@@ -32,7 +36,6 @@ def parse_error(response: str) -> Optional[InstrumentError]:
 
 
 class CorvusAxis(MotionControllerAxis):
-
     def calibrate(self) -> None:
         self.resource.write(f"{self.index:d} ncal")
 
@@ -63,15 +66,12 @@ class CorvusAxis(MotionControllerAxis):
 
 
 class CorvusTT(MotionController):
-
     def identify(self) -> str:
         return self.resource.query("identify").strip()
 
-    def reset(self) -> None:
-        ...
+    def reset(self) -> None: ...
 
-    def clear(self) -> None:
-        ...
+    def clear(self) -> None: ...
 
     def next_error(self) -> Optional[InstrumentError]:
         response = self.resource.query("geterror")
@@ -93,17 +93,17 @@ class CorvusTT(MotionController):
         return [int(value) for value in values].count(0x3) == len(values)
 
     def move_absolute(self, position: Position) -> None:
-        values = " ".join([format(value, '.3f') for value in position])
+        values = " ".join([format(value, ".3f") for value in position])
         self.resource.write(f"{values} move")
 
     def move_relative(self, position: Position) -> None:
-        values = " ".join([format(value, '.3f') for value in position])
+        values = " ".join([format(value, ".3f") for value in position])
         self.resource.write(f"{values} rmove")
 
-    def abort(self):
+    def abort(self) -> None:
         self.resource.write("abort")
 
-    def force_abort(self):
+    def force_abort(self) -> None:
         self.resource.write(chr(0x03))  # Ctrl+C
 
     @property

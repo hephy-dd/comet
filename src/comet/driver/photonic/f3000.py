@@ -21,7 +21,7 @@ class F3000(LightSource):
         return int(response.replace("B", ""))
 
     @brightness.setter
-    def brightness(self, brightness: int):
+    def brightness(self, brightness: int) -> None:
         """Set brightness of light source in percent
 
         Args:
@@ -46,7 +46,7 @@ class F3000(LightSource):
         return int(response) == 0
 
     @light_enabled.setter
-    def light_enabled(self, light_enabled: bool):
+    def light_enabled(self, light_enabled: bool) -> None:
         """Turn on / off shutter (light source)
 
         Args:
@@ -59,7 +59,7 @@ class F3000(LightSource):
 
         self.resource.read()
 
-    def identify(self):
+    def identify(self) -> str:
         """Acquire identification string"""
         self.resource.write("V?")
         return self.resource.read()

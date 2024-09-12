@@ -3,7 +3,6 @@ from typing import Optional, Iterator
 from comet.driver.generic import InstrumentError
 from comet.driver.generic.power_supply import PowerSupply, PowerSupplyChannel
 
-
 __all__ = ["NGE100", "NGE100Channel"]
 
 
@@ -13,13 +12,11 @@ class NGE100Channel(PowerSupplyChannel):
     @property
     def enabled(self) -> bool:
         value = int(self.query("OUTPut?"))
-
         return {0: self.OUTPUT_OFF, 1: self.OUTPUT_ON}[value]
 
     @enabled.setter
     def enabled(self, state: bool) -> None:
         value = {self.OUTPUT_OFF: 0, self.OUTPUT_ON: 1}[state]
-
         self.write(f"OUTPut {value}")
 
     @property
@@ -32,7 +29,6 @@ class NGE100Channel(PowerSupplyChannel):
             raise ValueError("Voltage level must be non-negative")
         if level > 32:
             raise ValueError("Voltage level must be less than 32 V")
-
         self.write(f"SOURce:VOLTage:LEVel:IMMediate:AMPLitude {level}")
 
     @property
@@ -45,7 +41,6 @@ class NGE100Channel(PowerSupplyChannel):
             raise ValueError("Current limit must be non-negative")
         if level > 3:
             raise ValueError("Current limit must be less than 3 A")
-
         self.write(f"SOURce:CURRent:LEVel:IMMediate:AMPLitude {level}")
 
     def measure_voltage(self) -> float:
@@ -71,6 +66,8 @@ class NGE100Channel(PowerSupplyChannel):
 class NGE100(PowerSupply):
     """Rohde & Schwarz NGE100 power supply featuring multiple channels"""
 
+    N_CHANNELS: int = 3
+
     def identify(self) -> str:
         return self.query("*IDN?")
 
@@ -94,17 +91,14 @@ class NGE100(PowerSupply):
         self.query("*OPC?")
 
     def __getitem__(self, channel: int) -> NGE100Channel:
-
         if not isinstance(channel, int):
             raise TypeError("Channel index must be an integer")
-
-        if channel not in range(3):
+        if channel not in range(type(self).N_CHANNELS):
             raise IndexError("Channel index out of range")
-
         return NGE100Channel(self.resource, channel)
 
     def __iter__(self) -> Iterator[NGE100Channel]:
         return iter([NGE100Channel(self.resource, channel) for channel in range(3)])
 
     def __len__(self) -> int:
-        return 3
+        return type(self).N_CHANNELS

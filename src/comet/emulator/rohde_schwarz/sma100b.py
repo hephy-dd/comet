@@ -1,7 +1,5 @@
 """Rohde Schwarz SMA100B signal generator emulator"""
 
-from typing import List
-
 from comet.emulator import Emulator
 from comet.emulator import message, run
 from comet.emulator.utils import Error
@@ -16,7 +14,7 @@ class SMA100BEmulator(Emulator):
     def __init__(self) -> None:
         super().__init__()
 
-        self.error_queue: List[Error] = []
+        self.error_queue: list[Error] = []
 
         self.frequency_mode: str = "FIXed"
         self.frequency: float = 1e10
@@ -24,20 +22,20 @@ class SMA100BEmulator(Emulator):
         self.output: bool = False
 
     @message(r"^\*IDN\?$")
-    def identify(self):
+    def identify(self) -> str:
         return self.IDENTITY
 
     @message(r"^\*RST$")
-    def set_reset(self):
+    def set_reset(self) -> None:
         self.average_count = 100
         self.wavelength = 370
 
     @message(r"^\*CLS$")
-    def set_clear(self):
+    def set_clear(self) -> None:
         self.error_queue.clear()
 
     @message(r"^:?SYST(?:em)?:ERR(?::NEXT)?\?$")
-    def get_system_error_next(self):
+    def get_system_error_next(self) -> str:
         if self.error_queue:
             error = self.error_queue.pop(0)
         else:
@@ -45,51 +43,43 @@ class SMA100BEmulator(Emulator):
         return f'{error.code}, "{error.message}"'
 
     @message(r"^(?:SOUR(?:ce)?1)?:FREQ(?:uency)?:MODE\?$")
-    def get_frequency_mode(self):
+    def get_frequency_mode(self) -> str:
         return self.frequency_mode
 
     @message(r"^(?:SOUR(?:ce)?1)?:FREQ(?:uency)?:MODE (\w+)$")
-    def set_frequency_mode(self, mode):
-        print("setting new mode", mode)
+    def set_frequency_mode(self, mode) -> None:
         self.frequency_mode = mode
 
     @message(r"^(?:SOUR(?:ce)?1)?:FREQuency:(?:CW|FIX(?:ed)?)\?$")
-    def get_frequency(self):
+    def get_frequency(self) -> float:
         return self.frequency
 
-    @message(
-        r"^(?:SOUR(?:ce)?1)?:FREQuency:(?:CW|FIX(?:ed)?) ([\d.]+(?:[eE][+-]?\d+)?)$"
-    )
-    def set_frequency(self, frequency):
-
+    @message(r"^(?:SOUR(?:ce)?1)?:FREQuency:(?:CW|FIX(?:ed)?) ([\d.]+(?:[eE][+-]?\d+)?)$")
+    def set_frequency(self, frequency) -> None:
         frequency = float(frequency)
         if frequency < 8e3 or frequency > 12.75e9:
             self.error_queue.append(Error(222, "Parameter Data Out of Range"))
-            return
-
-        self.frequency = frequency
+        else:
+            self.frequency = frequency
 
     @message(r"^(?:SOUR(?:ce)?1)?:POW(?:er)?:POW(?:er)?\?$")
-    def get_power(self):
+    def get_power(self) -> float:
         return self.power
 
-    @message(
-        r"^(?:SOUR(?:ce)?1)?:POW(?:er)?:POW(?:er)? ([+-]?[\d.]+(?:[eE][+-]?\d+)?)$"
-    )
-    def set_power(self, power):
-        print(power)
+    @message(r"^(?:SOUR(?:ce)?1)?:POW(?:er)?:POW(?:er)? ([+-]?[\d.]+(?:[eE][+-]?\d+)?)$")
+    def set_power(self, power) -> None:
         power = float(power)
         if power < -145 or power > 40:
             self.error_queue.append(Error(222, "Parameter Data Out of Range"))
-            return
-        self.power = power
+        else:
+            self.power = power
 
     @message(r"^(?:SOUR(?:ce)?1:)?OUTP(?:ut)?:STAT(?:e)?\?$")
-    def get_output(self):
+    def get_output(self) -> str:
         return "1" if self.output else "0"
 
     @message(r"^(?:SOUR(?:ce)?1:)?OUTP(?:ut)?:STAT(?:e)? (ON|OFF)$")
-    def set_output(self, state):
+    def set_output(self, state) -> None:
         self.output = True if state == "ON" else False
 
 

@@ -4,9 +4,9 @@ from typing import Optional
 from comet.driver.generic import InstrumentError
 from comet.driver.generic.source_meter_unit import SourceMeterUnit
 
-__all__ = ['K237']
+__all__ = ["K237"]
 
-ERROR_MESSAGES = {
+ERROR_MESSAGES: dict[int, str] = {
     0: "Trigger Overrun",
     1: "IDDC",
     2: "IDDCO",
@@ -32,11 +32,11 @@ ERROR_MESSAGES = {
     22: "Cal Compliance Error",
     23: "Cal Value Error",
     24: "Cal Constants Error",
-    25: "Cal Invalid Error"
+    25: "Cal Invalid Error",
 }
 
 
-def select_range_index(values: dict, level: float) -> int:
+def select_range_index(values: dict[int, float], level: float) -> int:
     level = abs(level)
     for index, value in sorted(values.items()):
         if level <= value:
@@ -45,19 +45,18 @@ def select_range_index(values: dict, level: float) -> int:
 
 
 class K237(SourceMeterUnit):
+    WRITE_DELAY: float = 0.250
 
-    WRITE_DELAY = 0.250
-
-    VOLTAGE_RANGES = {
-        0: 0.,
+    VOLTAGE_RANGES: dict[int, float] = {
+        0: 0.0,
         1: 1.1,
-        2: 11.,
-        3: 110.,
-        4: 1100.,
+        2: 11.0,
+        3: 110.0,
+        4: 1100.0,
     }
 
-    CURRENT_RANGES = {
-        0: 0.,
+    CURRENT_RANGES: dict[int, float] = {
+        0: 0.0,
         1: 1e-09,
         2: 1e-08,
         3: 1e-07,
@@ -67,14 +66,14 @@ class K237(SourceMeterUnit):
         7: 1e-03,
         8: 1e-02,
         9: 1e-01,
-        10: 1e-00
+        10: 1e-00,
     }
 
     def identify(self) -> str:
-        value = self.query('U0X')
+        value = self.query("U0X")
         model = value[0:3]
         revision = value[3:6]
-        return f'Keithley Inc., Model {model}, rev. {revision}'
+        return f"Keithley Inc., Model {model}, rev. {revision}"
 
     def reset(self) -> None:
         self.resource.clear()
@@ -83,9 +82,9 @@ class K237(SourceMeterUnit):
         self.resource.clear()
 
     def next_error(self) -> Optional[InstrumentError]:
-        values = self.query('U1X')[3:]
+        values = self.query("U1X")[3:]
         for index, value in enumerate(values):
-            if value == '1':
+            if value == "1":
                 message = ERROR_MESSAGES.get(index, "Unknown Error")
                 return InstrumentError(index, message)
         return None
@@ -94,48 +93,44 @@ class K237(SourceMeterUnit):
 
     @property
     def output(self) -> bool:
-        return self.query('U3X')[18:20] == 'N1'
+        return self.query("U3X")[18:20] == "N1"
 
     @output.setter
     def output(self, state: bool) -> None:
-        value = {False: 'N0X', True: 'N1X'}[state]
+        value = {False: "N0X", True: "N1X"}[state]
         self.write(value)
 
     @property
     def function(self) -> str:
-        return {
-            0: self.FUNCTION_VOLTAGE,
-            1: self.FUNCTION_CURRENT
-        }[int(self.query('U4X')[8])]
+        return {0: self.FUNCTION_VOLTAGE, 1: self.FUNCTION_CURRENT}[
+            int(self.query("U4X")[8])
+        ]
 
     @function.setter
     def function(self, function: str) -> None:
-        value = {
-            self.FUNCTION_VOLTAGE: 0,
-            self.FUNCTION_CURRENT: 1
-        }[function]
-        self.write(f'F{value:d},0X')
+        value = {self.FUNCTION_VOLTAGE: 0, self.FUNCTION_CURRENT: 1}[function]
+        self.write(f"F{value:d},0X")
 
     # Voltage source
 
     @property
     def voltage_level(self) -> float:
-        self.write('G1,2,0X')  # set output format
-        return float(self.query('X'))
+        self.write("G1,2,0X")  # set output format
+        return float(self.query("X"))
 
     @voltage_level.setter
     def voltage_level(self, level: float) -> None:
-        self.write(f'B{level:.3E},,X')
+        self.write(f"B{level:.3E},,X")
 
     @property
     def voltage_range(self) -> float:
-        index = int(self.query('U4X')[5:7])
+        index = int(self.query("U4X")[5:7])
         return type(self).VOLTAGE_RANGES[index]
 
     @voltage_range.setter
     def voltage_range(self, level: float) -> None:
         index = select_range_index(type(self).VOLTAGE_RANGES, level)
-        self.write(f'B,{index:d},X')
+        self.write(f"B,{index:d},X")
 
     @property
     def voltage_compliance(self) -> float:
@@ -143,28 +138,28 @@ class K237(SourceMeterUnit):
 
     @voltage_compliance.setter
     def voltage_compliance(self, level: float) -> None:
-        self.write(f'L{level:.3E},0X')
+        self.write(f"L{level:.3E},0X")
 
     # Current source
 
     @property
     def current_level(self) -> float:
-        self.write('G1,2,0X')  # set output format
-        return float(self.query('X'))
+        self.write("G1,2,0X")  # set output format
+        return float(self.query("X"))
 
     @current_level.setter
     def current_level(self, level: float) -> None:
-        self.write(f'B{level:.3E},,X')
+        self.write(f"B{level:.3E},,X")
 
     @property
     def current_range(self) -> float:
-        index = int(self.query('U4X')[5:7])
+        index = int(self.query("U4X")[5:7])
         return type(self).CURRENT_RANGES[index]
 
     @current_range.setter
     def current_range(self, level: float) -> None:
         index = select_range_index(type(self).CURRENT_RANGES, level)
-        self.write(f'B,{index:d},X')
+        self.write(f"B,{index:d},X")
 
     @property
     def current_compliance(self) -> float:
@@ -172,26 +167,26 @@ class K237(SourceMeterUnit):
 
     @current_compliance.setter
     def current_compliance(self, level: float) -> None:
-        self.write(f'L{level:.3E},0X')
+        self.write(f"L{level:.3E},0X")
 
     @property
     def compliance_tripped(self) -> bool:
-        self.write('G1,0,0X')  # set output format
-        return self.query('X')[0:2] == 'OS'
+        self.write("G1,0,0X")  # set output format
+        return self.query("X")[0:2] == "OS"
 
     # Measurements
 
     def measure_voltage(self) -> float:
-        self.write('G4,2,0X')  # set output format
-        return float(self.query('X'))
+        self.write("G4,2,0X")  # set output format
+        return float(self.query("X"))
 
     def measure_current(self) -> float:
-        self.write('G4,2,0X')  # set output format
-        return float(self.query('X'))
+        self.write("G4,2,0X")  # set output format
+        return float(self.query("X"))
 
     # Helper
 
-    def write(self, message):
+    def write(self, message: str) -> None:
         self.resource.write(message)
         # throttle consecutive writes
         time.sleep(self.WRITE_DELAY)

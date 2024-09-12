@@ -1,18 +1,16 @@
 import re
-from typing import Dict, List, Optional, Tuple
+from typing import Optional
 
 from comet.driver.generic import Instrument
 from comet.driver.generic import InstrumentError
 
-__all__ = ['ShuntBox']
+__all__ = ["ShuntBox"]
 
-ERROR_MESSAGES: Dict[int, str] = {
-    99: "Unknown command"
-}
+ERROR_MESSAGES: dict[int, str] = {99: "Unknown command"}
 
 
 def parse_error(response: str) -> Optional[InstrumentError]:
-    m = re.match(r'^err(\d+)', response.lower())
+    m = re.match(r"^err(\d+)", response.lower())
     if m:
         code = int(m.group(1))
         message = ERROR_MESSAGES.get(code, "")
@@ -21,15 +19,14 @@ def parse_error(response: str) -> Optional[InstrumentError]:
 
 
 class ShuntBox(Instrument):
-
-    _error_queue: List[InstrumentError] = []
+    _error_queue: list[InstrumentError] = []
 
     def identify(self) -> str:
-        return self.query('*IDN?')
+        return self.query("*IDN?")
 
     def reset(self) -> None:
         self._error_queue.clear()
-        self.write('*RST')
+        self.write("*RST")
 
     def clear(self) -> None:
         self._error_queue.clear()
@@ -49,7 +46,7 @@ class ShuntBox(Instrument):
         error = parse_error(response)
         if error:
             self._error_queue.append(error)
-            return ''
+            return ""
         return response
 
     def write(self, message: str) -> None:

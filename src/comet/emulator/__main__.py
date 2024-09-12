@@ -32,9 +32,7 @@ import argparse
 import logging
 import os
 import signal
-import socketserver
 import threading
-import time
 
 import schema
 import yaml
@@ -42,26 +40,28 @@ import yaml
 from .emulator import emulator_factory
 from .tcpserver import TCPServer, TCPServerThread, TCPServerContext
 
-default_config_filenames = ["emulators.yaml", "emulators.yml"]
+default_config_filenames: list[str] = ["emulators.yaml", "emulators.yml"]
 default_hostname: str = ""
 default_termination: str = "\r\n"
 default_request_delay: float = 0.1
 
 version_schema = schema.Regex(r"^\d+\.\d+$")
 
-config_schema = schema.Schema({
-    "version": version_schema,
-    "emulators": {
-        str: {
-            "module": str,
-            schema.Optional("hostname"): str,
-            "port": int,
-            schema.Optional("termination"): str,
-            schema.Optional("request_delay"): float,
-            schema.Optional("options"): dict,
-        }
-    },
-})
+config_schema = schema.Schema(
+    {
+        "version": version_schema,
+        "emulators": {
+            str: {
+                "module": str,
+                schema.Optional("hostname"): str,
+                "port": int,
+                schema.Optional("termination"): str,
+                schema.Optional("request_delay"): float,
+                schema.Optional("options"): dict,
+            }
+        },
+    }
+)
 
 
 def load_config(filename: str) -> dict:
@@ -102,8 +102,10 @@ def locate_config_filename() -> str:
 def event_loop() -> None:
     """Blocks execution until termination or interrupt from keyboard signal."""
     e = threading.Event()
+
     def handle_event(signum, frame):
         e.set()
+
     signal.signal(signal.SIGTERM, handle_event)
     signal.signal(signal.SIGINT, handle_event)
     e.wait()

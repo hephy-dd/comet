@@ -1,6 +1,6 @@
 import datetime
-from typing import Tuple
 from collections import namedtuple
+from typing import Union
 
 from comet.driver import Driver
 
@@ -10,7 +10,7 @@ __all__ = ["ITC"]
 class ITCDriver(Driver):
     """ITC driver base class."""
 
-    def query_bytes(self, message, count) -> str:
+    def query_bytes(self, message: Union[str, bytes], count: int) -> str:
         """Raw query for bytes.
 
         >>> instr.query_bytes("P", 4)
@@ -23,8 +23,7 @@ class ITCDriver(Driver):
 
 
 class AnalogChannel(ITCDriver):
-
-    CHANNELS = {
+    CHANNELS: dict[int, bytes] = {
         1: b"A0",
         2: b"A1",
         3: b"A2",
@@ -45,7 +44,7 @@ class AnalogChannel(ITCDriver):
     """Mapping analog channel index to channel code. When writing convert to
     lower case."""
 
-    def __getitem__(self, index: int) -> Tuple[float, float]:
+    def __getitem__(self, index: int) -> tuple[float, float]:
         """Read analog channel, returns tuple containing actual value and target value.
 
         >>> instr.analog_channel[1] # read temperature target/actual
@@ -57,7 +56,7 @@ class AnalogChannel(ITCDriver):
             raise RuntimeError(f"invalid channel returned: '{result}'")
         return float(actual), float(target)
 
-    def __setitem__(self, index: int, value: float):
+    def __setitem__(self, index: int, value: float) -> None:
         """Set target value for analog channel.
 
         >>> instr.set_analog_channel[1] = 42.0
@@ -73,7 +72,7 @@ class AnalogChannel(ITCDriver):
 class ITC(ITCDriver):
     """Interface for CTS Climate Chambers."""
 
-    WARNING_MESSAGES = {
+    WARNING_MESSAGES: dict[str, str] = {
         "\x01": "Wassernachfüllen",
         "\x02": "Temp. Toleranzband Oben",
         "\x03": "Temp. Toleranzband Unten",
@@ -83,7 +82,7 @@ class ITC(ITCDriver):
     }
     """Warning messages."""
 
-    ERROR_MESSAGES = {
+    ERROR_MESSAGES: dict[str, str] = {
         "\x31": "Temperatur Grenze Min 08-B1",
         "\x32": "Temperatur Grenze Max 08-B1",
         "\x33": "Temp. Begrenzer Pruefr. 01-F1.1",
@@ -114,11 +113,11 @@ class ITC(ITCDriver):
     Status = namedtuple("Status", ("running", "warning", "error", "channels"))
     """Status type container."""
 
-    def __init__(self, resource):
+    def __init__(self, resource) -> None:
         super().__init__(resource)
         self.analog_channel = AnalogChannel(resource)
 
-    def identify(self):
+    def identify(self) -> str:
         """Returns instrument identification."""
         self.time  # perform device access
         return "ITC climate chamber"
@@ -134,7 +133,7 @@ class ITC(ITCDriver):
         return datetime.datetime.strptime(result, "T%d%m%y%H%M%S")
 
     @time.setter
-    def time(self, dt: datetime.datetime):
+    def time(self, dt: datetime.datetime) -> None:
         """Update device date and time, returns updated data and time as datetime object.
 
         >>> instr.time = datetime.datetime.now()
@@ -145,7 +144,7 @@ class ITC(ITCDriver):
             raise RuntimeError("failed to set date and time")
 
     @property
-    def status(self) -> object:
+    def status(self) -> Status:
         """Returns device status as object.
 
         >>> instr.status
@@ -160,7 +159,7 @@ class ITC(ITCDriver):
         error_nr = result[9]
         warning = type(self).WARNING_MESSAGES[error_nr] if is_error and error_nr in type(self).WARNING_MESSAGES else None
         error = type(self).ERROR_MESSAGES[error_nr] if is_error and error_nr in type(self).ERROR_MESSAGES else None
-        return self.Status(running, warning, error, channels)
+        return type(self).Status(running, warning, error, channels)
 
     @property
     def error_message(self) -> str:
@@ -183,7 +182,7 @@ class ITC(ITCDriver):
         return int(result[1:])
 
     @program.setter
-    def program(self, number: int):
+    def program(self, number: int) -> None:
         """Starts a program. Returns program number or 0 for no program.
 
         >>> instr.program = 42
