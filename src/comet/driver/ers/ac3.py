@@ -56,21 +56,29 @@ class AC3:
     @target_temperature.setter
     def target_temperature(self, value: float) -> None:
         """Set temperature setpoint in °C."""
+
+        if value > 300 or value < -70:
+            raise ValueError("Temperature {} is out of range -70 to 300C".format(value))
+
         # Convert to 1/10°C with sign
         temp = int(value * 10)
         # write sign explicitly
         sign = "+" if temp >= 0 else "-"
         temp_str = f"{sign}{abs(temp):04d}"
 
+        self._query(f"ST{temp_str}")
+
     @property
     def operating_mode(self) -> int:
         """Get current operating mode."""
         response = self._query("RO")
         # Format: Oy where y is mode number
-        return int(response)
+        return int(response[1])
 
     @operating_mode.setter
     def operating_mode(self, mode: int) -> None:
+        if mode not in range(1, 5):
+            raise ValueError("Invalid mode: {}".format(mode))
         """Set operating mode."""
         self._query(f"SO{mode}")
 
@@ -87,7 +95,7 @@ class AC3:
         """Get dewpoint control status."""
         response = self._query("RD")
         # Format: Dy where y is 0 (off) or 1 (on)
-        return bool(int(response))
+        return bool(int(response[1]))
 
     @dewpoint_control.setter
     def dewpoint_control(self, state: bool) -> None:
