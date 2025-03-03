@@ -7,15 +7,15 @@ class AC3:
     """AC3 Fusion TS010S temperature controller interface."""
 
     # Operating mode constants
-    MODE_NORMAL = 1
-    MODE_STANDBY = 2
-    MODE_DEFROST = 3
-    MODE_PURGE = 4
+    MODE_NORMAL: int = 1
+    MODE_STANDBY: int = 2
+    MODE_DEFROST: int = 3
+    MODE_PURGE: int = 4
 
-    STATUS_TEMPERATURE_REACHED = 0
-    STATUS_HEATING = 1
-    STATUS_COOLING = 2
-    STATUS_ERROR = 8
+    STATUS_TEMPERATURE_REACHED: int = 0
+    STATUS_HEATING: int = 1
+    STATUS_COOLING: int = 2
+    STATUS_ERROR: int = 8
 
     def __init__(self, resource):
         self._resource = resource
