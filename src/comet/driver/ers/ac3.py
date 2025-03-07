@@ -3,6 +3,8 @@
 from typing import Tuple
 
 
+__all__ = ["AC3"]
+
 class AC3:
     """AC3 Fusion TS010S temperature controller interface."""
 
