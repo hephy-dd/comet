@@ -74,4 +74,4 @@ class AC3Emulator(Emulator):
 
     @message(r"^RE$")
     def get_error(self) -> str:
-        return "E00"
+        return "E000"

@@ -8,6 +8,10 @@ def emulator():
     return AC3Emulator()
 
 
+def test_identify(emulator):
+    assert emulator("RI") == "I1"
+
+
 def test_get_temperature(emulator):
     assert emulator("RC") == "C+0250"
 
@@ -66,4 +70,4 @@ def test_get_control_status(emulator):
 
 
 def test_get_error_code(emulator):
-    assert emulator("RE") == "E00"
+    assert emulator("RE") == "E000"

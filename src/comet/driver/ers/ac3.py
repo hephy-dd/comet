@@ -1,11 +1,13 @@
-""" Driver for ECR AC3 thermal chuck"""
+"""Driver for ECR AC3 thermal chuck"""
 
-from typing import Tuple
+from comet.driver.generic import Instrument, InstrumentError
+from typing import Tuple, Optional
 
 
 __all__ = ["AC3"]
 
-class AC3:
+
+class AC3(Instrument):
     """AC3 Fusion TS010S temperature controller interface."""
 
     # Operating mode constants
@@ -18,6 +20,48 @@ class AC3:
     STATUS_HEATING: int = 1
     STATUS_COOLING: int = 2
     STATUS_ERROR: int = 8
+
+    ERROR_MESSAGES = {
+        1: "OVERTEMP: The Chuck temperature has passed the maximum temperature limit by more than 2°C.",
+        3: "CHUCKCABLE: Analog-digital-converter error",
+        4: "CHUCKCABLE: The Chuck's sensor cable or the Chuck sensor is defective.",
+        5: "CHUCKVOLTx or CHUCKCURRx: Either one of the Chuck's voltage sensors or the Chuck's current sensors is defective.",
+        7: "BASE SENSOR: The base sensor cable is broken or the base sensor is defective.",
+        8: "EXTCHILL: External Chiller communication error.",
+        16: "DEWPWARN: The dew point is too close to the Chuck temperature. Chuck temperature waits for better dewpoint.",
+        17: "DEWPALARM: Severe dew point deterioration. Auto Chuck Defrost in progress.",
+        18: "DEWPSENS: Dew point sensor not connected or defective.",
+        40: "ADC FROZEN: Analog-digital-converter error. Power has been switched off.",
+        61: "OVERCURR HC1: The protective circuit has detected too much current to the Chuck heater No. 1. The Controller SP115P will shut off the Chuck power supply. (Dead end error)",
+        62: "PWR DEFECT HC1: Power Supply defect. The protective circuit measures no voltage and current.",
+        63: "UNDERCURR HC1: The protective circuit has detected too low current in Channel 1. The Circuit can measure voltage, but no current.",
+        70: "INTTEMP: The internal temperature is outside its limits!",
+        72: "THERMO CUT: Thermal Cut-Out. Chuck temperature has passed the maximum temperature limit and the safeguard has switched off the chuck power. (Dead end error)",
+        81: "OVERCURR CH2: The protective circuit has detected too much current to the Chuck heater No 2 (Only for 300mm Chuck). The Controller SP115P will shut off the Chuck power supply. (Dead end error)",
+        82: "PWR DEFECT CH2: Power Supply defect. The protective circuit measures no voltage and current.",
+        83: "UNDERCURR CH2: The protective circuit has detected too low current to the Chuck heater No 2 (Only for 300mm Chuck).",
+        89: "NOCHILLER: The air temperature coming from the Chiller does not go cold",
+        97: "AIRPRESS LOW: Air pressure at air input is too low.",
+        200: "PROB LOCK: Prober lock switch signaled an error.",
+        201: "CHUCKTEMP: Chuck temperature differs. Power has been switched off.",
+        202: "PT1000J: The PT1000J cable is defective.",
+        203: "PT100M: The PT1000 cable is defective.",
+    }
+
+    def identify(self) -> str:
+        self._query("RI")  # verify connection
+        return "ERS AC3 Thermal Chuck"
+
+    def reset(self) -> None: ...  # not supported
+
+    def clear(self) -> None: ...  # not supported
+
+    def next_error(self) -> Optional[InstrumentError]:
+        code = int(self._query("RE")[1:])
+
+        if code:
+            return InstrumentError(code, self.ERROR_MESSAGES.get(code, "unknown error"))
+        return None
 
     def __init__(self, resource):
         self._resource = resource
@@ -125,9 +169,3 @@ class AC3:
         response = self._query("RI")
 
         return int(response[1])
-
-    def get_error_status(self) -> int:
-        """Get error status code."""
-        response = self._query("RE")
-        # Format: Eyyy where yyy is error code
-        return int(response[1:])
