@@ -64,5 +64,6 @@ def test_set_hold_mode(emulator):
 def test_get_control_status(emulator):
     assert emulator("RI") == "I1"
 
+
 def test_get_error_code(emulator):
     assert emulator("RE") == "E00"
