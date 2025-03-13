@@ -14,7 +14,7 @@ from .emulator import Emulator, emulator_factory
 T = TypeVar("T")
 
 
-def open_emulator(module_name: str, options: dict = None) -> "EmulatorResource":
+def open_emulator(module_name: str, options: Optional[dict] = None) -> "EmulatorResource":
     emulator = emulator_factory(module_name)()
     if options:
         emulator.options.update(options)
