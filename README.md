@@ -214,9 +214,9 @@ To use instrument emulators as resources use function `open_emulator` from
 package `comet.emulator` to open a mock resource for an instrument.
 
 ```python
-from comet.emulator import open_resource
+from comet.emulator import open_emulator
 
-with open_resource("keithley.k2410") as res:
+with open_emulator("keithley.k2410") as res:
     print(res.query("*IDN?"))
 ```
 
@@ -225,22 +225,22 @@ instrument drivers.
 
 ```python
 from comet.driver.keithley import K2410
-from comet.emulator import open_resource
+from comet.emulator import open_emulator
 
-with open_resource("keithley.k2410") as res:
+with open_emulator("keithley.k2410") as res:
     instr = K2410(res)
     print(instr.identify())
 ```
 
 To set emulator specific options either provide an `options` dict to
-`open_resource` or update the `emulator.options` dict directly.
+`open_emulator` or update the `emulator.options` dict directly.
 
 ```python
-from comet.emulator import open_resource
+from comet.emulator import open_emulator
 
 options = {"correction_open_delay": 2.0}
 
-with open_resource("keysight.e4980a", options=options) as res:
+with open_emulator("keysight.e4980a", options=options) as res:
     res.emulator.options.update({
         "cp.min": 2.5e-10,
         "cp.max": 2.5e-9,
