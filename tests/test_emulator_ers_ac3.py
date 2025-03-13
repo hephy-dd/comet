@@ -58,10 +58,10 @@ def test_get_hold_mode(emulator):
 
 
 def test_set_hold_mode(emulator):
-    assert emulator("SH01") == "OK"
+    assert emulator("SH1") == "OK"
     assert emulator.hold_mode == 11
 
-    assert emulator("SH00") == "OK"
+    assert emulator("SH0") == "OK"
     assert emulator.hold_mode == 0
 
 

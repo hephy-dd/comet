@@ -59,7 +59,7 @@ class AC3Emulator(Emulator):
     def get_hold_mode(self) -> str:
         return f"H{self.hold_mode:02d}"
 
-    @message(r"^SH([01][01])$")
+    @message(r"^SH([01])$")
     def set_hold_mode(self, value: str) -> str:
         val = int(value)
         if val == 0:
