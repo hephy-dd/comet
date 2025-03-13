@@ -164,7 +164,8 @@ class AC3(Instrument):
         """Set hold mode state."""
         self._query(f"SH{int(state)}")
 
-    def get_control_status(self) -> int:
+    @property
+    def control_status(self) -> int:
         """Get control status."""
         response = self._query("RI")
 
