@@ -31,6 +31,7 @@ class AC3Emulator(Emulator):
     @message(r"^ST([+-]\d{4})$")
     def set_target_temperature(self, value: str) -> str:
         self.target_temperature = float(value) / 10
+        self.temperature = self.target_temperature
         return "OK"
 
     @message(r"^RO$")
