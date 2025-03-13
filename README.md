@@ -171,7 +171,7 @@ print(to_unit(2.5, "pA"))
 
 ## Emulators
 
-### TCP sockets
+### Emulator TCP sockets
 
 To emulate one or more instruments using TCP sockets create a `emulators.yaml`
 configuration file in your project directory specifying emulator module and
@@ -208,7 +208,7 @@ python -m comet.emulator -f custom_emulators.yaml
 
 See [comet/emulator](src/comet/emulator) for available instrument emulators.
 
-### Resources
+### Emulator Resources
 
 To use instrument emulators as resources use function `open_emulator` from
 package `comet.emulator` to open a mock resource for an instrument.
@@ -229,7 +229,7 @@ from comet.emulator import open_resource
 
 with open_resource("keithley.k2410") as res:
     instr = K2410(res)
-    print(isntr.identify())
+    print(instr.identify())
 ```
 
 To set emulator specific options either provide an `options` dict to
