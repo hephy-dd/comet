@@ -150,20 +150,23 @@ def test_hold_mode_setter(resource):
     assert resource.buffer[0] == "SH0"
 
 
-def control_status(resource):
+def test_control_status(resource):
     device = AC3(resource)
     resource.buffer = ["I0"]
     assert device.control_status == device.STATUS_TEMPERATURE_REACHED
+    assert resource.buffer == ["RI"]
 
     resource.buffer = ["I1"]
     assert device.control_status == device.STATUS_HEATING
+    assert resource.buffer == ["RI"]
 
     resource.buffer = ["I2"]
     assert device.control_status == device.STATUS_COOLING
+    assert resource.buffer == ["RI"]
 
     resource.buffer = ["I8"]
     assert device.control_status == device.STATUS_ERROR
-    assert device.buffer == ["RI"]
+    assert resource.buffer == ["RI"]
 
 
 def test_next_error(resource):
