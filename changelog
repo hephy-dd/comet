@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.1.0] - 2025-03-13
 
 ### Added
+- Support for Python 3.13
 - Emulator mock resources (#84).
 - Missing type hints for static type checking (#82).
 - Generic base classes `PowerSupply` and `PowerSupplyChannel` and `LightSource`.
@@ -19,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Thorlabs PM100 USB optical power meter (#78).
 - Rohde&Schwarz SMA100B (#79).
 - NKT Photonics PILAS laser (#80).
+- ERS AC3 Thermal Chuck (#83).
 
 ### Changed
 - Restructured driver mixins (#81).
