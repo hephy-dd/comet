@@ -24,9 +24,13 @@ dynamic = ["version"]
 Homepage = "https://github.com/hephy-dd/comet/"
 Source = "https://github.com/hephy-dd/comet/"
 
+[project.scripts]
+comet-emulator = "comet.emulator.__main__:main"
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.version]
 path = "src/comet/__init__.py"
+
