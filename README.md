@@ -171,7 +171,7 @@ print(to_unit(2.5, "pA"))
 
 ## Emulators
 
-### Emulator TCP sockets
+### Using TCP sockets
 
 To emulate one or more instruments using TCP sockets create a `emulators.yaml`
 configuration file in your project directory specifying emulator module and
@@ -194,21 +194,22 @@ emulators:
       cp.max: 2.5e-9
 ```
 
-To spin up the emulator sockets execute the `comet.emulator` package.
+To spin up the emulator sockets run `comet-emulator` or alternatively
+`python -m comet.emulator`.
 
 ```bash
-python -m comet.emulator
+comet-emulator
 ```
 
 Use command line argument `-f` to use a custom configuration file.
 
 ```bash
-python -m comet.emulator -f custom_emulators.yaml
+comet-emulator -f custom_emulators.yaml
 ```
 
 See [comet/emulator](src/comet/emulator) for available instrument emulators.
 
-### Emulator Resources
+### Using Resources
 
 To use instrument emulators as resources use function `open_emulator` from
 package `comet.emulator` to open a mock resource for an instrument.
