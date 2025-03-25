@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Generic base class `DigitalMultiMeter`.
 - Keithley DAQ6510 DMM (#88).
 - Keithley K2700 DMM (#89).
+- Driver factory (#90).
 
 ## [1.1.1] - 2025-03-17
 
@@ -49,7 +50,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - ITK CorvisTT emulator.
 
-[unreleased]: https://github.com/hephy-dd/comet/releases/tag/v1.1.1...HEAD
+[unreleased]: https://github.com/hephy-dd/comet/releases/tag/v1.2.0...HEAD
+[1.2.0]: https://github.com/hephy-dd/comet/compare/v1.1.1...v1.2.0
 [1.1.1]: https://github.com/hephy-dd/comet/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/hephy-dd/comet/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/hephy-dd/comet/releases/tag/v1.0.0
