@@ -5,9 +5,10 @@ from .instrument import (
     InstrumentError,
     Instrument,
 )
-from .source_meter_unit import SourceMeterUnit
+from .dmm import DigitalMultiMeter
 from .electrometer import Electrometer
 from .lcr_meter import LCRMeter
+from .source_meter_unit import SourceMeterUnit
 from .switching_matrix import SwitchingMatrix
 from .motion_controller import (
     MotionController,
@@ -21,9 +22,10 @@ __all__ = [
     "RouteTerminalMixin",
     "InstrumentError",
     "Instrument",
-    "SourceMeterUnit",
+    "DigitalMultiMeter",
     "Electrometer",
     "LCRMeter",
+    "SourceMeterUnit",
     "SwitchingMatrix",
     "MotionController",
     "MotionControllerAxis",

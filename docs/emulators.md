@@ -1,6 +1,6 @@
 # Emulators
 
-See package [comet.emulator](https://github.com/hephy-dd/comet/tree/main/comet/emulator)
+See package [comet.emulator](https://github.com/hephy-dd/comet/tree/main/src/comet/emulator)
 for available instrument emulators.
 
 ## Using TCP sockets
