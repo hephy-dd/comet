@@ -2,6 +2,10 @@
 
 Generic instrument drivers use a PyVISA compatible resource to communicate with.
 
+See package [comet.driver](https://github.com/hephy-dd/comet/tree/main/src/comet/driver) for available instrument drivers.
+
+## Examples
+
 ```python
 import pyvisa
 
@@ -26,17 +30,26 @@ with rm.open_resource("TCPIP::0.0.0.0::11001::SOCKET") as res:
     smu.output = smu.OUTPUT_OFF
 ```
 
+Loading driver by module name using driver factory.
+
+```python
+from comet.driver import driver_factory
+
+rm = pyvisa.ResourceManager("@py")
+
+with rm.open_resource("TCPIP::0.0.0.0::11001::SOCKET") as res:
+    smu = driver_factory("keithley.k2410")(res)
+```
+
 Switching between generic drivers.
 
 ```python
-from comet.driver.keithley import K2410
-from comet.driver.keithley import K2470
-from comet.driver.keithley import K2657A
+from comet.driver import driver_factory
 
 smu_drivers = {
-    "Keithely2410": K2410,
-    "Keithely2470": K2470,
-    "Keitley2657A": K2657A,
+    "Keithely2410": "keihtley.k2410",
+    "Keithely2470": "keihtley.k2470",
+    "Keitley2657A": "keihtley.k2657a",
 }
 
 driver_name = "Keithely2470"
@@ -47,4 +60,21 @@ with rm.open_resource("TCPIP::0.0.0.0::11001::SOCKET") as res:
     smu = smu_drivers.get(driver_name)(res)
 ```
 
-See package [comet.driver](https://github.com/hephy-dd/comet/tree/main/comet/driver) for available instrument drivers.
+Open multiple resources using `contextlib.ExitStack` to guarantee all
+resources are automatically closed properly.
+
+```python
+from contextlib import ExitStack
+
+import pyvisa
+
+resource_name_1 = "TCPIP::0.0.0.0::11001::SOCKET"
+resource_name_2 = "TCPIP::0.0.0.0::11002::SOCKET"
+
+rm = pyvisa.ResourceManager("@py")
+
+with ExitStack() as stack:
+    res_1 = stack.enter_context(rm.open_resource(resource_name_1))
+    res_2 = stack.enter_context(rm.open_resource(resource_name_2))
+    ...
+```
