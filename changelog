@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] = 2025-03-25
+
+### Added
+- Generic base class `DigitalMultiMeter`.
+- Keithley DAQ6510 DMM (#88).
+- Keithley K2700 DMM (#89).
+
 ## [1.1.1] - 2025-03-17
 
 ### Added
