@@ -62,9 +62,9 @@ Switching between generic drivers.
 from comet.driver import driver_factory
 
 smu_drivers = {
-    "Keithely2410": "keihtley.k2410",
-    "Keithely2470": "keihtley.k2470",
-    "Keitley2657A": "keihtley.k2657a",
+    "Keithely2410": "keithley.k2410",
+    "Keithely2470": "keithley.k2470",
+    "Keitley2657A": "keithley.k2657a",
 }
 
 driver_name = "Keithely2470"
