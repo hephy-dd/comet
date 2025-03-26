@@ -86,6 +86,26 @@ class K2700Emulator(IEC60488Emulator):
         time.sleep(random.uniform(.5, 1.0))  # rev B10 ;)
         return "{:E},+0.000,+0.000,+0.000,+0.000".format(vdc)
 
+    # Measure
+
+    @message(r'^:?MEAS:VOLT\?$')
+    def get_measure_voltage(self) -> str:
+        volt_min = float(self.options.get("volt.min", 0))
+        volt_max = float(self.options.get("volt.max", 10))
+        return format(random.uniform(volt_min, volt_max), "E")
+
+    @message(r'^:?MEAS:CURR\?$')
+    def get_measure_current(self) -> str:
+        curr_min = float(self.options.get("curr.min", 1e6))
+        curr_max = float(self.options.get("curr.max", 1e7))
+        return format(random.uniform(curr_min, curr_max), "E")
+
+    @message(r'^:?MEAS:TEMP\?$')
+    def get_measure_temperature(self) -> str:
+        temp_min = float(self.options.get("temp.min", 24))
+        temp_max = float(self.options.get("temp.max", 25))
+        return format(random.uniform(temp_min, temp_max), "E")
+
     # Trigger
 
     @message(r':?TRIG:DEL:AUTO\?')
