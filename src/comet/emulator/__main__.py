@@ -4,7 +4,6 @@ configuration file.
 Example configuration:
 
 ```
-version: '1.0'
 emulators:
   smu:
     module: keithley.k2410
@@ -45,11 +44,9 @@ default_hostname: str = ""
 default_termination: str = "\r\n"
 default_request_delay: float = 0.1
 
-version_schema = schema.Regex(r"^\d+\.\d+$")
-
 config_schema = schema.Schema(
     {
-        "version": version_schema,
+        schema.Optional("version"): str,  # deprecated
         "emulators": {
             str: {
                 "module": str,

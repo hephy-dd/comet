@@ -1,5 +1,5 @@
 site_name: COMET
-site_url: https://hephy-dd.github.com/comet/
+site_url: https://hephy-dd.github.io/comet/
 repo_url: https://github.com/hephy-dd/comet/
 edit_uri: edit/main/docs/
 site_description: Control and Measurement Toolkit
@@ -15,4 +15,4 @@ theme:
     highlightjs: true
 extra_css: [extra.css]
 extra:
-    version: 1.2.0
+    version: 1.2.1

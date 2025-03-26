@@ -187,7 +187,6 @@ configuration file in your project directory specifying emulator module and
 port.
 
 ```yaml
-version: '1.0'
 emulators:
   smu:
     module: keithley.k2470
