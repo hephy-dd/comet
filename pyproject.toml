@@ -21,7 +21,7 @@ dependencies = [
 dynamic = ["version"]
 
 [project.urls]
-Homepage = "https://github.com/hephy-dd/comet/"
+Homepage = "https://hephy-dd.github.io/comet/"
 Source = "https://github.com/hephy-dd/comet/"
 
 [project.scripts]

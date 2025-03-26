@@ -14,7 +14,7 @@ utilities for instrumentation applications. Inspired by
 Install from GitHub using pip
 
 ```bash
-pip install git+https://github.com/hephy-dd/comet.git@v1.2.0
+pip install https://github.com/hephy-dd/comet/archive/refs/tags/v1.2.0.tar.gz
 ```
 
 ## Drivers
