@@ -13,32 +13,40 @@ def parse_error(response: str) -> tuple[int, str]:
 
 
 class K2700(BeeperMixin, DigitalMultiMeter):
+    """Driver for Keithley 2700 digital multimeter."""
+    def __init__(self, resource) -> None:
+        super().__init__(resource)
+        self._sense_function: Optional[str] = None
+        self._format_elements: Optional[str] = None
+
     def identify(self) -> str:
-        return self.query("*IDN?")
+        return self._query("*IDN?")
 
     def reset(self) -> None:
-        self.write("*RST")
-        self.query("*OPC?")
+        self._write("*RST")
+        self._query("*OPC?")
+        self._sense_function = None
+        self._format_elements = None
 
     def clear(self) -> None:
-        self.write("*CLS")
-        self.query("*OPC?")
+        self._write("*CLS")
+        self._query("*OPC?")
 
     # Beeper
 
     @property
     def beeper(self) -> bool:
-        return bool(int(self.query(":SYST:BEEP:STAT?")))
+        return bool(int(self._query(":SYST:BEEP:STAT?")))
 
     @beeper.setter
     def beeper(self, value: bool) -> None:
-        self.write(f":SYST:BEEP:STAT {value:d}")
-        self.query("*OPC?")
+        self._write(f":SYST:BEEP:STAT {value:d}")
+        self._query("*OPC?")
 
     # Error queue
 
     def next_error(self) -> Optional[InstrumentError]:
-        code, message = parse_error(self.query(":SYST:ERR:NEXT?"))
+        code, message = parse_error(self._query(":SYST:ERR:NEXT?"))
         if code:
             return InstrumentError(code, message)
         return None
@@ -46,15 +54,29 @@ class K2700(BeeperMixin, DigitalMultiMeter):
     # Measurements
 
     def measure_voltage(self) -> float:
-        return float(self.query(":MEAS:VOLT?"))
+        self._ensure_sense_function("VOLT:DC")
+        self._ensure_format_elements("READ")
+        return float(self._query(":READ?"))
 
     def measure_current(self) -> float:
-        return float(self.query(":MEAS:CURR?"))
+        self._ensure_sense_function("CURR:DC")
+        self._ensure_format_elements("READ")
+        return float(self._query(":READ?"))
 
     # Helper
 
-    def query(self, message: str) -> str:
+    def _query(self, message: str) -> str:
         return self.resource.query(message).strip()
 
-    def write(self, message: str) -> None:
+    def _write(self, message: str) -> None:
         self.resource.write(message)
+
+    def _ensure_sense_function(self, function: str) -> None:
+        if self._sense_function != function:
+            self._write(f":SENS:FUNC '{function}'")
+            self._sense_function = function
+
+    def _ensure_format_elements(self, elements: str) -> None:
+        if self._format_elements != elements:
+            self._write(f":FORM:ELEM {elements}")
+            self._format_elements = elements

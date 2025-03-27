@@ -14,6 +14,8 @@ def parse_error(response: str) -> tuple[int, str]:
 
 
 class K2400(BeeperMixin, RouteTerminalMixin, SourceMeterUnit):
+    """Driver for Keithley 2400 source meter unit."""
+
     def identify(self) -> str:
         return self.query("*IDN?")
 
