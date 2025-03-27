@@ -14,7 +14,7 @@ utilities for instrumentation applications. Inspired by
 Install from GitHub using pip
 
 ```bash
-pip install https://github.com/hephy-dd/comet/archive/refs/tags/v1.2.1.tar.gz
+pip install https://github.com/hephy-dd/comet/archive/refs/tags/v1.2.2.tar.gz
 ```
 
 ## Drivers
@@ -62,9 +62,9 @@ Switching between generic drivers.
 from comet.driver import driver_factory
 
 smu_drivers = {
-    "Keithely2410": "keithley.k2410",
-    "Keithely2470": "keithley.k2470",
-    "Keitley2657A": "keithley.k2657a",
+    "Keithely2410": driver_factory("keithley.k2410"),
+    "Keithely2470": driver_factory("keithley.k2470"),
+    "Keitley2657A": driver_factory("keithley.k2657a"),
 }
 
 driver_name = "Keithely2470"
