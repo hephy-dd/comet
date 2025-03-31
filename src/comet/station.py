@@ -165,6 +165,12 @@ class Station:
         except SchemaError as e:
             raise ValueError(f"Invalid update for instrument {name!r}: {e}")
 
+    def enter_context(self, cm: Any) -> Any:
+        """Enter an context manager and attach it to the station's lifecycle."""
+        if not self._stack:
+            raise RuntimeError(f"{type(self).__name__!r} context is not active, enter context first.")
+        return self._stack.enter_context(cm)
+
     def __enter__(self) -> "Station":
         self._stack = ExitStack()
         for name, config in self.instruments_config.items():
