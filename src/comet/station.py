@@ -13,20 +13,20 @@ from comet.driver import driver_factory, Driver
 logger = logging.getLogger(__name__)
 
 INSTRUMENT_SCHEMA = Schema({
-    Optional_('model'): And(str, lambda s: len(s) > 0),
-    'resource_name': And(str, lambda s: len(s) > 0),
-    Optional_('termination'): And(str, lambda s: len(s) > 0),
-    Optional_('timeout'): And(Use(float), lambda t: t > 0),
-    Optional_('visa_library'): str,
+    Optional_("model"): And(str, lambda s: len(s) > 0),
+    "resource_name": And(str, lambda s: len(s) > 0),
+    Optional_("termination"): And(str, lambda s: len(s) > 0),
+    Optional_("timeout"): And(Use(float), lambda t: t > 0),
+    Optional_("visa_library"): str,
 })
 
 
 def default_resource_factory(config: dict[str, Any]) -> pyvisa.Resource:
     visa_library = config.get("visa_library", "@py")
     rm = pyvisa.ResourceManager(visa_library)
-    resource_name = config['resource_name']
-    termination = config.get('termination', "\r\n")
-    timeout_ms = int(config.get('timeout', 8.0) * 1000)
+    resource_name = config["resource_name"]
+    termination = config.get("termination", "\r\n")
+    timeout_ms = int(config.get("timeout", 8.0) * 1000)
     return rm.open_resource(
         resource_name,
         read_termination=termination,
@@ -40,7 +40,7 @@ def find_default_file(default_files: list[str]) -> Optional[str]:
     found_files = [f for f in default_files if os.path.isfile(f)]
     if not found_files:
         logger.critical("No configuration file found.")
-        return
+        return None
     # Select the file by priority (order in default_files).
     for file in default_files:
         if file in found_files:
@@ -71,8 +71,8 @@ class Station:
             resource_factory: Optional custom factory function.
             resource_middleware: Optional list of middleware functions.
         """
-        self.instruments_config: dict[str] = {}
-        self.instruments: dict[str] = {}
+        self.instruments_config: dict[str, Any] = {}
+        self.instruments: dict[str, Any] = {}
         self._stack: Optional[ExitStack] = None
         self.resource_factory: Callable = resource_factory or default_resource_factory
         self.resource_middleware: list[Callable] = resource_middleware or []
@@ -107,7 +107,7 @@ class Station:
                 validated = INSTRUMENT_SCHEMA.validate(conf)
                 validated_configs[name] = validated
             except SchemaError as e:
-                raise ValueError(f"Invalid configuration for instrument '{name}': {e}")
+                raise ValueError(f"Invalid configuration for instrument {name!r}: {e}")
 
         station = cls(
             resource_factory=resource_factory,
@@ -121,20 +121,23 @@ class Station:
             default_files = ["station.yml", "station.yaml", "station.json"]
             config_file = find_default_file(default_files)
 
+        if not config_file:
+            raise ValueError("No default config file found.")
+
         # Load configuration based on file extension.
-        if config_file.endswith(('.yml', '.yaml')):
+        if config_file.endswith((".yml", ".yaml")):
             if yaml is None:
                 raise ImportError("PyYAML is required for YAML configuration.")
-            with open(config_file, 'r') as f:
+            with open(config_file, "r") as f:
                 config = yaml.safe_load(f)
-        elif config_file.endswith('.json'):
-            with open(config_file, 'r') as f:
+        elif config_file.endswith(".json"):
+            with open(config_file, "r") as f:
                 config = json.load(f)
         else:
             raise ValueError("Unsupported config file type.")
 
         # Validate each instrument's configuration.
-        raw_instruments = config.get('instruments', {})
+        raw_instruments = config.get("instruments", {})
         validated_configs = {}
         for name, conf in raw_instruments.items():
             try:
@@ -142,25 +145,25 @@ class Station:
                 # Convert the validated dict into an object for attribute access.
                 validated_configs[name] = validated
             except SchemaError as e:
-                raise ValueError(f"Invalid configuration for instrument '{name}': {e}")
+                raise ValueError(f"Invalid configuration for instrument {name!r}: {e}")
         self.instruments_config = validated_configs
 
     def add_instrument(self, name: str, /, **kwargs) -> None:
         if name in self.instruments_config:
-            raise KeyError(f"Instrument '{name}' already in configuration.")
+            raise KeyError(f"Instrument {name!r} already in configuration.")
         self.instruments_config.setdefault(name, {})
         self.update_instrument(name, **kwargs)
 
     def update_instrument(self, name: str, /, **kwargs):
         if name not in self.instruments_config:
-            raise KeyError(f"Instrument '{name}' not found in configuration.")
+            raise KeyError(f"Instrument {name!r} not found in configuration.")
         conf_dict = self.instruments_config[name]
         conf_dict.update(**kwargs)
         try:
             validated = INSTRUMENT_SCHEMA.validate(conf_dict)
             self.instruments_config[name] = validated
         except SchemaError as e:
-            raise ValueError(f"Invalid update for instrument '{name}': {e}")
+            raise ValueError(f"Invalid update for instrument {name!r}: {e}")
 
     def __enter__(self) -> "Station":
         self._stack = ExitStack()
@@ -172,7 +175,7 @@ class Station:
                 res_cm = middleware(res_cm, config)
             # Open the resource and instantiate the driver.
             res = self._stack.enter_context(res_cm)
-            driver_cls = driver_factory(config['model']) if "model" in config else Driver
+            driver_cls = driver_factory(config["model"]) if "model" in config else Driver
             self.instruments[name] = driver_cls(res)
             # Attach as a read-only attribute.
             object.__setattr__(self, name, self.instruments[name])
@@ -180,16 +183,16 @@ class Station:
 
     def __exit__(self, exc_type, exc_value, traceback) -> None:
         """Close all instrument resources."""
-        self._stack.close()
+        self._stack.close()  # type: ignore
 
     def __getattr__(self, name):
         """Dynamic lookup of instruments from dictionary."""
         if name in self.instruments:
             return self.instruments[name]
-        raise AttributeError(f"'{type(self).__name__}' object has no attribute '{name}'")
+        raise AttributeError(f"{type(self).__name__!r} object has no attribute {name!r}")
 
     def __setattr__(self, name, value):
         """Prevent modifications to instrument attributes once they are set."""
         if "instruments" in self.__dict__ and name in self.__dict__.get("instruments", {}):
-            raise AttributeError(f"Cannot modify read-only instrument attribute '{name}'")
+            raise AttributeError(f"Cannot modify read-only instrument attribute {name!r}")
         object.__setattr__(self, name, value)
