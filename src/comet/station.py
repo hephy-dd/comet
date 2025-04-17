@@ -89,7 +89,7 @@ class Station:
         return station
 
     @classmethod
-    def from_file(self, config_file: Optional[str] = None, *, resource_factory: Optional[Callable[[dict[str, Any]], Any]] = None) -> "Station":
+    def from_file(cls, config_file: Optional[str] = None, *, resource_factory: Optional[Callable[[dict[str, Any]], Any]] = None) -> "Station":
         """
         Create a Station instance from a config file.
 
