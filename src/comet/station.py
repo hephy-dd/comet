@@ -47,6 +47,7 @@ def find_default_file(default_files: list[str]) -> Optional[str]:
     for file in default_files:
         if file in found_files:
             return file
+    return None
 
 
 class Station:
