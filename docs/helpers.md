@@ -10,8 +10,9 @@ remaining time calculation.
 ```python
 from comet.estimate import Estimate
 
-e = Estimate(42)  # start stopwatch
-for i in range(42 + 1):
+n = 42
+e = Estimate(n)  # start stopwatch
+for i in range(n):
     ...
     e.advance()  # stop time since last step
     print("passed:", e.passed)

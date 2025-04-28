@@ -47,12 +47,12 @@ Switching between generic drivers.
 from comet.driver import driver_factory
 
 smu_drivers = {
-    "Keithely2410": driver_factory("keithley.k2410"),
-    "Keithely2470": driver_factory("keithley.k2470"),
-    "Keitley2657A": driver_factory("keithley.k2657a"),
+    "Keithley2410": driver_factory("keithley.k2410"),
+    "Keithley2470": driver_factory("keithley.k2470"),
+    "Keithley2657A": driver_factory("keithley.k2657a"),
 }
 
-driver_name = "Keithely2470"
+driver_name = "Keithley2470"
 
 rm = pyvisa.ResourceManager("@py")
 

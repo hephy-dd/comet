@@ -62,12 +62,12 @@ Switching between generic drivers.
 from comet.driver import driver_factory
 
 smu_drivers = {
-    "Keithely2410": driver_factory("keithley.k2410"),
-    "Keithely2470": driver_factory("keithley.k2470"),
-    "Keitley2657A": driver_factory("keithley.k2657a"),
+    "Keithley2410": driver_factory("keithley.k2410"),
+    "Keithley2470": driver_factory("keithley.k2470"),
+    "Keithley2657A": driver_factory("keithley.k2657a"),
 }
 
-driver_name = "Keithely2470"
+driver_name = "Keithley2470"
 
 rm = pyvisa.ResourceManager("@py")
 
@@ -89,8 +89,9 @@ remaining time calculation.
 ```python
 from comet.estimate import Estimate
 
-e = Estimate(42)  # start stopwatch
-for i in range(42 + 1):
+n = 42
+e = Estimate(n)  # start stopwatch
+for i in range(n):
     ...
     e.advance()  # stop time since last step
     print("passed:", e.passed)
