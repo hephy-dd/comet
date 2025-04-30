@@ -1,14 +1,17 @@
 import os
-import json
 import logging
 from contextlib import ExitStack
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Optional, TextIO, Union
 
 import pyvisa
 import yaml
-from schema import Schema, SchemaError, And, Optional as Opt, Use 
+from pathlib import Path
+from schema import Schema, SchemaError, And, Optional as Opt, Use
 
 from comet.driver import driver_factory, Driver
+
+Config = dict[str, Any]
+ResourceFactory = Callable[[Config], Any]
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +26,7 @@ INSTRUMENT_SCHEMA: Schema = Schema({
 DEFAULT_CONFIG_FILES: list[str] = ["station.yml", "station.yaml", "station.json"]
 
 
-def default_resource_factory(config: dict[str, Any]) -> pyvisa.Resource:
+def default_resource_factory(config: Config) -> pyvisa.Resource:
     visa_library = config.get("visa_library", "@py")
     rm = pyvisa.ResourceManager(visa_library)
     resource_name = config["resource_name"]
@@ -40,26 +43,23 @@ def default_resource_factory(config: dict[str, Any]) -> pyvisa.Resource:
 def find_default_file(default_files: list[str]) -> Optional[str]:
     """Lookup an orderd list of default files and returns the first found or None."""
     default_files = [os.path.abspath(f) for f in default_files]
-    found_files = [f for f in default_files if os.path.isfile(f)]
-    if not found_files:
-        return None
     # Select the file by priority (order in default_files).
-    for file in default_files:
-        if file in found_files:
-            return file
+    for filename in default_files:
+        if os.path.isfile(filename):
+            return filename
     return None
 
 
 class Station:
-    def __init__(self, *, resource_factory: Optional[Callable[[dict[str, Any]], Any]] = None) -> None:
+    def __init__(self, *, resource_factory: Optional[ResourceFactory] = None) -> None:
         """Create an empty Station instance."""
-        self.instruments_config: dict[str, Any] = {}
+        self.instruments_config: Config = {}
         self.instruments: dict[str, Any] = {}
         self._stack: Optional[ExitStack] = None
-        self.resource_factory: Callable = resource_factory or default_resource_factory
+        self.resource_factory: ResourceFactory = resource_factory or default_resource_factory
 
     @classmethod
-    def from_config(cls, config: dict[str, Any], *, resource_factory: Optional[Callable[[dict[str, Any]], Any]] = None) -> "Station":
+    def from_config(cls, config: Config, *, resource_factory: Optional[ResourceFactory] = None) -> "Station":
         """
         Create a Station instance from a config dictionary.
 
@@ -90,12 +90,12 @@ class Station:
         return station
 
     @classmethod
-    def from_file(cls, config_file: Optional[str] = None, *, resource_factory: Optional[Callable[[dict[str, Any]], Any]] = None) -> "Station":
+    def from_file(cls, config_file: Optional[Union[str, Path, TextIO]] = None, *, resource_factory: Optional[Callable[[dict[str, Any]], Any]] = None) -> "Station":
         """
         Create a Station instance from a config file.
 
         Args:
-            config_file: Optional config file name.
+            config_file: Optional config file name or file like object.
             resource_factory: Optional custom factory function.
         Returns:
             Configured Station instance (not yet entered).
@@ -103,19 +103,27 @@ class Station:
         if config_file is None:
             config_file = find_default_file(DEFAULT_CONFIG_FILES)
 
-        if not config_file:
+        if config_file is None:
             default_file_list = ", ".join([f"{file_name!r}" for file_name in DEFAULT_CONFIG_FILES])
-            raise ValueError(f"No default config file found, must be one of: {default_file_list}")
+            raise ValueError(f"No default config file found, must be any of: {default_file_list}")
 
-        # Load configuration based on file extension.
-        if config_file.endswith((".yml", ".yaml")):
-            with open(config_file, "r") as f:
-                config = yaml.safe_load(f)
-        elif config_file.endswith(".json"):
-            with open(config_file, "r") as f:
-                config = json.load(f)
-        else:
-            raise ValueError(f"Unsupported config file type: {config_file!r}")
+        with ExitStack() as stack:
+            if isinstance(config_file, (str, os.PathLike, Path)):
+                file_obj: Any = stack.enter_context(open(config_file, "r", encoding="utf-8"))
+            elif hasattr(config_file, "read"):
+                file_obj = config_file
+            else:
+                raise TypeError(f"Unsupported config file type: {config_file!r}")
+
+            config = yaml.safe_load(file_obj)  # YAML is a superset of JSON
+
+        # Default for empty files
+        if config is None:
+            config = {}
+
+        # Reject arrays
+        if not isinstance(config, dict):
+            raise TypeError(f"Unsupported config file type: {config_file!r}")
 
         return cls.from_config(config, resource_factory=resource_factory)
 
