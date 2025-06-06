@@ -23,7 +23,7 @@ INSTRUMENT_SCHEMA: Schema = Schema({
     Opt("visa_library"): str,
 })
 
-DEFAULT_CONFIG_FILES: list[str] = ["station.yml", "station.yaml", "station.json"]
+DEFAULT_CONFIG_FILES: list[str] = ["station.yaml", "station.yml", "station.json"]
 
 
 def default_resource_factory(config: Config) -> pyvisa.Resource:
@@ -40,14 +40,9 @@ def default_resource_factory(config: Config) -> pyvisa.Resource:
     )
 
 
-def find_default_file(default_files: list[str]) -> Optional[str]:
-    """Lookup an orderd list of default files and returns the first found or None."""
-    default_files = [os.path.abspath(f) for f in default_files]
-    # Select the file by priority (order in default_files).
-    for filename in default_files:
-        if os.path.isfile(filename):
-            return filename
-    return None
+def find_filenames(default_filenames: list[str]) -> list[str]:
+    """Lookup an orderd list of files and return absolut paths to existing ones."""
+    return [os.path.abspath(filename) for filename in default_filenames if os.path.isfile(filename)]
 
 
 class Station:
@@ -101,11 +96,16 @@ class Station:
             Configured Station instance (not yet entered).
         """
         if config_file is None:
-            config_file = find_default_file(DEFAULT_CONFIG_FILES)
+            found_config_files = find_filenames(DEFAULT_CONFIG_FILES)
+            if found_config_files:
+                config_file = found_config_files[0]
+                if len(found_config_files) > 1:
+                    logger.warning("Found multiple config files with supported names: %s", ", ".join(found_config_files))
+                    logger.warning("Using %s", config_file)
 
         if config_file is None:
             default_file_list = ", ".join([f"{file_name!r}" for file_name in DEFAULT_CONFIG_FILES])
-            raise ValueError(f"No default config file found, must be any of: {default_file_list}")
+            raise ValueError(f"No default config file found, must be one of: {default_file_list}")
 
         with ExitStack() as stack:
             if isinstance(config_file, (str, os.PathLike, Path)):
