@@ -296,8 +296,8 @@ class K2400Emulator(IEC60488Emulator):
     def get_read(self) -> str:
         result = []
         if "VOLT" in self.format_elements._values:
-            curr_min = float(self.options.get("volt.min", self.source_level.get("VOLT")))
-            curr_max = float(self.options.get("volt.max", self.source_level.get("VOLT")))
+            curr_min = float(self.options.get("volt.min", self.source_level.get("VOLT", 0)))
+            curr_max = float(self.options.get("volt.max", self.source_level.get("VOLT", 0)))
             result.append(format(random.uniform(curr_min, curr_max), "E"))
         if "CURR" in self.format_elements._values:
             curr_min = float(self.options.get("curr.min", 1e6))
