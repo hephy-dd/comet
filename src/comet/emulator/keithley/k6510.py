@@ -54,8 +54,8 @@ class K6510Emulator(IEC60488Emulator):
 
     @message(r'^:?MEAS(?:ure)?:CURR(?:ent)?\?$')
     def get_measure_current(self) -> str:
-        curr_min = float(self.options.get("curr.min", 1e6))
-        curr_max = float(self.options.get("curr.max", 1e7))
+        curr_min = float(self.options.get("curr.min", 1e-6))
+        curr_max = float(self.options.get("curr.max", 1e-7))
         return format(random.uniform(curr_min, curr_max), "E")
 
     @message(r'^(.*)$')

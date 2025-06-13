@@ -186,8 +186,8 @@ class K2657AEmulator(IEC60488Emulator):
 
     @message(tsp_print(r'smua\.measure\.i\(\)'))
     def get_measure_i(self) -> str:
-        curr_min = float(self.options.get("curr.min", 1e6))
-        curr_max = float(self.options.get("curr.max", 1e7))
+        curr_min = float(self.options.get("curr.min", 1e-6))
+        curr_max = float(self.options.get("curr.max", 1e-7))
         return format(random.uniform(curr_min, curr_max), "E")
 
     @message(tsp_print(r'smua\.measure\.v\(\)'))

@@ -223,8 +223,8 @@ class K2700Emulator(IEC60488Emulator):
             volt_max = float(self.options.get("volt.max", 10))
             reading = Reading(random.uniform(volt_min, volt_max), "VDC")
         elif self.sense_function == "CURR:DC":
-            curr_min = float(self.options.get("curr.min", 1e6))
-            curr_max = float(self.options.get("curr.max", 1e7))
+            curr_min = float(self.options.get("curr.min", 1e-6))
+            curr_max = float(self.options.get("curr.max", 1e-7))
             reading = Reading(random.uniform(curr_min, curr_max), "ADC")
         else:
             temp_min = float(self.options.get("temp.min", 24))

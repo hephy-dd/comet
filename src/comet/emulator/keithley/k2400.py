@@ -300,8 +300,8 @@ class K2400Emulator(IEC60488Emulator):
             curr_max = float(self.options.get("volt.max", self.source_level.get("VOLT", 0)))
             result.append(format(random.uniform(curr_min, curr_max), "E"))
         if "CURR" in self.format_elements._values:
-            curr_min = float(self.options.get("curr.min", 1e6))
-            curr_max = float(self.options.get("curr.max", 1e7))
+            curr_min = float(self.options.get("curr.min", 1e-6))
+            curr_max = float(self.options.get("curr.max", 1e-7))
             result.append(format(random.uniform(curr_min, curr_max), "E"))
         if "RES" in self.format_elements._values:
             result.append(format(float("nan")))
@@ -313,8 +313,8 @@ class K2400Emulator(IEC60488Emulator):
 
     @message(r'^:?FETC[H]?\?$')
     def get_fetch(self) -> str:
-        curr_min = float(self.options.get("curr.min", 1e6))
-        curr_max = float(self.options.get("curr.max", 1e7))
+        curr_min = float(self.options.get("curr.min", 1e-6))
+        curr_max = float(self.options.get("curr.max", 1e-7))
         return format(random.uniform(curr_min, curr_max), "E")
 
     @message(r'^(.*)$')
