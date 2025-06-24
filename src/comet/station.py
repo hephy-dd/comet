@@ -1,7 +1,7 @@
 import os
 import logging
 from contextlib import ExitStack
-from typing import Any, Callable, Optional, TextIO, Union
+from typing import Any, Callable, ContextManager, Optional, TextIO, Union
 
 import pyvisa
 import yaml
@@ -10,8 +10,10 @@ from schema import Schema, SchemaError, And, Optional as Opt, Use
 
 from comet.driver import driver_factory, Driver
 
+__all__ = ["Station"]
+
 Config = dict[str, Any]
-ResourceFactory = Callable[[Config], Any]
+ResourceFactory = Callable[[Config], ContextManager[Any]]
 
 logger = logging.getLogger(__name__)
 
@@ -165,13 +167,12 @@ class Station:
 
     def __exit__(self, exc_type, exc_value, traceback) -> None:
         """Close all instrument resources."""
-        self._stack.close()  # type: ignore
-
-    def __getattr__(self, name):
-        """Dynamic lookup of instruments from dictionary."""
-        if name in self.instruments:
-            return self.instruments[name]
-        raise AttributeError(f"{type(self).__name__!r} object has no attribute {name!r}")
+        if self._stack:
+            self._stack.close()
+        for name in self.instruments:
+            if hasattr(self, name):
+                object.__delattr__(self, name)
+        self.instruments = {}
 
     def __setattr__(self, name, value):
         """Prevent modifications to instrument attributes once they are set."""
