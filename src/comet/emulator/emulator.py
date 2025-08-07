@@ -155,7 +155,7 @@ def run(emulator: Emulator) -> int:
     server = TCPServer(address, context)
     thread = TCPServerThread(server)
 
-    hostname, port = server.server_address
+    hostname, port, *_ = server.server_address  # IPv4/IPv6
 
     context.logger.info("starting... %s:%s", hostname, port)
 
