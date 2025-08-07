@@ -117,15 +117,15 @@ def test_frequency(driver, resource):
 
 def test_laser_diode_temperature(driver, resource):
     resource.buffer = ["LD temp.:\t\tgood"]
-    assert driver.get_laser_diode_temperature() == driver.DIODE_TEMPERATURE_GOOD
+    assert driver.laser_diode_temperature == driver.DIODE_TEMPERATURE_GOOD
     assert resource.buffer == ["ldtemp?"]
 
     resource.buffer = ["LD temp.:\t\tbad"]
-    assert driver.get_laser_diode_temperature() == driver.DIODE_TEMPERATURE_BAD
+    assert driver.laser_diode_temperature == driver.DIODE_TEMPERATURE_BAD
     assert resource.buffer == ["ldtemp?"]
 
 
 def test_laser_head_temperature(driver, resource):
     resource.buffer = ["laser head temp.:\t     26.12 °C"]
-    assert driver.get_laser_head_temperature() == 26.12
+    assert driver.laser_head_temperature == 26.12
     assert resource.buffer == ["lht?"]
