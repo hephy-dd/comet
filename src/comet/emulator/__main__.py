@@ -132,13 +132,13 @@ def main() -> None:
         threads.append(TCPServerThread(server))
 
     for thread in threads:
-        hostname, port = thread.server.server_address
+        hostname, port, *_ = thread.server.server_address  # IPv4/IPv6
         thread.server.context.logger.info("starting... %s:%s", hostname, port)
         thread.start()
 
     def handle_event(signum, frame):
         for thread in threads:
-            hostname, port = thread.server.server_address
+            hostname, port, *_ = thread.server.server_address  # IPv4/IPv6
             thread.server.context.logger.info("stopping... %s:%s", hostname, port)
             thread.shutdown()
 

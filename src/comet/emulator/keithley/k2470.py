@@ -241,14 +241,14 @@ class K2470Emulator(IEC60488Emulator):
 
     @message(r'^:?MEAS:VOLT\?$')
     def get_measure_voltage(self) -> str:
-        volt_min = float(self.options.get("curr.min", 0))
-        volt_max = float(self.options.get("curr.max", 10))
+        volt_min = float(self.options.get("volt.min", 0))
+        volt_max = float(self.options.get("volt.max", 10))
         return format(random.uniform(volt_min, volt_max), "E")
 
     @message(r'^:?MEAS:CURR\?$')
     def get_measure_current(self) -> str:
-        curr_min = float(self.options.get("curr.min", 1e6))
-        curr_max = float(self.options.get("curr.max", 1e7))
+        curr_min = float(self.options.get("curr.min", 1e-6))
+        curr_max = float(self.options.get("curr.max", 1e-7))
         return format(random.uniform(curr_min, curr_max), "E")
 
     # TSP
