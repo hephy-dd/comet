@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Replaced methods by properties in PILAS driver.
 
+### Fixed
+- Unpacking emulator TCPIP server address (IPv4/IPv6).
+
 ## [1.2.2] - 2025-03-27
 
 ### Added
