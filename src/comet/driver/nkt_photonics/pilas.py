@@ -1,5 +1,7 @@
 """Driver for NKT Photonics PILAS picosecond pulsed diode laser."""
 
+import warnings
+
 from comet.driver import Driver
 
 __all__ = ["PILAS"]
@@ -67,14 +69,33 @@ class PILAS(Driver):
             raise ValueError("Frequency must be between 25Hz and 40MHz")
         self.write_and_check(f"f={frequency}")
 
-    def get_laser_head_temperature(self) -> float:
+    @property
+    def laser_head_temperature(self) -> float:
         response = self.query_value("lht?")
-
         return float(response.replace("°C", ""))
 
-    def get_laser_diode_temperature(self) -> bool:
+    @property
+    def laser_diode_temperature(self) -> bool:
         response = self.query_value("ldtemp?")
         return response == "good"
+
+    def get_laser_head_temperature(self) -> float:
+        warnings.warn(
+            "Method 'PILAS.get_laser_head_temperature' is deprecated and will be removed in a future version. "
+            "Use property 'PILAS.laser_head_temperature' instead.",
+            DeprecationWarning,
+            stacklevel=1
+        )
+        return self.laser_head_temperature
+
+    def get_laser_diode_temperature(self) -> bool:
+        warnings.warn(
+            "Method 'PILAS.get_laser_diode_temperature' is deprecated and will be removed in a future version. "
+            "Use property 'PILAS.laser_diode_temperature' instead.",
+            DeprecationWarning,
+            stacklevel=1
+        )
+        return self.laser_diode_temperature
 
     # helper
     def query_value(self, command: str) -> str:
