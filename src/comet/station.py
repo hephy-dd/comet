@@ -1,5 +1,6 @@
 import os
 import logging
+from collections.abc import Mapping
 from contextlib import ExitStack
 from typing import Any, Callable, ContextManager, Optional, TextIO, Union
 
@@ -47,11 +48,11 @@ def find_filenames(default_filenames: list[str]) -> list[str]:
     return [os.path.abspath(filename) for filename in default_filenames if os.path.isfile(filename)]
 
 
-class Station:
+class Station(Mapping):
     def __init__(self, *, resource_factory: Optional[ResourceFactory] = None) -> None:
         """Create an empty Station instance."""
         self.instruments_config: Config = {}
-        self.instruments: dict[str, Any] = {}
+        self._instruments: dict[str, Any] = {}
         self._stack: Optional[ExitStack] = None
         self.resource_factory: ResourceFactory = resource_factory or default_resource_factory
 
@@ -160,22 +161,34 @@ class Station:
             # Open the resource and instantiate the driver.
             res = self._stack.enter_context(res_cm)
             driver_cls = driver_factory(config["model"]) if "model" in config else Driver
-            self.instruments[name] = driver_cls(res)
+            self._instruments[name] = driver_cls(res)
             # Attach as a read-only attribute.
-            object.__setattr__(self, name, self.instruments[name])
+            object.__setattr__(self, name, self._instruments[name])
         return self
 
     def __exit__(self, exc_type, exc_value, traceback) -> None:
         """Close all instrument resources."""
         if self._stack:
             self._stack.close()
-        for name in self.instruments:
+        for name in self._instruments:
             if hasattr(self, name):
                 object.__delattr__(self, name)
-        self.instruments = {}
+        self._instruments = {}
 
     def __setattr__(self, name, value):
         """Prevent modifications to instrument attributes once they are set."""
-        if "instruments" in self.__dict__ and name in self.__dict__.get("instruments", {}):
+        if "_instruments" in self.__dict__ and name in self.__dict__.get("_instruments", {}):
             raise AttributeError(f"Cannot modify read-only instrument attribute {name!r}")
         object.__setattr__(self, name, value)
+
+    def __getitem__(self, name):
+        return self._instruments[name]
+
+    def __contains__(self, name):
+        return name in self._instruments
+
+    def __iter__(self):
+        return iter(self._instruments)
+
+    def __len__(self):
+        return len(self._instruments)
