@@ -14,5 +14,5 @@ utilities for instrumentation applications. Inspired by
 Install from GitHub using pip
 
 ```bash
-pip install https://github.com/hephy-dd/comet/archive/refs/tags/v1.2.2.tar.gz
+pip install https://github.com/hephy-dd/comet/archive/refs/tags/v1.3.0.tar.gz
 ```
