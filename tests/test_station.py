@@ -74,11 +74,11 @@ def test_station_from_file_yaml():
 
 def test_station_context(mock_resource_factory):
     with Station(resource_factory=mock_resource_factory) as station:
-        assert station.instruments == {}
+        assert station._instruments == {}
     config = {"instruments": {"smu": {"resource_name": "GPIB::16::INSTR", "model": "keithley.k2410"}}}
     with Station.from_config(config, resource_factory=mock_resource_factory) as station:
-        assert "smu" in station.instruments
-        assert station.smu is station.instruments["smu"]
+        assert "smu" in station._instruments
+        assert station.smu is station._instruments["smu"]
         assert station.smu.identify() == "Keithley Model 2410"
 
 
