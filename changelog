@@ -7,21 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.0] - 2025-08-11
+
+### Added
+- Station context manager for handling collections of instruments.
+
 ### Changed
 - Replaced methods by properties in PILAS driver.
 
 ### Fixed
 - Unpacking emulator TCPIP server address (IPv4/IPv6).
 
-## [1.3.0] - 2025-03-31
-
-### Added
-- station object.
-
 ## [1.2.2] - 2025-03-27
 
 ### Added
-- tests for Keithley K2700 emulator.
+- Tests for Keithley K2700 emulator.
 
 ### Fixed
 - Keithley K2700 reading format
@@ -29,10 +29,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.2.1] - 2025-03-26
 
 ### Changed
-- deprecated version key in emulator files (#92).
+- Deprecated version key in emulator files (#92).
 
 ### Fixed
-- install instructions and links
+- Install instructions and links.
 
 ## [1.2.0] - 2025-03-25
 
@@ -45,8 +45,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.1.1] - 2025-03-17
 
 ### Added
-- executable script `comet-emulator` (#87).
-- deploying docs using gh-pages (#86).
+- Executable script `comet-emulator` (#87).
+- Deploying docs using gh-pages (#86).
 
 ## [1.1.0] - 2025-03-14
 

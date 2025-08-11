@@ -33,4 +33,3 @@ build-backend = "hatchling.build"
 
 [tool.hatch.version]
 path = "src/comet/__init__.py"
-
