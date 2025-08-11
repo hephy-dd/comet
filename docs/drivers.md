@@ -78,3 +78,5 @@ with ExitStack() as stack:
     res_2 = stack.enter_context(rm.open_resource(resource_name_2))
     ...
 ```
+
+See also [Station](station.md) for handling multiple instrument connections.

@@ -8,6 +8,7 @@ copyright: 'COMET is licensed under the <a href="https://github.com/hephy-dd/com
 nav:
     - Home: index.md
     - drivers.md
+    - station.md
     - emulators.md
     - helpers.md
 theme:
