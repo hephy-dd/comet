@@ -7,36 +7,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Type annotations in emulator code.
+
+### Changed
+
+- Set default emulator hostname to `localhost`.
+- Renamed this changelog to `CHANGELOG.md`.
+
 ## [1.3.0] - 2025-08-11
 
 ### Added
+
 - Station context manager for handling collections of instruments.
 
 ### Changed
+
 - Replaced methods by properties in PILAS driver.
 
 ### Fixed
+
 - Unpacking emulator TCPIP server address (IPv4/IPv6).
 
 ## [1.2.2] - 2025-03-27
 
 ### Added
+
 - Tests for Keithley K2700 emulator.
 
 ### Fixed
+
 - Keithley K2700 reading format
 
 ## [1.2.1] - 2025-03-26
 
 ### Changed
+
 - Deprecated version key in emulator files (#92).
 
 ### Fixed
+
 - Install instructions and links.
 
 ## [1.2.0] - 2025-03-25
 
 ### Added
+
 - Generic base class `DigitalMultiMeter`.
 - Keithley DAQ6510 DMM (#88).
 - Keithley K2700 DMM (#89).
@@ -45,12 +62,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.1.1] - 2025-03-17
 
 ### Added
+
 - Executable script `comet-emulator` (#87).
 - Deploying docs using gh-pages (#86).
 
 ## [1.1.0] - 2025-03-14
 
 ### Added
+
 - Support for Python 3.13
 - Emulator mock resources (#84).
 - Missing type hints for static type checking (#82).
@@ -64,17 +83,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ERS AC3 Thermal Chuck (#83).
 
 ### Changed
+
 - Restructured driver mixins (#81).
 
 ### Removed
+
 - Dropped support for Python 3.8
 
 ## [1.0.0] - 2024-03-26
 
 ### Added
+
 - ITK Hydra emulator.
 
 ### Changed
+
 - ITK CorvisTT emulator.
 
 [unreleased]: https://github.com/hephy-dd/comet/releases/tag/v1.3.0...HEAD

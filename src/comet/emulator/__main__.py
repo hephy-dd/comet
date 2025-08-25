@@ -32,6 +32,7 @@ import logging
 import os
 import signal
 import threading
+from typing import Any
 
 import schema
 import yaml
@@ -40,7 +41,7 @@ from .emulator import emulator_factory
 from .tcpserver import TCPServer, TCPServerThread, TCPServerContext
 
 default_config_filenames: list[str] = ["emulators.yaml", "emulators.yml"]
-default_hostname: str = ""
+default_hostname: str = "localhost"
 default_termination: str = "\r\n"
 default_request_delay: float = 0.1
 
@@ -61,7 +62,7 @@ config_schema = schema.Schema(
 )
 
 
-def load_config(filename: str) -> dict:
+def load_config(filename: str) -> dict[str, Any]:
     with open(filename) as fp:
         data = yaml.safe_load(fp)
     config = validate_config(data or {})
@@ -74,7 +75,7 @@ def load_config(filename: str) -> dict:
     return config
 
 
-def validate_config(config: dict) -> dict:
+def validate_config(config: dict[str, Any]) -> dict[str, Any]:
     return config_schema.validate(config)
 
 
