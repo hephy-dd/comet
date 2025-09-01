@@ -3,7 +3,7 @@ site_url: https://hephy-dd.github.io/comet/
 repo_url: https://github.com/hephy-dd/comet/
 edit_uri: edit/main/docs/
 site_description: Control and Measurement Toolkit
-site_author: HEPHY
+site_author: MBI
 copyright: 'COMET is licensed under the <a href="https://github.com/hephy-dd/comet/LICENSE">GNU General Public License Version 3</a>'
 nav:
     - Home: index.md
