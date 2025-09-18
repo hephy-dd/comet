@@ -25,9 +25,12 @@ class EmptyBufferError(Exception): ...
 
 
 class EmulatorResource:
+    termination: str = "\n"
+    encoding: str = "ascii"
+
     def __init__(self, emulator: Emulator) -> None:
         self.emulator: Emulator = emulator
-        self.buffer: list[str] = []
+        self.buffer: list = []
 
     def __enter__(self: T) -> T:
         return self
@@ -35,16 +38,21 @@ class EmulatorResource:
     def __exit__(self, *args) -> None:
         ...
 
-    def write(self, message: str, *args, **kwargs) -> int:
+    def write(self, message: str, termination: Optional[str] = None, encoding: Optional[str] = None) -> int:
+        termination = self.termination if termination is None else termination
         response = self.emulator(message)
-        if response:
-            self.buffer.append(str(response))
-        return len(message)
+        if isinstance(response, (list, tuple)):
+            for res in response:
+                self.buffer.append(response)
+        else:
+            self.buffer.append(response)
+        return len(message + termination)
 
-    def read(self, *args, **kwargs) -> str:
+    def read(self, termination: Optional[str] = None, encoding: Optional[str] = None,) -> str:
+        encoding = self.encoding if encoding is None else encoding
         if not self.buffer:
             raise EmptyBufferError()
-        return self.buffer.pop(0)
+        return bytes(self.buffer.pop(0)).decode(encoding)
 
     def query(self, message: str, delay: Optional[float] = None) -> str:
         self.write(message)

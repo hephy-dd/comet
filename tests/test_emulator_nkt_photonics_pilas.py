@@ -53,5 +53,10 @@ def test_frequency(emulator):
 def test_laser_diode_temperature(emulator):
     assert emulator("ldtemp?") == "LD temp.:\t\tgood"
     emulator.laser_diode_temperature = False
-
     assert emulator("ldtemp?") == "LD temp.:\t\tbad"
+
+
+def test_laser_head_temperature(emulator):
+    assert emulator("lht?") == "laser head temp.:\t     25.0 °C".encode("latin-1")
+    emulator.laser_head_temperature += 1.0
+    assert emulator("lht?") == "laser head temp.:\t     26.0 °C".encode("latin-1")

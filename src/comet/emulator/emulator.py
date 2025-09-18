@@ -1,14 +1,11 @@
-import argparse
 import importlib
 import inspect
 import logging
 import re
-import signal
+from abc import ABC, abstractmethod
 from typing import Any, Callable, Optional, Union
 
-from .tcpserver import TCPServer, TCPServerThread, TCPServerContext
-
-__all__ = ["Emulator", "message", "emulator_factory", "run"]
+__all__ = ["Emulator", "message", "emulator_factory"]
 
 logger = logging.getLogger(__name__)
 
@@ -76,101 +73,109 @@ def get_routes(cls: type) -> list[Route]:
     return routes
 
 
+class Response(ABC):
+    @abstractmethod
+    def __bytes__(self) -> bytes: ...
+
+
+class TextResponse(Response):
+    def __init__(self, text: str, *, encoding: str = "ascii") -> None:
+        self.text: str = text
+        self.encoding: str = encoding
+
+    def __repr__(self) -> str:
+        return f"<{type(self).__name__} text={self.text!r} encoding={self.encoding}>"
+
+    def __bytes__(self) -> bytes:
+        return self.text.encode(self.encoding)
+
+    def __int__(self) -> int:
+        return int(self.text)
+
+    def __float__(self) -> float:
+        return float(self.text)
+
+    def __str__(self) -> str:
+        return bytes(self).decode("utf-8")
+
+    def __eq__(self, other):
+        if isinstance(other, TextResponse):
+            return (self.text, self.encoding) == (other.text, other.encoding)
+        if isinstance(other, str):
+            return bytes(self) == other.encode("utf-8")
+        if isinstance(other, bytes):
+            return bytes(self) == other
+        return NotImplemented
+
+
+class BinaryResponse(Response):
+    def __init__(self, data: bytes) -> None:
+        self.data: bytes = data
+
+    def __repr__(self) -> str:
+        return f"<{type(self).__name__} size={len(self.data)} data={self.data!r}>"
+
+    def __bytes__(self) -> bytes:
+        n_bytes = len(self.data)
+        n_chars = len(str(n_bytes))
+        header = f"#{n_chars}{n_bytes}".encode("ascii")
+        return header + self.data
+
+    def __eq__(self, other):
+        if isinstance(other, BinaryResponse):
+            return self.data == other.data
+        if isinstance(other, bytes):
+            return bytes(self) == other
+        return NotImplemented
+
+
+class RawResponse(Response):
+    def __init__(self, data: bytes) -> None:
+        self.data: bytes = data
+
+    def __repr__(self) -> str:
+        return f"<{type(self).__name__} data={self.data!r}>"
+
+    def __bytes__(self) -> bytes:
+        return self.data
+
+    def __eq__(self, other):
+        if isinstance(other, RawResponse):
+            return self.data == other.data
+        if isinstance(other, bytes):
+            return bytes(self) == other
+        return NotImplemented
+
+
+def make_response(response: Any) -> Response:
+    if isinstance(response, Response):
+        return response
+    elif isinstance(response, int):
+        return TextResponse(format(response))
+    elif isinstance(response, float):
+        return TextResponse(format(response))
+    elif isinstance(response, str):
+        return TextResponse(response)
+    elif isinstance(response, bytes):
+        return BinaryResponse(response)
+    elif isinstance(response, bytearray):
+        return BinaryResponse(bytes(response))
+    raise TypeError(f"Invalid response type: {type(response)}")
+
+
 class Emulator:
     def __init__(self) -> None:
         self.options: dict[str, Any] = {}
 
-    def __call__(self, message: str) -> Union[None, str, list[str]]:
+    def __call__(self, message: str) -> Union[None, Response, list[Response]]:
         logging.debug("handle message: %s", message)
         for route in get_routes(type(self)):
             args = route.match(message)
             if args is not None:
                 response = route(self, *args)
                 if response is not None:
-                    # If result is list or tuple make sure items are strings
                     if isinstance(response, (list, tuple)):
-                        return [format(r) for r in response]
-                    # Else make sure result is string
-                    return format(response)
+                        return [make_response(res) for res in response]
+                    return make_response(response)
                 return response
         return None
-
-
-def option_type(value: str) -> tuple[str, str]:
-    m = re.match(r"^([\w_][\w\d_]*)=(.*)$", value)
-    if m:
-        return m.group(1), m.group(2)
-    raise argparse.ArgumentTypeError("expected key=value")
-
-
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--hostname",
-        default="localhost",
-        help="hostname, default is 'localhost'",
-    )
-    parser.add_argument(
-        "-p", "--port",
-        type=int,
-        default=10000,
-        help="port, default is 10000",
-    )
-    parser.add_argument(
-        "-t",
-        "--termination",
-        default="\r\n",
-        help="message termination, default is '\\r\\n'",
-    )
-    parser.add_argument(
-        "-d",
-        "--request-delay",
-        type=float,
-        default=0.1,
-        help="delay between requests in seconds, default is 0.1 sec",
-    )
-    parser.add_argument(
-        "-o",
-        "--option",
-        type=option_type,
-        action="append",
-        default=[],
-        help="set emulator specific option(s), e.g. '-o version=2.1'",
-    )
-    return parser.parse_args()
-
-
-def run(emulator: Emulator) -> int:
-    """Convenience emulator runner using TCP server."""
-    if not isinstance(emulator, Emulator):
-        raise TypeError(f"Emulator must inherit from {Emulator}")
-
-    args = parse_args()
-    emulator.options.update({key: value for key, value in args.option})
-
-    logging.basicConfig(level=logging.INFO)
-
-    mod = inspect.getmodule(emulator.__class__)
-    name = (getattr(getattr(mod, "__spec__", None), "name", None)
-            or emulator.__class__.__module__)
-
-    context = TCPServerContext(name, emulator, args.termination, args.request_delay)
-    address = args.hostname, args.port
-    server = TCPServer(address, context)
-    thread = TCPServerThread(server)
-
-    hostname, port, *_ = server.server_address  # IPv4/IPv6
-    context.logger.info("starting... %s:%s", hostname, port)
-
-    thread.start()
-
-    def handle_event(signum, frame):
-        context.logger.info("stopping... %s:%s", hostname, port)
-        server.shutdown()
-
-    signal.signal(signal.SIGTERM, handle_event)
-    signal.signal(signal.SIGINT, handle_event)
-
-    thread.join()
-
-    return 0
