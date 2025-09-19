@@ -1,7 +1,7 @@
 """Driver for ECR AC3 thermal chuck"""
 
 from comet.driver.generic import Instrument, InstrumentError
-from typing import Tuple, Optional
+from typing import Optional
 
 
 __all__ = ["AC3"]

@@ -1,4 +1,4 @@
-from typing import Optional, Iterator, List
+from typing import Optional, Iterator
 
 import numpy as np
 
@@ -21,14 +21,14 @@ class RTP164Channel(OscilloscopeChannel):
         value = {False: "OFF", True: "ON"}[state]
         self.resource.write(f":CHAN{self.channel + 1}:STAT {value}")
 
-    def time_axis(self) -> List[float]:
+    def time_axis(self) -> list[float]:
         source = f"CHAN{self.channel + 1}"
         head = self.resource.query(f":{source}:DATA:HEAD?").strip()
         xmin, xmax, pts, *_ = [float(x) for x in head.split(",")]
         t = np.linspace(xmin, xmax, int(pts), endpoint=True)
         return t.tolist()
 
-    def acquire_waveform(self) -> List[float]:
+    def acquire_waveform(self) -> list[float]:
         self.resource.write("SING")
         self.resource.query("*OPC?")
 

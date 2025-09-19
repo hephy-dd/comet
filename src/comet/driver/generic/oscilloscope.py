@@ -1,6 +1,6 @@
 from abc import abstractmethod
 
-from typing import Iterator, List
+from typing import Iterator
 
 from .instrument import Driver, Instrument
 
@@ -22,10 +22,10 @@ class OscilloscopeChannel(Driver):
     def enabled(self, state: bool) -> None: ...
 
     @abstractmethod
-    def time_axis(self) -> List[float]: ...
+    def time_axis(self) -> list[float]: ...
 
     @abstractmethod
-    def acquire_waveform(self) -> List[float]: ...
+    def acquire_waveform(self) -> list[float]: ...
 
 
 class Oscilloscope(Instrument):

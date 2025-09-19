@@ -1,5 +1,4 @@
 import struct
-from typing import List
 
 import pytest
 
@@ -10,7 +9,7 @@ def pack_bianry_values(values) -> bytes:
     return header + payload
 
 
-def unpack_binary_values(data: bytes) -> List[float]:
+def unpack_binary_values(data: bytes) -> list[float]:
     if not data.startswith(b"#"):
         raise ValueError("Invalid block: must start with '#'")
 
