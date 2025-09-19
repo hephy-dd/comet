@@ -41,11 +41,12 @@ class EmulatorResource:
     def write(self, message: str, termination: Optional[str] = None, encoding: Optional[str] = None) -> int:
         termination = self.termination if termination is None else termination
         response = self.emulator(message)
-        if isinstance(response, (list, tuple)):
-            for res in response:
+        if response:
+            if isinstance(response, (list, tuple)):
+                for res in response:
+                    self.buffer.append(response)
+            else:
                 self.buffer.append(response)
-        else:
-            self.buffer.append(response)
         return len(message + termination)
 
     def read(self, termination: Optional[str] = None, encoding: Optional[str] = None,) -> str:
