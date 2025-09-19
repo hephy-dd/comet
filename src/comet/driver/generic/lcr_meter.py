@@ -1,5 +1,4 @@
 from abc import abstractmethod
-from typing import Tuple
 
 from .instrument import Instrument
 
@@ -33,4 +32,4 @@ class LCRMeter(Instrument):
     def frequency(self, frequency: float) -> None: ...
 
     @abstractmethod
-    def measure_impedance(self) -> Tuple[float, float]: ...
+    def measure_impedance(self) -> tuple[float, float]: ...
