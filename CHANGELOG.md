@@ -10,11 +10,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Type annotations in emulator code.
+- Emulator module tests.
 
 ### Changed
 
-- Set default emulator hostname to `localhost`.
+- Emulator yields `TextResponse`, `RawResponse` or `RawResponse`.
+- Renamed `--hostname` to `--host` for emulator parameters.
+- Set default emulator host to `localhost`.
 - Renamed this changelog to `CHANGELOG.md`.
+
+### Fixed
+
+- Emulator routes are now properly overriden from derived classes in function `get_routes`.
 
 ## [1.3.0] - 2025-08-11
 

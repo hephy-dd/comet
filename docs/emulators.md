@@ -17,7 +17,7 @@ emulators:
   lcr:
     module: keysight.e4980a
     port: 11002
-    # Set message termination
+    # Set message termination (\n, \r, \n, \r\n, CR, LF, CRLF)
     termination: '\n'
     # Set specific options
     options:
@@ -32,11 +32,17 @@ To spin up the emulator sockets run `comet-emulator` or alternatively
 comet-emulator
 ```
 
-Use command line argument `-f` to use a custom configuration file.
+Use command line argument `-f` (or `--file`) to use a custom configuration file.
 
 ```bash
 comet-emulator -f custom_emulators.yaml
 ```
+
+## The Emulators file
+
+The default path for an Emulators file is `emulators.yaml` (preferred) or
+`emulators.yml` that is placed in the current working directory. If both files
+exist, `comet-emulator` prefers the canonical `emulators.yaml`.
 
 ## Using Resources
 

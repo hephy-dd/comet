@@ -1,14 +1,19 @@
-import argparse
 import importlib
 import inspect
 import logging
 import re
-import signal
+from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from typing import Any, Callable, Optional, Union
 
-from .tcpserver import TCPServer, TCPServerThread, TCPServerContext
-
-__all__ = ["Emulator", "message", "emulator_factory", "run"]
+__all__ = [
+    "emulator_factory",
+    "TextResponse",
+    "BinaryResponse",
+    "RawResponse",
+    "message",
+    "Emulator",
+]
 
 logger = logging.getLogger(__name__)
 
@@ -16,13 +21,16 @@ emulator_registry: dict[str, type["Emulator"]] = {}
 
 
 def emulator_factory(module_name: str) -> type["Emulator"]:
-    """Returns emulator class from module specified by `name`."""
+    """Returns emulator class from module specified by `module_name`."""
     key: str = module_name
     if key not in emulator_registry:
         try:
             # Try to load module from global namespace
             module = importlib.import_module(module_name)
         except ModuleNotFoundError:
+            # Package can be None
+            if not __package__:
+                raise
             # If does not exist, try to load from comet.emulator package
             key = f"{__package__}.{module_name}"
             module = importlib.import_module(key)
@@ -38,21 +46,131 @@ def emulator_factory(module_name: str) -> type["Emulator"]:
     return emulator_registry[key]
 
 
-def message(route: str) -> Callable[[Callable[..., Any]], "Route"]:
-    """Decorator to register a regex route for an emulator method."""
+@dataclass
+class Response(ABC):
+    """Base class for emulator response types."""
 
-    def decorator(method: Callable[..., Any]) -> "Route":
-        return Route(route, method)
+    @abstractmethod
+    def __bytes__(self) -> bytes: ...
 
-    return decorator
+
+@dataclass(repr=False)
+class TextResponse(Response):
+    """SCPI text response with optional encoding."""
+    text: str
+    encoding: str = "ascii"  # SCPI default is ascii
+
+    def __repr__(self) -> str:
+        n_chars = len(self.text)
+        preview = f"{self.text[:13]}..." if n_chars > 16 else self.text
+        return f"<{type(self).__name__} text={preview!r} encoding={self.encoding!r}>"
+
+    def __bytes__(self) -> bytes:
+        return self.text.encode(self.encoding)
+
+    def __int__(self) -> int:
+        return int(self.text)
+
+    def __float__(self) -> float:
+        return float(self.text)
+
+    def __str__(self) -> str:
+        return self.text
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, TextResponse):
+            return (self.text, self.encoding) == (other.text, other.encoding)
+        if isinstance(other, str):
+            return self.text == other
+        if isinstance(other, bytes):
+            return bytes(self) == other
+        return False
+
+
+@dataclass(repr=False)
+class RawResponse(Response):
+    """Generic bytes response."""
+    data: bytes
+
+    def __repr__(self) -> str:
+        n_bytes = len(self.data)
+        preview = self.data[:13] + b"..." if n_bytes > 16 else self.data
+        return f"<{type(self).__name__} size={n_bytes!r} data={preview!r}>"
+
+    def __bytes__(self) -> bytes:
+        return self.data
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, RawResponse):
+            return self.data == other.data
+        if isinstance(other, bytes):
+            return self.data == other
+        return False
+
+
+@dataclass(repr=False)
+class BinaryResponse(RawResponse):
+    """Binary SCPI block response in format `#<n_chr_size><chr_size><bytes>`."""
+
+    def __bytes__(self) -> bytes:
+        n_bytes = len(self.data)
+        n_digits = len(str(n_bytes))
+        if n_digits > 9:
+            raise ValueError(
+                f"Invalid SCPI block length {n_bytes}; "
+                "must be representable with 1-9 digits."
+            )
+        header = f"#{n_digits}{n_bytes}".encode("ascii")
+        return header + self.data
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, BinaryResponse):
+            return self.data == other.data
+        if isinstance(other, bytes):
+            return bytes(self) == other
+        return False
+
+
+def make_response(response: Any) -> Response:
+    """Helper function to convert various types returned by emulator routes into
+    emulator response types.
+
+    >>> make_response("spam")
+    <TextResponse text='spam' encoding='ascii'>
+    >>> make_response(42)
+    <TextResponse text='42' encoding='ascii'>
+    >>> make_response(b"shrubbery")
+    <BinaryResponse size=9 data=b'shrubbery'>
+    """
+    if isinstance(response, Response):
+        return response
+    elif isinstance(response, int):
+        return TextResponse(format(response))
+    elif isinstance(response, float):
+        return TextResponse(format(response))
+    elif isinstance(response, str):
+        return TextResponse(response)
+    elif isinstance(response, bytes):
+        return BinaryResponse(response)
+    elif isinstance(response, bytearray):
+        return BinaryResponse(bytes(response))
+    raise TypeError(f"Invalid response type: {type(response)}")
+
+
+def normalize_route(pattern: str) -> str:
+    """Remove a leading ^ only if it's at the very start of the regex (and not escaped)."""
+    if pattern.startswith("^") and not pattern.startswith(r"\^"):
+        return pattern[1:]
+    return pattern
 
 
 class Route:
     """Route wrapper for message routing."""
+    __slots__ = ["route", "pattern", "method"]
 
     def __init__(self, route: str, method: Callable[..., Any]) -> None:
-        self.route: str = route
-        self.pattern = re.compile(route)
+        self.route: str = normalize_route(route)
+        self.pattern = re.compile(self.route)  # precompile for speed
         self.method: Callable[..., Any] = method
 
     def __call__(self, *args, **kwargs) -> Any:
@@ -64,113 +182,45 @@ class Route:
 
 
 def get_routes(cls: type) -> list[Route]:
-    """Return sorted list of routes defined by method decorator."""
-    routes: list[Route] = []
+    """Return routes with subclass overrides by regex pattern."""
+    by_pattern: dict[tuple[str, int], Route] = {}
+
+    # Subclass first, bases later, so subclass wins.
     for cls_ in cls.__mro__:
-        for name in dir(cls_):
-            attr = getattr(cls_, name)
+        for attr in cls_.__dict__.values():
             if isinstance(attr, Route):
-                routes.append(attr)
-    # Reverse sort methods by expression length.
-    routes.sort(key=lambda route: len(route.route), reverse=True)
+                key = (attr.pattern.pattern, attr.pattern.flags)
+                # keep the first seen (from the most-derived class)
+                by_pattern.setdefault(key, attr)
+
+    routes = list(by_pattern.values())
+    # Reverse sort by expression length for specificity; tie-breaker: method name.
+    routes.sort(key=lambda r: (-len(r.pattern.pattern), r.method.__name__))
     return routes
+
+
+def message(route: str) -> Callable[[Callable[..., Any]], Route]:
+    """Decorator to register a regex route for an emulator method."""
+
+    def decorator(method: Callable[..., Any]) -> Route:
+        return Route(route, method)
+
+    return decorator
 
 
 class Emulator:
     def __init__(self) -> None:
         self.options: dict[str, Any] = {}
 
-    def __call__(self, message: str) -> Union[None, str, list[str]]:
-        logging.debug("handle message: %s", message)
+    def __call__(self, message: str) -> Union[None, Response, list[Response]]:
+        logger.debug("handle message: %s", message)
         for route in get_routes(type(self)):
             args = route.match(message)
             if args is not None:
                 response = route(self, *args)
                 if response is not None:
-                    # If result is list or tuple make sure items are strings
                     if isinstance(response, (list, tuple)):
-                        return [format(r) for r in response]
-                    # Else make sure result is string
-                    return format(response)
+                        return [make_response(res) for res in response]
+                    return make_response(response)
                 return response
         return None
-
-
-def option_type(value: str) -> tuple[str, str]:
-    m = re.match(r"^([\w_][\w\d_]*)=(.*)$", value)
-    if m:
-        return m.group(1), m.group(2)
-    raise argparse.ArgumentTypeError("expected key=value")
-
-
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--hostname",
-        default="localhost",
-        help="hostname, default is 'localhost'",
-    )
-    parser.add_argument(
-        "-p", "--port",
-        type=int,
-        default=10000,
-        help="port, default is 10000",
-    )
-    parser.add_argument(
-        "-t",
-        "--termination",
-        default="\r\n",
-        help="message termination, default is '\\r\\n'",
-    )
-    parser.add_argument(
-        "-d",
-        "--request-delay",
-        type=float,
-        default=0.1,
-        help="delay between requests in seconds, default is 0.1 sec",
-    )
-    parser.add_argument(
-        "-o",
-        "--option",
-        type=option_type,
-        action="append",
-        default=[],
-        help="set emulator specific option(s), e.g. '-o version=2.1'",
-    )
-    return parser.parse_args()
-
-
-def run(emulator: Emulator) -> int:
-    """Convenience emulator runner using TCP server."""
-    if not isinstance(emulator, Emulator):
-        raise TypeError(f"Emulator must inherit from {Emulator}")
-
-    args = parse_args()
-    emulator.options.update({key: value for key, value in args.option})
-
-    logging.basicConfig(level=logging.INFO)
-
-    mod = inspect.getmodule(emulator.__class__)
-    name = (getattr(getattr(mod, "__spec__", None), "name", None)
-            or emulator.__class__.__module__)
-
-    context = TCPServerContext(name, emulator, args.termination, args.request_delay)
-    address = args.hostname, args.port
-    server = TCPServer(address, context)
-    thread = TCPServerThread(server)
-
-    hostname, port, *_ = server.server_address  # IPv4/IPv6
-    context.logger.info("starting... %s:%s", hostname, port)
-
-    thread.start()
-
-    def handle_event(signum, frame):
-        context.logger.info("stopping... %s:%s", hostname, port)
-        server.shutdown()
-
-    signal.signal(signal.SIGTERM, handle_event)
-    signal.signal(signal.SIGINT, handle_event)
-
-    thread.join()
-
-    return 0

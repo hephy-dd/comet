@@ -41,11 +41,11 @@ def test_ctrl(emulator):
 
 
 def test_ctrl_mode(emulator):
-    assert emulator("GET:PC_DATA ?").split(",")[13] == "1"
+    assert str(emulator("GET:PC_DATA ?")).split(",")[13] == "1"
     assert emulator("SET:CTRL_MODE DEW") == "OK"
-    assert emulator("GET:PC_DATA ?").split(",")[13] == "2"
+    assert str(emulator("GET:PC_DATA ?")).split(",")[13] == "2"
     assert emulator("SET:CTRL_MODE HUM") == "OK"
-    assert emulator("GET:PC_DATA ?").split(",")[13] == "1"
+    assert str(emulator("GET:PC_DATA ?")).split(",")[13] == "1"
 
 
 def test_test_led(emulator):
@@ -184,7 +184,7 @@ def test_env(emulator):
 
 
 def test_uptime(emulator):
-    assert re.match(r'^\d\d,\d\d,\d\d,\d\d$', emulator("GET:UPTIME ?")) is not None
+    assert re.match(r'^\d\d,\d\d,\d\d,\d\d$', str(emulator("GET:UPTIME ?"))) is not None
 
 
 def test_version(emulator):
