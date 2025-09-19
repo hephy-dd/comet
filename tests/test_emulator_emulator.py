@@ -78,6 +78,7 @@ def test_emulator_factory_not_found():
 
 def test_get_routes():
     routes = get_routes(K2410Emulator)
-    route_patterns = [r.route for r in routes]
-    assert "*IDN?$" in route_patterns
-    assert "*OPC?$" in route_patterns
+    route_patterns = {r.route: r for r in routes}
+    assert r"\*IDN\?$" in route_patterns
+    assert r"\*CLS$" in route_patterns
+    assert r"\*CLS$" in route_patterns
