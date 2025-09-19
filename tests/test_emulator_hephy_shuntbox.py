@@ -15,7 +15,7 @@ def test_basic(emulator):
 
 
 def test_temp(emulator):
-    assert len(emulator("GET:TEMP ALL").split(",")) == ShuntBoxEmulator.CHANNELS
+    assert len(str(emulator("GET:TEMP ALL")).split(",")) == ShuntBoxEmulator.CHANNELS
     for index in range(ShuntBoxEmulator.CHANNELS):
         assert float(emulator(f"GET:TEMP {index}")) > 0
 
