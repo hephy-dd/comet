@@ -2,6 +2,7 @@ import random
 import time
 
 from comet.emulator import IEC60488Emulator, message, run
+from comet.emulator.utils import Error
 
 
 class E4980AEmulator(IEC60488Emulator):
@@ -12,6 +13,7 @@ class E4980AEmulator(IEC60488Emulator):
 
     def __init__(self) -> None:
         super().__init__()
+        self.error_queue: list[Error] = []
         self.function_impedance_type: str = "CPD"
         self.correction_open_state: int = 0
         self.correction_use: int = 0
@@ -21,8 +23,9 @@ class E4980AEmulator(IEC60488Emulator):
         self.bias_voltage_level: float = 0.
         self.bias_state: bool = False
 
-    @message(r'^\*RST$')
+    @message(r'\*RST$')
     def set_rst(self) -> None:
+        self.error_queue.clear()
         self.function_impedance_type = "CPD"
         self.correction_open_state = 0
         self.correction_use = 0
@@ -32,9 +35,16 @@ class E4980AEmulator(IEC60488Emulator):
         self.bias_voltage_level = 0.
         self.bias_state = False
 
-    @message(r'^:?SYST:ERR(?::NEXT)?\?$')
-    def get_system_error(self) -> str:
-        return '+0, "no error"'
+    @message(r'\*CLS$')
+    def set_cls(self) -> None:
+        self.error_queue.clear()
+
+    @message(r':?SYST:ERR(?::NEXT)?\?$')
+    def get_system_error_next(self) -> str:
+        if self.error_queue:
+            error = self.error_queue.pop(0)
+            return f"{error.code:+d},\"{error.message}\""
+        return '+0,"No error"'
 
     @message(r'^:?FUNC:IMP:TYPE\?$')
     def get_function_impedance_type(self) -> str:
@@ -120,6 +130,10 @@ class E4980AEmulator(IEC60488Emulator):
     @message(r'^:?BIAS:STAT\s+(0|1|ON|OFF)$')
     def set_bias_state(self, value) -> None:
         self.bias_state = {"0": False, "1": True, "OFF": False, "ON": True}[value]
+
+    @message(r"(.*)$")
+    def undefined_header(self, _):
+        self.error_queue.append(Error(-113, "Undefined header"))
 
 
 if __name__ == "__main__":

@@ -14,6 +14,12 @@ def test_basic(emulator):
     assert emulator("*OPC?") == "1"
 
 
+def test_error(emulator):
+    assert emulator(":SYST:ERR?") == "+0,\"No error\""
+    assert emulator("SHRUBBERY?") is None
+    assert emulator(":SYST:ERR?") == "-113,\"Undefined header\""
+
+
 def test_correction_method(emulator):
     assert emulator(":CORR:METH?") == "SING"
     assert emulator(":CORR:METH MULT") is None
