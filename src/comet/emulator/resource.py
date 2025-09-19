@@ -51,7 +51,7 @@ class EmulatorResource:
     def read(self, termination: Optional[str] = None, encoding: Optional[str] = None,) -> str:
         encoding = self.encoding if encoding is None else encoding
         if not self.buffer:
-            raise EmptyBufferError()
+            raise EmptyBufferError("Read buffer is empty.")
         return bytes(self.buffer.pop(0)).decode(encoding)
 
     def query(self, message: str, delay: Optional[float] = None) -> str:

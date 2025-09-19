@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+
 __all__ = ["tsp_print", "tsp_assign"]
 
 
@@ -9,9 +11,8 @@ def tsp_assign(route: str) -> str:
     return rf"^{route}\s*\=\s*(.+)$"
 
 
+@dataclass
 class Error:
     """Generic error message container."""
-
-    def __init__(self, code: int, message: str) -> None:
-        self.code: int = code
-        self.message: str = message
+    code: int
+    message: str

@@ -1,7 +1,8 @@
 import pytest
 
+from comet.emulator.keithley.k2410 import K2410Emulator
 from comet.emulator.emulator import Response, TextResponse, BinaryResponse, RawResponse
-from comet.emulator.emulator import make_response
+from comet.emulator.emulator import make_response, get_routes, emulator_factory
 
 
 def test_text_response():
@@ -16,7 +17,7 @@ def test_text_response():
 
 def test_text_response_latin1():
     res = TextResponse("25°C", encoding="latin-1")
-    assert not res == "25°C"  # UTF-8
+    assert res == "25°C"
     assert res == "25°C".encode("latin-1")
     assert res == TextResponse("25°C", encoding="latin-1")
     assert res.text == "25°C"
@@ -63,3 +64,20 @@ def test_make_response():
     assert isinstance(res, TextResponse)
     res = make_response(42.0)
     assert isinstance(res, TextResponse)
+
+
+def test_emulator_factory():
+    cls = emulator_factory("keithley.k2410")
+    assert cls is K2410Emulator
+
+
+def test_emulator_factory_not_found():
+    with pytest.raises(ModuleNotFoundError):
+        emulator_factory("shrubbery.ni")
+
+
+def test_get_routes():
+    routes = get_routes(K2410Emulator)
+    route_patterns = [r.route for r in routes]
+    assert "*IDN?$" in route_patterns
+    assert "*OPC?$" in route_patterns

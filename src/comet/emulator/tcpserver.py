@@ -1,12 +1,16 @@
 import argparse
 import inspect
 import logging
+import os
 import re
 import socketserver
 import threading
 import time
 import signal
+from dataclasses import dataclass
 from typing import Callable, Iterable, Optional, Union
+
+from .. import __version__
 
 from .emulator import Emulator, Response, TextResponse
 
@@ -53,13 +57,13 @@ class TCPRequestHandler(socketserver.BaseRequestHandler):
                     self.send_messages(context, response)
 
 
+@dataclass
 class TCPServerContext:
-    def __init__(self, name: str, emulator: Emulator, termination: str, request_delay: float) -> None:
-        self.name: str = name
-        self.emulator: Emulator = emulator
-        self.termination: bytes = termination.encode("utf-8")
-        self.request_delay: float = request_delay
-        self.logger: logging.Logger = logging.getLogger(name)
+    name: str
+    emulator: Emulator
+    termination: bytes
+    request_delay: float
+    logger: logging.Logger
 
     def handle_message(self, message: str) -> Union[None, Response, Iterable[Response]]:
         response = self.emulator(message)
@@ -100,12 +104,13 @@ def option_type(value: str) -> tuple[str, str]:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--hostname",
+        "--host",
         default="localhost",
-        help="hostname, default is 'localhost'",
+        help="host, default is 'localhost'",
     )
     parser.add_argument(
-        "-p", "--port",
+        "-p",
+        "--port",
         type=int,
         default=10000,
         help="port, default is 10000",
@@ -113,8 +118,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "-t",
         "--termination",
-        default="\r\n",
-        help="message termination, default is '\\r\\n'",
+        default="\n",
+        choices=["\r", "\n", "\r\n"],
+        help="message termination, default is '\\n'",
     )
     parser.add_argument(
         "-d",
@@ -148,18 +154,24 @@ def run(emulator: Emulator) -> int:
     name = (getattr(getattr(mod, "__spec__", None), "name", None)
             or emulator.__class__.__module__)
 
-    context = TCPServerContext(name, emulator, args.termination, args.request_delay)
-    address = args.hostname, args.port
+    context = TCPServerContext(
+        name=name,
+        emulator=emulator,
+        termination=args.termination.encode(),
+        request_delay=args.request_delay,
+        logger=logging.getLogger(name),
+    )
+    address = args.host, args.port
     server = TCPServer(address, context)
     thread = TCPServerThread(server)
 
-    hostname, port, *_ = server.server_address  # IPv4/IPv6
-    context.logger.info("starting... %s:%s", hostname, port)
+    host, port, *_ = server.server_address  # IPv4/IPv6
+    context.logger.info("starting... %s:%s", host, port)
 
     thread.start()
 
     def handle_event(signum, frame):
-        context.logger.info("stopping... %s:%s", hostname, port)
+        context.logger.info("stopping... %s:%s", host, port)
         server.shutdown()
 
     signal.signal(signal.SIGTERM, handle_event)

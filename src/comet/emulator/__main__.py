@@ -37,13 +37,34 @@ from typing import Any
 import schema
 import yaml
 
+from .. import __version__
+
 from .emulator import emulator_factory
 from .tcpserver import TCPServer, TCPServerThread, TCPServerContext
 
 default_config_filenames: list[str] = ["emulators.yaml", "emulators.yml"]
-default_hostname: str = "localhost"
-default_termination: str = "\r\n"
+default_host: str = "localhost"
+default_termination: str = "\n"
 default_request_delay: float = 0.1
+
+termination_aliases: dict[str, str] = {
+    "\r": "\r",
+    "\n": "\n",
+    "\r\n": "\r\n",
+    "CR": "\r",
+    "LF": "\n",
+    "CRLF": "\r\n",
+}
+
+
+def normalize_termination(value: str) -> str:
+    if value not in termination_aliases:
+        raise schema.SchemaError(
+            f"Invalid termination: {value!r}."
+            f" Must be one of {list(termination_aliases)}"
+        )
+    return termination_aliases[value]
+
 
 config_schema = schema.Schema(
     {
@@ -51,10 +72,16 @@ config_schema = schema.Schema(
         "emulators": {
             str: {
                 "module": str,
-                schema.Optional("hostname"): str,
-                "port": int,
-                schema.Optional("termination"): str,
-                schema.Optional("request_delay"): float,
+                schema.Optional("host"): str,
+                "port": schema.And(
+                    int,
+                    lambda p: 1 <= p <= 65535,
+                    error="port must be an integer between 1 and 65535",
+                ),
+                schema.Optional("termination"): schema.And(str, normalize_termination),
+                schema.Optional("request_delay"): schema.And(
+                    schema.Use(float), lambda d: d >= 0, error="request_delay must be >= 0"
+                ),
                 schema.Optional("options"): dict,
             }
         },
@@ -68,7 +95,7 @@ def load_config(filename: str) -> dict[str, Any]:
     config = validate_config(data or {})
     # Set defaults
     for params in config.get("emulators", {}).values():
-        params.setdefault("hostname", default_hostname)
+        params.setdefault("host", default_host)
         params.setdefault("termination", default_termination)
         params.setdefault("request_delay", default_request_delay)
         params.setdefault("options", {})
@@ -86,6 +113,12 @@ def parse_args() -> argparse.Namespace:
         "--file",
         dest="filename",
         metavar="filename",
+    )
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=f"%(prog)s version {__version__}",
+        help="Print version information and quit",
     )
     return parser.parse_args()
 
@@ -120,27 +153,33 @@ def main() -> None:
 
     for name, params in config.get("emulators", {}).items():
         module = params.get("module")
-        hostname = params.get("hostname")
+        host = params.get("host")
         port = params.get("port")
-        termination = params.get("termination")
+        termination_bytes = params.get("termination").encode()
         request_delay = params.get("request_delay")
         options = params.get("options", {})
-        address = hostname, port
+        address = host, port
         emulator = emulator_factory(module)()
         emulator.options.update(options)
-        context = TCPServerContext(name, emulator, termination, request_delay)
+        context = TCPServerContext(
+            name=name,
+            emulator=emulator,
+            termination=termination_bytes,
+            request_delay=request_delay,
+            logger=logging.getLogger(name),
+        )
         server = TCPServer(address, context)
         threads.append(TCPServerThread(server))
 
     for thread in threads:
-        hostname, port, *_ = thread.server.server_address  # IPv4/IPv6
-        thread.server.context.logger.info("starting... %s:%s", hostname, port)
+        host, port, *_ = thread.server.server_address  # IPv4/IPv6
+        thread.server.context.logger.info("starting... %s:%s", host, port)
         thread.start()
 
     def handle_event(signum, frame):
         for thread in threads:
-            hostname, port, *_ = thread.server.server_address  # IPv4/IPv6
-            thread.server.context.logger.info("stopping... %s:%s", hostname, port)
+            host, port, *_ = thread.server.server_address  # IPv4/IPv6
+            thread.server.context.logger.info("stopping... %s:%s", host, port)
             thread.shutdown()
 
     signal.signal(signal.SIGTERM, handle_event)
