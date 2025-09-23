@@ -12,7 +12,8 @@ from typing import Callable, Iterable, Optional, Union
 
 from .. import __version__
 
-from .emulator import Emulator, Response, TextResponse
+from .emulator import Emulator
+from .response import Response, TextResponse
 
 __all__ = ["TCPRequestHandler", "TCPServer", "TCPServerThread", "TCPServerContext"]
 

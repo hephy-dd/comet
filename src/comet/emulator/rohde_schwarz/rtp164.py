@@ -1,8 +1,8 @@
-"""Rohde Schwarz SMA100B signal generator emulator"""
+"""Rohde Schwarz RTP164 oscilloscope emulator"""
 
 from comet.emulator import IEC60488Emulator
 from comet.emulator import BinaryResponse, message, run
-from comet.emulator.utils import SCPIError, scpi_parse_bool, scpi_pack_real32, generate_waveform
+from comet.emulator.utils import SCPIError, scpi_parse_bool, generate_waveform
 
 __all__ = ["RTP164Emulator"]
 
@@ -56,7 +56,7 @@ class RTP164Emulator(IEC60488Emulator):
     @message(r":?CHAN([1-4]):DATA\?$")
     def get_channel_data(self, channel) -> BinaryResponse:
         _, y = generate_waveform(self.num_samples, duration=self.duration, noise_std=0.01)  # TODO
-        return BinaryResponse(scpi_pack_real32(y))
+        return BinaryResponse.pack_real32(y)
 
     @message(r"(.*)$")
     def undefined_header(self, command) -> None:

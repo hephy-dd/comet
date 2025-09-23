@@ -47,12 +47,6 @@ def scpi_parse_bool(s: str) -> bool:
     raise ValueError(f"Not a SCPI boolean: {s!r}")
 
 
-def scpi_pack_real32(values: list[float], big_endian: bool = False) -> bytes:
-    endian_format = ">" if big_endian else "<"
-    data_format = "f"
-    return struct.pack(endian_format + data_format * len(values), *values)
-
-
 def generate_waveform(
     n_points=1000,
     duration=1e-3,         # 1 ms total time
