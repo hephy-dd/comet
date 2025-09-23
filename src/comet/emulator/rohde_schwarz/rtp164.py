@@ -49,12 +49,12 @@ class RTP164Emulator(IEC60488Emulator):
     def set_channel_state(self, channel, enabled) -> None:
         self.channel_state[int(channel)] = scpi_parse_bool(enabled)
 
-    @message(r":?CHAN([1-4]):DATA:HEAD\?$")
-    def get_channel_data_header(self, channel) -> str:
-        return f"{-(self.duration / 2):E},{self.duration / 2:E},{self.num_samples:d},0"
+    @message(r":?CHAN([1-4])(?::WAV([1-3]))?:DATA:HEAD\?$")
+    def get_channel_waveform_data_header(self, channel, waveform) -> str:
+        return f"{-(self.duration / 2):E},{self.duration / 2:E},{self.num_samples:d},1"
 
-    @message(r":?CHAN([1-4]):DATA\?$")
-    def get_channel_data(self, channel) -> BinaryResponse:
+    @message(r":?CHAN([1-4])(?::WAV([1-3]))?:DATA(?::VAL)?\?$")
+    def get_channel_waveform_data(self, channel, waveform) -> BinaryResponse:
         _, y = generate_waveform(self.num_samples, duration=self.duration, noise_std=0.01)  # TODO
         return BinaryResponse.pack_real32(y)
 
