@@ -2,7 +2,7 @@
 
 from comet.emulator import IEC60488Emulator
 from comet.emulator import BinaryResponse, message, run
-from comet.emulator.utils import SCPIError, scpi_bool, scpi_pack_real32, generate_waveform
+from comet.emulator.utils import SCPIError, scpi_parse_bool, scpi_pack_real32, generate_waveform
 
 
 __all__ = ["RTP164Emulator"]
@@ -47,7 +47,7 @@ class RTP164Emulator(IEC60488Emulator):
 
     @message(r":?CHAN([1-4]):STAT\s+(OFF|ON|0|1)$")
     def set_channel_state(self, channel, enabled) -> None:
-        self.channel_state[int(channel)] = scpi_bool(enabled)
+        self.channel_state[int(channel)] = scpi_parse_bool(enabled)
 
     @message(r":?CHAN([1-4]):DATA:HEAD\?$")
     def get_channel_data_header(self, channel) -> str:

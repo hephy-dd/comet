@@ -4,7 +4,14 @@ import random
 import struct
 from dataclasses import dataclass
 
-__all__ = ["Error", "SCPIError", "tsp_print", "tsp_assign", "scpi_bool", "generate_waveform"]
+__all__ = [
+    "Error",
+    "SCPIError",
+    "tsp_print",
+    "tsp_assign",
+    "scpi_parse_bool",
+    "generate_waveform",
+]
 
 
 @dataclass
@@ -29,7 +36,7 @@ def tsp_assign(route: str) -> str:
     return rf"^{route}\s*\=\s*(.+)$"
 
 
-def scpi_bool(s: str) -> bool:
+def scpi_parse_bool(s: str) -> bool:
     s = s.strip().upper()
     if s in ("ON", "1", "TRUE"):
         return True
@@ -38,7 +45,7 @@ def scpi_bool(s: str) -> bool:
     raise ValueError(f"Not a SCPI boolean: {s!r}")
 
 
-def scpi_pack_real32(values: float) -> bytes:
+def scpi_pack_real32(values: list[float]) -> bytes:
     return struct.pack('>' + 'f' * len(values), *values)
 
 
