@@ -4,7 +4,6 @@ from comet.emulator import IEC60488Emulator
 from comet.emulator import BinaryResponse, message, run
 from comet.emulator.utils import SCPIError, scpi_parse_bool, scpi_pack_real32, generate_waveform
 
-
 __all__ = ["RTP164Emulator"]
 
 
@@ -15,6 +14,7 @@ class RTP164Emulator(IEC60488Emulator):
         super().__init__()
         self.error_queue: list[SCPIError] = []
         self.num_samples: int = 1000
+        self.duration: float = 1e-3
         self.channel_state: dict[int, bool] = {}
 
     @message(r"\*IDN\?$")
@@ -51,13 +51,12 @@ class RTP164Emulator(IEC60488Emulator):
 
     @message(r":?CHAN([1-4]):DATA:HEAD\?$")
     def get_channel_data_header(self, channel) -> str:
-        window = 1e-3
-        return f"{-(window / 2):E},{window / 2:E},{self.num_samples:d},0"
+        return f"{-(self.duration / 2):E},{self.duration / 2:E},{self.num_samples:d},0"
 
     @message(r":?CHAN([1-4]):DATA\?$")
     def get_channel_data(self, channel) -> BinaryResponse:
-        values = generate_waveform(self.num_samples, 1e-3)  # TODO
-        return BinaryResponse(scpi_pack_real32(values))
+        _, y = generate_waveform(self.num_samples, duration=self.duration, noise_std=0.01)  # TODO
+        return BinaryResponse(scpi_pack_real32(y))
 
     @message(r"(.*)$")
     def undefined_header(self, command) -> None:

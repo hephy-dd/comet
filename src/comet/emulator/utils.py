@@ -4,6 +4,8 @@ import random
 import struct
 from dataclasses import dataclass
 
+import numpy as np
+
 __all__ = [
     "Error",
     "SCPIError",
@@ -45,31 +47,34 @@ def scpi_parse_bool(s: str) -> bool:
     raise ValueError(f"Not a SCPI boolean: {s!r}")
 
 
-def scpi_pack_real32(values: list[float]) -> bytes:
-    return struct.pack('>' + 'f' * len(values), *values)
+def scpi_pack_real32(values: list[float], big_endian: bool = False) -> bytes:
+    endian_format = ">" if big_endian else "<"
+    data_format = "f"
+    return struct.pack(endian_format + data_format * len(values), *values)
 
 
-def generate_waveform(num_samples=1000, duration_s=1e-3):
-    samples = []
-    dt = duration_s / num_samples
+def generate_waveform(
+    n_points=1000,
+    duration=1e-3,         # 1 ms total time
+    baseline=0.0,          # DC baseline level
+    spike_time=0.5e-3,     # spike occurs at 0.5 ms
+    spike_width=5e-6,      # spike duration 5 µs
+    spike_amplitude=2.0,   # spike height
+    noise_std=0.0          # optional Gaussian noise
+):
+    """Create a waveform with a DC baseline and one spike for testing."""
+    # Time axis
+    t = np.linspace(0, duration, n_points, endpoint=False)
 
-    # parameters
-    sine_freq = 50_000.0        # 50 kHz
-    peak_center = 0.5e-3        # 0.5 ms
-    peak_width = 10e-6          # 10 µs sigma
-    peak_ampl = 1.0
+    # Baseline
+    y = np.full_like(t, baseline)
 
-    for n in range(num_samples):
-        t = n * dt
-        # base sine + tiny noise
-        base = 0.1 * math.sin(2 * math.pi * sine_freq * t) + 0.01 * (random.random() - 0.5)
-        # Gaussian bump
-        gauss = peak_ampl * math.exp(-0.5 * ((t - peak_center) / peak_width) ** 2)
-        samples.append(base + gauss)
+    # Add spike using a Gaussian shape
+    spike = spike_amplitude * np.exp(-0.5 * ((t - spike_time) / spike_width) ** 2)
+    y += spike
 
-    # normalize roughly to ±1
-    max_abs = max(abs(x) for x in samples)
-    if max_abs > 0:
-        samples = [x / max_abs for x in samples]
+    # Optional noise
+    if noise_std > 0:
+        y += np.random.normal(scale=noise_std, size=t.shape)
 
-    return samples
+    return t, y
