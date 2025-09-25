@@ -45,7 +45,7 @@ class RTP164Emulator(IEC60488Emulator):
         return self.format_border
 
     @message(r":?FORM(?:AT)?:BORD(?:ER)?\s+(LSBF(?:irst)?|MSBF(?:irst)?)$")
-    def set_format_border(self, byte_order) -> str:
+    def set_format_border(self, byte_order) -> None:
         self.format_border = byte_order[:4]
 
     @message(r":?FORM(?:AT)?(?::DATA)?\?$")
@@ -53,7 +53,7 @@ class RTP164Emulator(IEC60488Emulator):
         return self.format_data
 
     @message(r":?FORM(?:AT)?(?::DATA)?\s+(ASC|ASC,0|REAL,32|INT,8|INT,16)$")
-    def set_format_data(self, format_length) -> str:
+    def set_format_data(self, format_length) -> None:
         if format_length == "ASC":
             format_length == "ASC,0"
         self.format_data = format_length
