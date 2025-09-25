@@ -1,5 +1,4 @@
 import warnings
-from typing import Tuple
 
 from comet.driver import Driver
 
@@ -200,7 +199,7 @@ class Axis(Driver):
         return int(self.resource.query(f"{self._index} getcaldone"))
 
     @property
-    def sw(self) -> Tuple[int, int]:
+    def sw(self) -> tuple[int, int]:
         """Returns tuple containing axis limit switch modes for calibration and
         rangemeasure (0: closing, 1: opening, 2: ignore).
 
@@ -246,7 +245,7 @@ class Axis(Driver):
         self.resource.write(f"{self._index} nrm")
 
     @property
-    def nlimit(self) -> Tuple[float, float]:
+    def nlimit(self) -> tuple[float, float]:
         """Returns axis soft limits (lower, upper).
 
         >>> instr.x.nlimit
@@ -442,7 +441,7 @@ class Venus1(Driver):
         return f"{model} {version} {serialno}"
 
     @property
-    def pitch(self) -> Tuple[float, ...]:
+    def pitch(self) -> tuple[float, ...]:
         """Returns tuple containing pitches.
 
         >>> instr.pitch
@@ -475,7 +474,7 @@ class Venus1(Driver):
         self.resource.write(f"{value:d} setdim")
 
     @property
-    def unit(self) -> Tuple[int, ...]:
+    def unit(self) -> tuple[int, ...]:
         """Returns tuple containing units.
         0: Microstep
         1: μm
@@ -492,7 +491,7 @@ class Venus1(Driver):
         return tuple(map(int, values))
 
     @property
-    def umotmin(self) -> Tuple[int, ...]:
+    def umotmin(self) -> tuple[int, ...]:
         """Returns tuple containing minimum motor voltages in [mV].
 
         >>> instr.umotmin
@@ -506,7 +505,7 @@ class Venus1(Driver):
         return tuple(map(int, values))
 
     @property
-    def umotgrad(self) -> Tuple[int, ...]:
+    def umotgrad(self) -> tuple[int, ...]:
         """Returns tuple containing motor phase current/torque.
 
         >>> instr.umotgrad
@@ -520,7 +519,7 @@ class Venus1(Driver):
         return tuple(map(int, values))
 
     @property
-    def polepairs(self) -> Tuple[int, ...]:
+    def polepairs(self) -> tuple[int, ...]:
         """Returns tuple containing step motor pole pairs.
 
         >>> instr.polepairs
@@ -534,7 +533,7 @@ class Venus1(Driver):
         return tuple(map(int, values))
 
     @property
-    def axes(self) -> Tuple[int, ...]:
+    def axes(self) -> tuple[int, ...]:
         """Returns axes states.
 
         >>> instr.axes
@@ -562,7 +561,7 @@ class Venus1(Driver):
         self.resource.write(f"{value:d} setpowerup")
 
     @property
-    def phaseares(self) -> Tuple[int, ...]:
+    def phaseares(self) -> tuple[int, ...]:
         """Returns tuple containing phase A resolution.
 
         >>> instr.phaseares
@@ -737,7 +736,7 @@ class Venus1(Driver):
     rm = rangemeasure
 
     @property
-    def sw(self) -> Tuple[int, ...]:
+    def sw(self) -> tuple[int, ...]:
         """Returns tuple containing limit switch modes for calibration and
         rangemeasure (0: closing, 1: opening, 2: ignore).
 
@@ -748,7 +747,7 @@ class Venus1(Driver):
         return tuple(map(int, values))
 
     @property
-    def limit(self) -> Tuple[Tuple[float, ...], ...]:
+    def limit(self) -> tuple[tuple[float, ...], ...]:
         """Returns tuple containing soft limits (lower, upper) for all axes.
 
         >>> instr.limit
@@ -762,7 +761,7 @@ class Venus1(Driver):
         return tuple(values)
 
     @limit.setter
-    def limit(self, values: Tuple[Tuple[float, float], ...]) -> None:
+    def limit(self, values: tuple[tuple[float, float], ...]) -> None:
         """Set soft limits (lower, upper) for all axes.
 
         >>> instr.limit = ((0, 12), (0, 25), (-10, 30))
@@ -792,7 +791,7 @@ class Venus1(Driver):
         self.resource.write("abort")
 
     @property
-    def mp(self) -> Tuple[int, ...]:
+    def mp(self) -> tuple[int, ...]:
         """Returns states of axes motors (0: currentless, 1: under current).
 
         >>> instr.mp
@@ -802,7 +801,7 @@ class Venus1(Driver):
         return tuple(map(int, values))
 
     @property
-    def pos(self) -> Tuple[float, ...]:
+    def pos(self) -> tuple[float, ...]:
         """Returns tuple containing axes position.
 
         >>> instr.pos
@@ -812,7 +811,7 @@ class Venus1(Driver):
         return tuple(map(float, values))
 
     @pos.setter
-    def pos(self, values: Tuple[float, float, float]) -> None:
+    def pos(self, values: tuple[float, float, float]) -> None:
         """Set coordinate origin relative to current position.
 
         >>> instr.pos = 0, 0, 0
@@ -821,7 +820,7 @@ class Venus1(Driver):
         self.resource.write(f"{x:.6f} {y:.6f} {z:.6f} setpos")
 
     @property
-    def pdisplay(self) -> Tuple[Tuple[int, ...], ...]:
+    def pdisplay(self) -> tuple[tuple[int, ...], ...]:
         """Returns format of position display for host and terminal mode.
 
         >>> instr.pdisplay

@@ -8,13 +8,14 @@ from .instrument import (
 from .dmm import DigitalMultiMeter
 from .electrometer import Electrometer
 from .lcr_meter import LCRMeter
+from .light_source import LightSource
 from .source_meter_unit import SourceMeterUnit
 from .switching_matrix import SwitchingMatrix
 from .motion_controller import (
     MotionController,
     MotionControllerAxis,
 )
-from .light_source import LightSource
+from .oscilloscope import Oscilloscope, OscilloscopeChannel
 
 __all__ = [
     "BeeperMixin",
@@ -25,9 +26,11 @@ __all__ = [
     "DigitalMultiMeter",
     "Electrometer",
     "LCRMeter",
+    "LightSource",
     "SourceMeterUnit",
     "SwitchingMatrix",
     "MotionController",
     "MotionControllerAxis",
-    "LightSource",
+    "Oscilloscope",
+    "OscilloscopeChannel",
 ]
