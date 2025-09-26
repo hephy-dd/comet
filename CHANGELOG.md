@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Type annotations in emulator code.
 - Emulator module tests.
+- Display measure function to Keithley 2657A emulator.
 
 ### Changed
 
