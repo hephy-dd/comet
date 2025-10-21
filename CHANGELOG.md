@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Support for Python 3.14 (#99).
 - Type annotations in emulator code.
 - Emulator module tests.
 - Display measure function to Keithley 2657A emulator.
