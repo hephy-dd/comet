@@ -21,6 +21,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Set default emulator host to `localhost`.
 - Renamed this changelog to `CHANGELOG.md`.
 
+### Removed
+
+- Obsolete `mypy.ini` (not required with recent mypy versions).
+
 ### Fixed
 
 - Emulator routes are now properly overriden from derived classes in function `get_routes`.
