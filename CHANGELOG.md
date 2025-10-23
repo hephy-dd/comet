@@ -27,8 +27,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- PILAS emulator missing response from tune command (#100).
 - Emulator routes are now properly overriden from derived classes in function `get_routes`.
+
+## [1.3.1] - 2025-10-23
+
+### Fixed
+
+- PILAS emulator missing response from tune command (#100).
 
 ## [1.3.0] - 2025-08-11
 
@@ -114,7 +119,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - ITK CorvisTT emulator.
 
-[unreleased]: https://github.com/hephy-dd/comet/releases/tag/v1.3.0...HEAD
+[unreleased]: https://github.com/hephy-dd/comet/releases/tag/v1.3.1...HEAD
+[1.3.1]: https://github.com/hephy-dd/comet/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/hephy-dd/comet/compare/v1.2.2...v1.3.0
 [1.2.2]: https://github.com/hephy-dd/comet/compare/v1.2.1...v1.2.2
 [1.2.1]: https://github.com/hephy-dd/comet/compare/v1.2.0...v1.2.1
