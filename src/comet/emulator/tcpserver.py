@@ -12,44 +12,46 @@ from typing import Callable, Iterable, Optional, Union
 
 from .. import __version__
 
-from .emulator import Emulator, Response, TextResponse
+from .emulator import Emulator
+from .response import Response, TextResponse
 
 __all__ = ["TCPRequestHandler", "TCPServer", "TCPServerThread", "TCPServerContext"]
 
 
-def split_data(data: bytes, terminator: bytes) -> list[bytes]:
-    if terminator:
-        return data.split(terminator)
-    return [data]
-
-
 class TCPRequestHandler(socketserver.BaseRequestHandler):
-    def read_messages(self, context) -> Optional[list[bytes]]:
+    def read_messages(self, context: "TCPServerContext", rx_buffer: bytearray) -> Optional[list[bytes]]:
         data = self.request.recv(4096)
         if not data:
             return None
         context.logger.info("recv %s", data)
+        rx_buffer.extend(data)
         termination_bytes = context.termination
-        return [line for line in split_data(data, termination_bytes) if line]
+        messages: list[bytes] = []
+        while (pos := rx_buffer.find(termination_bytes)) >= 0:
+            message = rx_buffer[:pos]
+            del rx_buffer[:pos + len(termination_bytes)]
+            messages.append(bytes(message))
+        return messages
 
-    def send_messages(self, context, response: Union[Response, Iterable[Response]]) -> None:
+    def send_messages(self, context: "TCPServerContext", response: Union[Response, Iterable[Response]]) -> None:
         termination_bytes = context.termination
         if not isinstance(response, (list, tuple)):
             response = [response]  # type: ignore
         buffer = bytearray()
         for res in response:
             buffer.extend(bytes(res))
-            if isinstance(res, TextResponse):
-                buffer.extend(termination_bytes)
+            # TODO most instruments append termination also to binary
+            buffer.extend(termination_bytes)
         data = bytes(buffer)
         context.logger.info("send %s", data)
         self.request.sendall(data)
 
     def handle(self) -> None:
         context = self.server.context  # type: ignore
+        rx_buffer = bytearray()
         while True:
-            messages = self.read_messages(context)
-            if not messages:
+            messages = self.read_messages(context, rx_buffer)
+            if messages is None:
                 break
             for message in messages:
                 response = context.handle_message(str(message, "utf-8"))
