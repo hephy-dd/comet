@@ -35,7 +35,6 @@ class PILASEmulator(Emulator):
 
     @message(r"^ld\?$")
     def get_output(self) -> str:
-
         return "pulsed laser emission: " + ("on" if self.output else "off")
 
     @message(r"^ld=(0|1)$")
@@ -57,8 +56,9 @@ class PILASEmulator(Emulator):
         return f"tune value:\t\t     {self.tune:.2f} %"
 
     @message(r"^tune=(\d{1,4})$")
-    def set_tune(self, tune: int) -> None:
+    def set_tune(self, tune: int) -> str:
         self.tune = int(tune) / 10
+        return "done"
 
     @message(r"^f\?$")
     def get_frequency(self) -> str:

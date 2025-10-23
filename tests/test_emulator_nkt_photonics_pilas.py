@@ -34,11 +34,11 @@ def test_tune_mode(emulator):
 
 def test_tune(emulator):
     assert emulator("tune?") == "tune value:\t\t     0.00 %"
-    assert emulator("tune=500") == None
+    assert emulator("tune=500") == "done"
     assert emulator("tune?") == "tune value:\t\t     50.00 %"
-    assert emulator("tune=1000") == None
+    assert emulator("tune=1000") == "done"
     assert emulator("tune?") == "tune value:\t\t     100.00 %"
-    assert emulator("tune=0") == None
+    assert emulator("tune=0") == "done"
     assert emulator("tune?") == "tune value:\t\t     0.00 %"
 
 
