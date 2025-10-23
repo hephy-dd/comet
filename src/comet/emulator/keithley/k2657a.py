@@ -12,6 +12,7 @@ class K2657AEmulator(IEC60488Emulator):
         super().__init__()
         self.error_queue: list[Error] = []
         self.beeper_enable: bool = True
+        self.display_measure_function: int = 1
         self.smua_source_output: bool = False
         self.smua_source_function = "DCVOLTS"
         self.smua_source_level: dict[str, float] = {"v": 0., "i": 0.}
@@ -28,6 +29,7 @@ class K2657AEmulator(IEC60488Emulator):
     def set_reset(self):
         self.error_queue.clear()
         self.beeper_enable = True
+        self.display_measure_function = 1
         self.smua_source_output = False
         self.smua_source_function = "DCVOLTS"
         self.smua_source_level.update({"v": 0., "i": 0.})
@@ -79,6 +81,24 @@ class K2657AEmulator(IEC60488Emulator):
             }[enable]
         except KeyError:
             self.error_queue.append(Error(110, "malformed command"))
+
+    # Display
+
+    @message(tsp_print(r'display\.smua\.measure\.func'))
+    def get_display_measure_function(self) -> str:
+        return format(self.display_measure_function, "E")
+
+    @message(tsp_assign(r'display\.smua\.measure\.func'))
+    def set_display_measure_function(self, func) -> None:
+        try:
+            self.display_measure_function = {
+                "display.MEASURE_DCAMPS": 0, "0": 0,
+                "display.MEASURE_DCVOLTS": 1, "1": 1,
+                "display.MEASURE_OHMS": 2, "2": 2,
+                "display.MEASURE_WATTS": 3, "3": 3,
+            }[func]
+        except KeyError:
+            self.error_queue.append(Error(111, "malformed command"))
 
     # Source output
 
