@@ -3,7 +3,7 @@ import pytest
 
 from comet.driver.rohde_schwarz.rtp164 import RTP164
 
-from .test_driver import resource, pack_bianry_values
+from .test_driver import resource, pack_binary_values
 
 
 @pytest.fixture
@@ -72,11 +72,11 @@ def test_channel_time_axis(driver, resource):
 
 def test_channel_acquire_waveform(driver, resource):
     values = [2.0, 1.0, 1.5]
-    resource.buffer = ["1", pack_bianry_values(values)]
+    resource.buffer = ["1", pack_binary_values(values)]
     assert driver[0].acquire_waveform() == values
     assert resource.buffer == ["SING", "*OPC?", ":CHAN1:DATA?"]
 
     values = [0, -1.0, 1.0, -2.0, 2.0, -1.0, 1.0, 0]
-    resource.buffer = ["1", pack_bianry_values(values)]
+    resource.buffer = ["1", pack_binary_values(values)]
     assert driver[1].acquire_waveform() == values
     assert resource.buffer == ["SING", "*OPC?", ":CHAN2:DATA?"]

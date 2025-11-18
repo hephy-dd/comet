@@ -40,7 +40,7 @@ def test_text_response_utf8():
     assert bytes(res) == "blancmangé".encode("utf-8")
 
 
-def test_bianry_response():
+def test_binary_response():
     res = BinaryResponse("shrubbery".encode("ascii"))
     assert res == "#19shrubbery".encode("ascii")
     assert res == BinaryResponse("shrubbery".encode("ascii"))
@@ -49,7 +49,7 @@ def test_bianry_response():
     assert bytes(res) == "#19shrubbery".encode("ascii")
 
 
-def test_bianry_response_pack_real32():
+def test_binary_response_pack_real32():
     values = [2.0, 7.0, 4.0, 9.0]
 
     # big-endian (default)
@@ -69,7 +69,7 @@ def test_bianry_response_pack_real32():
     assert bytes(res_le) == b"#216" + payload_le
 
 
-def test_bianry_response_pack_int16():
+def test_binary_response_pack_int16():
     values = [1, -2, 300]
 
     # little-endian (exercise sign handling and non-trivial value)

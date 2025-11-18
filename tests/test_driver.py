@@ -3,7 +3,7 @@ import struct
 import pytest
 
 
-def pack_bianry_values(values) -> bytes:
+def pack_binary_values(values) -> bytes:
     payload = struct.pack("<" + "f" * len(values), *values)
     header = f"#{len(str(len(payload)))}{len(payload)}".encode("ascii")
     return header + payload
