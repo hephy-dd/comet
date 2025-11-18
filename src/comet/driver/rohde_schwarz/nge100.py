@@ -98,7 +98,7 @@ class NGE100(PowerSupply):
         return NGE100Channel(self.resource, channel)
 
     def __iter__(self) -> Iterator[NGE100Channel]:
-        return iter([NGE100Channel(self.resource, channel) for channel in range(3)])
+        return iter([NGE100Channel(self.resource, channel) for channel in range(type(self).N_CHANNELS)])
 
     def __len__(self) -> int:
         return type(self).N_CHANNELS
