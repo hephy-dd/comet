@@ -58,11 +58,21 @@ class RTP164(Oscilloscope):
             return InstrumentError(int(code), message.strip().strip("\""))
         return None
 
+    def configure(self) -> None:
+        """Configure scope for waveform acquisition."""
+        self.resource.write("FORM REAL,32")
+        self.resource.write("FORM:BORD LSBFirst")
+        self.resource.write("EXP:WAV:MULT OFF")
+        self.resource.write("EXP:WAV:RAW OFF")
+        self.resource.write("EXP:WAV:INCX OFF")
+        self.resource.write("ACQ:COUN 1")
+        self.resource.query("*OPC?")
+
     def __getitem__(self, channel: int) -> RTP164Channel:
         if not isinstance(channel, int):
             raise TypeError("Channel index must be an integer")
         if channel not in range(type(self).N_CHANNELS):
-            raise IndexError("Channel index out of range")
+            raise IndexError(f"Channel index out of range: {channel!r}")
         return RTP164Channel(self.resource, channel)
 
     def __iter__(self) -> Iterator[RTP164Channel]:
