@@ -7,10 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.4.0] - 2025-11-18
+
 ### Added
 
 - Support for Python 3.14 (#99).
-- Generic oscilloscope driver.
+- Generic oscilloscope driver (#97).
+- Rohde&Schwarz RTO6/RTP164 drivers and emulators (#97).
 - Type annotations in emulator code.
 - Emulator module tests.
 - Display measure function to Keithley 2657A emulator.
@@ -120,7 +123,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - ITK CorvisTT emulator.
 
-[unreleased]: https://github.com/hephy-dd/comet/releases/tag/v1.3.1...HEAD
+[unreleased]: https://github.com/hephy-dd/comet/releases/tag/v1.4.0...HEAD
+[1.4.0]: https://github.com/hephy-dd/comet/compare/v1.3.1...v1.4.0
 [1.3.1]: https://github.com/hephy-dd/comet/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/hephy-dd/comet/compare/v1.2.2...v1.3.0
 [1.2.2]: https://github.com/hephy-dd/comet/compare/v1.2.1...v1.2.2
