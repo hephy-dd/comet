@@ -1,4 +1,5 @@
 from .instrument import (
+    InitializeMixin,
     BeeperMixin,
     ErrorQueueMixin,
     RouteTerminalMixin,
@@ -18,6 +19,7 @@ from .motion_controller import (
 from .oscilloscope import Oscilloscope, OscilloscopeChannel
 
 __all__ = [
+    "InitializeMixin",
     "BeeperMixin",
     "ErrorQueueMixin",
     "RouteTerminalMixin",

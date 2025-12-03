@@ -1,6 +1,6 @@
 from typing import Optional
 
-from comet.driver.generic import InstrumentError
+from comet.driver.generic import InstrumentError, InitializeMixin
 from comet.driver.generic.motion_controller import (
     Position,
     MotionControllerAxis,
@@ -65,9 +65,20 @@ class CorvusAxis(MotionControllerAxis):
         return bool(int(result) & 0x1)
 
 
-class CorvusTT(MotionController):
+class CorvusTT(InitializeMixin, MotionController):
+    AXES: list[int] = [1, 2, 3]
+
+    def initialize(self) -> None:
+        # Force host mode
+        self.resource.write("0 mode")
+        # Clear clogged control characters from internal buffer.
+        self.resource.query("version")
+
     def identify(self) -> str:
-        return self.resource.query("identify").strip()
+        identity = self.resource.query("identify").strip()
+        version = self.resource.query("version").strip()
+        serialno = self.resource.query("getserialno").strip()
+        return f"{identity} {version} {serialno}"
 
     def reset(self) -> None: ...
 
@@ -78,6 +89,8 @@ class CorvusTT(MotionController):
         return parse_error(response)
 
     def __getitem__(self, index: int) -> CorvusAxis:
+        if index not in type(self).AXES:
+            raise IndexError(index)
         return CorvusAxis(self.resource, index)
 
     def calibrate(self) -> None:
