@@ -11,9 +11,13 @@ def driver(resource):
 
 
 def test_corvus(driver, resource):
-    resource.buffer = ["Corvus 1 312 1 10F"]
-    assert driver.identify() == "Corvus 1 312 1 10F"
-    assert resource.buffer == ["identify"]
+    resource.buffer = ["\t\0331.0"]  # terminal buffer control characters
+    assert driver.initialize() == "\t\0331.0"
+    assert resource.buffer == ["0 mode", "version"]
+
+    resource.buffer = ["Corvus 1 312 1 10F", "1.0", "123456789"]
+    assert driver.identify() == "Corvus 1 312 1 10F 1.0 123456789"
+    assert resource.buffer == ["identify", "version", "getserialno"]
 
     resource.buffer = []
     assert driver.calibrate() is None
@@ -74,29 +78,29 @@ def test_corvus(driver, resource):
 
 def test_corvus_axes(driver, resource):
     resource.buffer = []
-    assert driver[0].calibrate() is None
-    assert resource.buffer == ["0 ncal"]
+    assert driver[1].calibrate() is None
+    assert resource.buffer == ["1 ncal"]
 
     resource.buffer = []
-    assert driver[1].range_measure() is None
-    assert resource.buffer == ["1 nrm"]
+    assert driver[2].range_measure() is None
+    assert resource.buffer == ["2 nrm"]
 
     resource.buffer = []
-    assert driver[2].move_absolute(2.4) is None
-    assert resource.buffer == ["2.400 2 nmove"]
+    assert driver[3].move_absolute(2.4) is None
+    assert resource.buffer == ["2.400 3 nmove"]
 
     resource.buffer = []
-    assert driver[0].move_relative(1.2) is None
-    assert resource.buffer == ["1.200 0 nrmove"]
+    assert driver[1].move_relative(1.2) is None
+    assert resource.buffer == ["1.200 1 nrmove"]
 
     resource.buffer = ["4.200"]
-    assert driver[1].position == 4.2
-    assert resource.buffer == ["1 npos"]
+    assert driver[2].position == 4.2
+    assert resource.buffer == ["2 npos"]
 
     resource.buffer = ["3"]
-    assert driver[2].is_moving
+    assert driver[3].is_moving
     assert resource.buffer == ["status"]
 
     resource.buffer = ["2"]
-    assert not driver[0].is_moving
+    assert not driver[1].is_moving
     assert resource.buffer == ["status"]
