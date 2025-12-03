@@ -6,10 +6,10 @@ Example configuration:
 ```
 emulators:
   smu:
-    module: keithley.k2410
+    model: urn:comet:model:keithley:2410
     port: 10001
   lcr:
-    module: keysight.e4980a
+    model: urn:comet:model:keysight:e4980a
     port: 11002
   # User specific emulator
   my_instr:
