@@ -14,8 +14,8 @@ This is useful when you want full control in code without relying on external co
 from comet.station import Station
 
 station = Station()
-station.add_instrument("smu", resource_name="GPIB::16", model="keithley.k2410")
-station.add_instrument("dmm", resource_name="GPIB::18", model="keithley.k2700")
+station.add_instrument("smu", resource_name="GPIB::16", model="urn:comet:model:keithley:2410")
+station.add_instrument("dmm", resource_name="GPIB::18", model="urn:comet:model:keithley:2700")
 ```
 
 ### From dict
@@ -26,8 +26,8 @@ Create a station from a config dict:
 from comet.station import Station
 
 station = Station.from_config({"instruments": {
-    "smu": {"resource_name": "GPIB::16", "model": "keithley.k2410"},
-    "dmm": {"resource_name": "GPIB::18", "model": "keithley.k2700"},
+    "smu": {"resource_name": "GPIB::16", "model": "urn:comet:model:keithley:2410"},
+    "dmm": {"resource_name": "GPIB::18", "model": "urn:comet:model:keithley:2700"},
 }})
 ```
 
@@ -40,10 +40,10 @@ Create a station from a config file (either YAML or JSON):
 instruments:
   smu:
     resource_name: GPIB::16
-    model: keithley.k2410
+    model: urn:comet:model:keithley:2410
   dmm:
     resource_name: GPIB::18
-    model: keithley.k2700
+    model: urn:comet:model:keithley:2700
 ```
 
 ```python

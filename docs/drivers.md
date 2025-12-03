@@ -38,7 +38,7 @@ from comet.driver import driver_factory
 rm = pyvisa.ResourceManager("@py")
 
 with rm.open_resource("TCPIP::0.0.0.0::11001::SOCKET") as res:
-    smu = driver_factory("keithley.k2410")(res)
+    smu = driver_factory("urn:comet:model:keithley:2410")(res)
 ```
 
 Switching between generic drivers.
@@ -47,9 +47,9 @@ Switching between generic drivers.
 from comet.driver import driver_factory
 
 smu_drivers = {
-    "Keithley2410": driver_factory("keithley.k2410"),
-    "Keithley2470": driver_factory("keithley.k2470"),
-    "Keithley2657A": driver_factory("keithley.k2657a"),
+    "Keithley2410": driver_factory("urn:comet:model:keithley:2410"),
+    "Keithley2470": driver_factory("urn:comet:model:keithley:2470"),
+    "Keithley2657A": driver_factory("urn:comet:model:keithley:2657a"),
 }
 
 driver_name = "Keithley2470"

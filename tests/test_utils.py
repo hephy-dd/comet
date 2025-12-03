@@ -1,4 +1,5 @@
 import re
+import warnings
 
 import pytest
 
@@ -56,3 +57,12 @@ def test_make_iso():
 def test_safe_filename():
     assert utils.safe_filename("Monty Python\"s!") == "Monty_Python_s_"
     assert utils.safe_filename("$2020-02-22 13:14:25") == "_2020-02-22_13_14_25"
+
+
+def test_parse_model_urn():
+    assert utils.parse_model_urn("urn:comet:model:shrubbery:3") == "shrubbery.s3"
+    assert utils.parse_model_urn("urn:comet:model:shrubbery:ni") == "shrubbery.ni"
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        assert utils.parse_model_urn("shrubbery.3") == "shrubbery.s3"
+        assert utils.parse_model_urn("shrubbery.ni") == "shrubbery.ni"

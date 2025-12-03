@@ -1,6 +1,6 @@
 """Emulator drop in replacement for PyVISA resources.
 
->>> with open_emulator("keithley.k2410") as res:
+>>> with open_emulator("urn:comet:model:keithley:2410") as res:
 ...     print(res.query("*IDN?"))
 ...
 

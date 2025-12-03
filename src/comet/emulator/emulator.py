@@ -6,6 +6,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any, Callable, Optional, Union
 
+from ..utils import parse_model_urn
 from .response import Response, make_response
 
 __all__ = ["emulator_factory", "message", "Emulator"]
@@ -15,8 +16,9 @@ logger = logging.getLogger(__name__)
 emulator_registry: dict[str, type["Emulator"]] = {}
 
 
-def emulator_factory(module_name: str) -> type["Emulator"]:
-    """Returns emulator class from module specified by `module_name`."""
+def emulator_factory(model_urn: str) -> type["Emulator"]:
+    """Returns emulator class from model specified by URN."""
+    module_name: str = parse_model_urn(model_urn)
     key: str = module_name
     if key not in emulator_registry:
         try:
