@@ -71,7 +71,7 @@ config_schema = schema.Schema(
         schema.Optional("version"): str,  # deprecated
         "emulators": {
             str: {
-                "module": str,
+                schema.Optional(schema.Or("model", "module")): str,
                 schema.Optional("host"): str,
                 "port": schema.And(
                     int,
@@ -95,6 +95,8 @@ def load_config(filename: str) -> dict[str, Any]:
     config = validate_config(data or {})
     # Set defaults
     for params in config.get("emulators", {}).values():
+        if "model" in params and "module" in params:
+            raise KeyError("keys 'model' and 'module' are exclusive")
         params.setdefault("host", default_host)
         params.setdefault("termination", default_termination)
         params.setdefault("request_delay", default_request_delay)
@@ -152,14 +154,14 @@ def main() -> None:
     threads = []
 
     for name, params in config.get("emulators", {}).items():
-        module = params.get("module")
+        model = params.get("model") or params.get("module") # fallback for comet<1.5
         host = params.get("host")
         port = params.get("port")
         termination_bytes = params.get("termination").encode()
         request_delay = params.get("request_delay")
         options = params.get("options", {})
         address = host, port
-        emulator = emulator_factory(module)()
+        emulator = emulator_factory(model)()
         emulator.options.update(options)
         context = TCPServerContext(
             name=name,
