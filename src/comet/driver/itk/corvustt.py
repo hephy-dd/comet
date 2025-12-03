@@ -1,6 +1,6 @@
 from typing import Optional
 
-from comet.driver.generic import InstrumentError
+from comet.driver.generic import InstrumentError, InitializeMixin
 from comet.driver.generic.motion_controller import (
     Position,
     MotionControllerAxis,
