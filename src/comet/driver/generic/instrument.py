@@ -10,7 +10,6 @@ __all__ = [
     "ResetMixin",
     "ClearMixin",
     "ErrorQueueMixin",
-    "ConfigureMixin",
     "BeeperMixin",
     "RouteTerminalMixin",
     "Instrument",
