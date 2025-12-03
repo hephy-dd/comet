@@ -11,8 +11,8 @@ def driver(resource):
 
 
 def test_corvus(driver, resource):
-    resource.buffer = ["\t\0331.0"]  # terminal buffer control characters
-    assert driver.initialize() == "\t\0331.0"
+    resource.buffer = ["\t\x1b1.0"]  # terminal buffer control characters
+    assert driver.initialize() is None
     assert resource.buffer == ["0 mode", "version"]
 
     resource.buffer = ["Corvus 1 312 1 10F", "1.0", "123456789"]
