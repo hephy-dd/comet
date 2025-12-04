@@ -1,6 +1,6 @@
 """NKT Photonics PILAS picosecond pulsed diode laser emulator"""
 
-from comet.emulator import Emulator
+from comet.emulator import Emulator, TextResponse
 from comet.emulator import message, run
 
 __all__ = ["PILASEmulator"]
@@ -35,7 +35,6 @@ class PILASEmulator(Emulator):
 
     @message(r"^ld\?$")
     def get_output(self) -> str:
-
         return "pulsed laser emission: " + ("on" if self.output else "off")
 
     @message(r"^ld=(0|1)$")
@@ -57,8 +56,9 @@ class PILASEmulator(Emulator):
         return f"tune value:\t\t     {self.tune:.2f} %"
 
     @message(r"^tune=(\d{1,4})$")
-    def set_tune(self, tune: int) -> None:
+    def set_tune(self, tune: int) -> str:
         self.tune = int(tune) / 10
+        return "done"
 
     @message(r"^f\?$")
     def get_frequency(self) -> str:
@@ -70,8 +70,8 @@ class PILASEmulator(Emulator):
         return "done"
 
     @message(r"^lht\?$")
-    def get_laser_head_temperature(self) -> str:
-        return f"laser head temp.:\t     {self.laser_head_temperature} °C"
+    def get_laser_head_temperature(self) -> TextResponse:
+        return TextResponse(f"laser head temp.:\t     {self.laser_head_temperature} °C", encoding="latin-1")
 
     @message(r"^ldtemp\?$")
     def get_laser_diode_temperature(self) -> str:

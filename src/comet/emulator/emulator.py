@@ -1,14 +1,14 @@
-import argparse
 import importlib
 import inspect
 import logging
 import re
-import signal
+from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from typing import Any, Callable, Optional, Union
 
-from .tcpserver import TCPServer, TCPServerThread, TCPServerContext
+from .response import Response, make_response
 
-__all__ = ["Emulator", "message", "emulator_factory", "run"]
+__all__ = ["emulator_factory", "message", "Emulator"]
 
 logger = logging.getLogger(__name__)
 
@@ -16,13 +16,16 @@ emulator_registry: dict[str, type["Emulator"]] = {}
 
 
 def emulator_factory(module_name: str) -> type["Emulator"]:
-    """Returns emulator class from module specified by `name`."""
+    """Returns emulator class from module specified by `module_name`."""
     key: str = module_name
     if key not in emulator_registry:
         try:
             # Try to load module from global namespace
             module = importlib.import_module(module_name)
         except ModuleNotFoundError:
+            # Package can be None
+            if not __package__:
+                raise
             # If does not exist, try to load from comet.emulator package
             key = f"{__package__}.{module_name}"
             module = importlib.import_module(key)
@@ -38,21 +41,20 @@ def emulator_factory(module_name: str) -> type["Emulator"]:
     return emulator_registry[key]
 
 
-def message(route: str) -> Callable[[Callable[..., Any]], "Route"]:
-    """Decorator to register a regex route for an emulator method."""
-
-    def decorator(method: Callable[..., Any]) -> "Route":
-        return Route(route, method)
-
-    return decorator
+def normalize_route(pattern: str) -> str:
+    """Remove a leading ^ only if it's at the very start of the regex (and not escaped)."""
+    if pattern.startswith("^") and not pattern.startswith(r"\^"):
+        return pattern[1:]
+    return pattern
 
 
 class Route:
     """Route wrapper for message routing."""
+    __slots__ = ["route", "pattern", "method"]
 
     def __init__(self, route: str, method: Callable[..., Any]) -> None:
-        self.route: str = route
-        self.pattern = re.compile(route)
+        self.route: str = normalize_route(route)
+        self.pattern = re.compile(self.route)  # precompile for speed
         self.method: Callable[..., Any] = method
 
     def __call__(self, *args, **kwargs) -> Any:
@@ -64,113 +66,45 @@ class Route:
 
 
 def get_routes(cls: type) -> list[Route]:
-    """Return sorted list of routes defined by method decorator."""
-    routes: list[Route] = []
+    """Return routes with subclass overrides by regex pattern."""
+    by_pattern: dict[tuple[str, int], Route] = {}
+
+    # Subclass first, bases later, so subclass wins.
     for cls_ in cls.__mro__:
-        for name in dir(cls_):
-            attr = getattr(cls_, name)
+        for attr in cls_.__dict__.values():
             if isinstance(attr, Route):
-                routes.append(attr)
-    # Reverse sort methods by expression length.
-    routes.sort(key=lambda route: len(route.route), reverse=True)
+                key = (attr.pattern.pattern, attr.pattern.flags)
+                # keep the first seen (from the most-derived class)
+                by_pattern.setdefault(key, attr)
+
+    routes = list(by_pattern.values())
+    # Reverse sort by expression length for specificity; tie-breaker: method name.
+    routes.sort(key=lambda r: (-len(r.pattern.pattern), r.method.__name__))
     return routes
+
+
+def message(route: str) -> Callable[[Callable[..., Any]], Route]:
+    """Decorator to register a regex route for an emulator method."""
+
+    def decorator(method: Callable[..., Any]) -> Route:
+        return Route(route, method)
+
+    return decorator
 
 
 class Emulator:
     def __init__(self) -> None:
         self.options: dict[str, Any] = {}
 
-    def __call__(self, message: str) -> Union[None, str, list[str]]:
-        logging.debug("handle message: %s", message)
+    def __call__(self, message: str) -> Union[None, Response, list[Response]]:
+        logger.debug("handle message: %s", message)
         for route in get_routes(type(self)):
             args = route.match(message)
             if args is not None:
                 response = route(self, *args)
                 if response is not None:
-                    # If result is list or tuple make sure items are strings
                     if isinstance(response, (list, tuple)):
-                        return [format(r) for r in response]
-                    # Else make sure result is string
-                    return format(response)
+                        return [make_response(res) for res in response]
+                    return make_response(response)
                 return response
         return None
-
-
-def option_type(value: str) -> tuple[str, str]:
-    m = re.match(r"^([\w_][\w\d_]*)=(.*)$", value)
-    if m:
-        return m.group(1), m.group(2)
-    raise argparse.ArgumentTypeError("expected key=value")
-
-
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--hostname",
-        default="localhost",
-        help="hostname, default is 'localhost'",
-    )
-    parser.add_argument(
-        "-p", "--port",
-        type=int,
-        default=10000,
-        help="port, default is 10000",
-    )
-    parser.add_argument(
-        "-t",
-        "--termination",
-        default="\r\n",
-        help="message termination, default is '\\r\\n'",
-    )
-    parser.add_argument(
-        "-d",
-        "--request-delay",
-        type=float,
-        default=0.1,
-        help="delay between requests in seconds, default is 0.1 sec",
-    )
-    parser.add_argument(
-        "-o",
-        "--option",
-        type=option_type,
-        action="append",
-        default=[],
-        help="set emulator specific option(s), e.g. '-o version=2.1'",
-    )
-    return parser.parse_args()
-
-
-def run(emulator: Emulator) -> int:
-    """Convenience emulator runner using TCP server."""
-    if not isinstance(emulator, Emulator):
-        raise TypeError(f"Emulator must inherit from {Emulator}")
-
-    args = parse_args()
-    emulator.options.update({key: value for key, value in args.option})
-
-    logging.basicConfig(level=logging.INFO)
-
-    mod = inspect.getmodule(emulator.__class__)
-    name = (getattr(getattr(mod, "__spec__", None), "name", None)
-            or emulator.__class__.__module__)
-
-    context = TCPServerContext(name, emulator, args.termination, args.request_delay)
-    address = args.hostname, args.port
-    server = TCPServer(address, context)
-    thread = TCPServerThread(server)
-
-    hostname, port, *_ = server.server_address  # IPv4/IPv6
-    context.logger.info("starting... %s:%s", hostname, port)
-
-    thread.start()
-
-    def handle_event(signum, frame):
-        context.logger.info("stopping... %s:%s", hostname, port)
-        server.shutdown()
-
-    signal.signal(signal.SIGTERM, handle_event)
-    signal.signal(signal.SIGINT, handle_event)
-
-    thread.join()
-
-    return 0

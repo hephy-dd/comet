@@ -14,6 +14,12 @@ def test_basic(emulator):
     assert emulator("*OPC?") == "1"
 
 
+def test_error(emulator):
+    assert emulator(":SYST:ERR?") == "+0,\"No error\""
+    assert emulator("SHRUBBERY?") is None
+    assert emulator(":SYST:ERR?") == "-113,\"Undefined header\""
+
+
 def test_correction_method(emulator):
     assert emulator(":CORR:METH?") == "SING"
     assert emulator(":CORR:METH MULT") is None
@@ -30,7 +36,7 @@ def test_fetch_impedance_format(emulator):
         float(a), float(b)
         return True
     for command in ("FETC", ":FETC", "FETCH:FORM", ":FETCH:FORM", "FETCH:IMP:FORM", ":FETCH:IMP:FORM"):
-        assert get_types(emulator(f"{command}?"))
+        assert get_types(str(emulator(f"{command}?")))
 
 
 def test_bias_voltage_level(emulator):

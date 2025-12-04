@@ -1,7 +1,5 @@
 """Driver for ECR AC3 thermal chuck"""
 
-from typing import Tuple
-
 from comet.emulator import Emulator
 from comet.emulator import message, run
 

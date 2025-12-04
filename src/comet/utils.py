@@ -16,7 +16,7 @@ __all__ = [
     "safe_filename",
 ]
 
-ureg = UnitRegistry()
+ureg: UnitRegistry = UnitRegistry()
 
 
 def to_unit(value: Union[float, str, Quantity], unit: str) -> float:

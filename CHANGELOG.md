@@ -7,14 +7,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.4.1] - 2025-12-04
+
+### Fixed
+
+- Missing OPC in PM100 emulator (#104).
+
+## [1.4.0] - 2025-11-18
+
 ### Added
 
+- Support for Python 3.14 (#99).
+- Generic oscilloscope driver (#97).
+- Rohde&Schwarz RTO6/RTP164 drivers and emulators (#97).
 - Type annotations in emulator code.
+- Emulator module tests.
+- Display measure function to Keithley 2657A emulator.
 
 ### Changed
 
-- Set default emulator hostname to `localhost`.
+- Emulator yields `TextResponse`, `RawResponse` or `RawResponse`.
+- Renamed `--hostname` to `--host` for emulator parameters.
+- Set default emulator host to `localhost`.
 - Renamed this changelog to `CHANGELOG.md`.
+
+### Removed
+
+- Obsolete `mypy.ini` (not required with recent mypy versions).
+
+### Fixed
+
+- Emulator routes are now properly overriden from derived classes in function `get_routes`.
+
+## [1.3.1] - 2025-10-23
+
+### Fixed
+
+- PILAS emulator missing response from tune command (#100).
 
 ## [1.3.0] - 2025-08-11
 
@@ -98,9 +127,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- ITK CorvisTT emulator.
+- ITK CorvusTT emulator.
 
-[unreleased]: https://github.com/hephy-dd/comet/releases/tag/v1.3.0...HEAD
+[unreleased]: https://github.com/hephy-dd/comet/releases/tag/v1.4.1...HEAD
+[1.4.1]: https://github.com/hephy-dd/comet/compare/v1.4.0...v1.4.1
+[1.4.0]: https://github.com/hephy-dd/comet/compare/v1.3.1...v1.4.0
+[1.3.1]: https://github.com/hephy-dd/comet/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/hephy-dd/comet/compare/v1.2.2...v1.3.0
 [1.2.2]: https://github.com/hephy-dd/comet/compare/v1.2.1...v1.2.2
 [1.2.1]: https://github.com/hephy-dd/comet/compare/v1.2.0...v1.2.1
