@@ -6,7 +6,6 @@ from comet.emulator import Emulator
 from comet.emulator import message, run
 from comet.emulator.utils import Error
 
-
 __all__ = ["PM100Emulator"]
 
 
@@ -33,6 +32,10 @@ class PM100Emulator(Emulator):
     @message(r"^\*CLS$")
     def set_clear(self) -> None:
         self.error_queue.clear()
+
+    @message(r"^\*OPC\?$")
+    def get_opc(self) -> int:
+        return 1
 
     @message(r"^:?SYST:ERR(?::NEXT)?\?$")
     def get_system_error_next(self) -> str:
