@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.4.1] - 2025-12-04
+
+### Fixed
+
+- Missing OPC in PM100 emulator (#104).
+
 ## [1.4.0] - 2025-11-18
 
 ### Added
@@ -123,7 +129,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - ITK CorvusTT emulator.
 
-[unreleased]: https://github.com/hephy-dd/comet/releases/tag/v1.4.0...HEAD
+[unreleased]: https://github.com/hephy-dd/comet/releases/tag/v1.4.1...HEAD
+[1.4.1]: https://github.com/hephy-dd/comet/compare/v1.4.0...v1.4.1
 [1.4.0]: https://github.com/hephy-dd/comet/compare/v1.3.1...v1.4.0
 [1.3.1]: https://github.com/hephy-dd/comet/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/hephy-dd/comet/compare/v1.2.2...v1.3.0
