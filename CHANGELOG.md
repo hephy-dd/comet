@@ -121,7 +121,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- ITK CorvisTT emulator.
+- ITK CorvusTT emulator.
 
 [unreleased]: https://github.com/hephy-dd/comet/releases/tag/v1.4.0...HEAD
 [1.4.0]: https://github.com/hephy-dd/comet/compare/v1.3.1...v1.4.0
