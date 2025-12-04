@@ -16,7 +16,7 @@ def test_basic(emulator):
 
 def test_time(emulator):
     assert re.match(r"^T\d{6}\d{6}$", str(emulator("T")))
-    assert re.match(r"^T\d{6}\d{6}$", str(emulator("t010203010203")))
+    assert re.match(r"^t\d{6}\d{6}$", str(emulator("t010203010203")))
 
 
 def test_channels(emulator):
@@ -44,7 +44,7 @@ def test_digital_channels(emulator):
 
 def test_program(emulator):
     assert emulator("P") == "P000"
-    assert emulator("P004") == "P004"
+    assert emulator("p004") == "p004"
     assert emulator("P") == "P004"
-    assert emulator("P000") == "P000"
+    assert emulator("p000") == "p000"
     assert emulator("P") == "P000"

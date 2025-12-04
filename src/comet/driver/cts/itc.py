@@ -187,7 +187,7 @@ class ITC(ITCDriver):
 
         >>> instr.program = 42
         """
-        result = self.query_bytes(f"P{number:03d}", 4)
+        result = self.query_bytes(f"p{number:03d}", 4)
         if number != int(result[1:]):
             raise RuntimeError(f"failed to start program '{number}'")
 

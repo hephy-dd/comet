@@ -54,7 +54,7 @@ class MockResource:
         return self.read()
 
     def read_bytes(self, count: int) -> bytes:
-        self.buffer.pop(0)
+        return bytes(self.buffer.pop(0))[:count]
 
     def write_raw(self, message: bytes) -> int:
         self.buffer.append(message)

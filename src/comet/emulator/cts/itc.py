@@ -38,7 +38,7 @@ class ITCEmulator(Emulator):
     @message(r'^(t\d{6}\d{6})$')
     def set_t(self, value) -> str:
         t = datetime.datetime.strptime(value, "t%d%m%y%H%M%S")
-        return t.strftime("T%d%m%y%H%M%S")
+        return t.strftime("t%d%m%y%H%M%S")
 
     @message(r'^(A0)$')
     def get_a0(self, channel) -> str:
@@ -116,10 +116,10 @@ class ITCEmulator(Emulator):
     def get_p(self) -> str:
         return f"P{self.program:03d}"
 
-    @message(r'^P(\d{3})$')
+    @message(r'^p(\d{3})$')
     def set_p(self, program) -> str:
         self.program = int(program)
-        return f"P{self.program:03d}"
+        return f"p{self.program:03d}"
 
 
 if __name__ == "__main__":
