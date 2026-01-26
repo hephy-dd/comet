@@ -1,5 +1,6 @@
 import datetime
 import re
+import warnings
 from math import log
 from typing import Iterable, Optional, Union
 
@@ -14,6 +15,7 @@ __all__ = [
     "t_dew",
     "make_iso",
     "safe_filename",
+    "parse_model_urn",
 ]
 
 ureg: UnitRegistry = UnitRegistry()
@@ -73,7 +75,7 @@ def t_dew(t: float, rh: float) -> float:
     """
     a: float = 17.27
     b: float = 237.3
-    m: float = log(rh / 100.) + ((a * t) / (b + t))
+    m: float = log(rh / 100.0) + ((a * t) / (b + t))
     return (b * m) / (a - m)
 
 
@@ -95,3 +97,45 @@ def make_iso(dt: Optional[Union[float, datetime.datetime]] = None) -> str:
 
 def safe_filename(filename: str) -> str:
     return re.sub(r"[^a-zA-Z0-9\_\/\.\-]+", "_", filename)
+
+
+def parse_model_urn(model_urn: str) -> str:
+    """Convert an instrument model URN into module name.
+
+    >>> parse_model_urn("urn:comet:model:keithley:2410")
+    'keithley.k2410'
+    """
+
+    def auto_prefix(vendor, model) -> str:
+        # Auto add prefix for numeric model names.
+        if vendor and model and model[0].isdigit():
+            model = f"{vendor[0]}{model}".lower()
+        return model
+
+    s = model_urn.strip().lower()
+    if s.startswith("urn:"):
+        try:
+            scheme, namespace, resource_type, vendor, model = s.split(":", 4)
+        except ValueError as exc:
+            raise ValueError(f"Invalid URN format: {model_urn!r}") from exc
+        if scheme != "urn" or namespace != "comet" or resource_type != "model":
+            raise ValueError(f"Unsupported URN: {model_urn!r}")
+        model_prefixed = auto_prefix(vendor, model)
+        return f"{vendor}.{model_prefixed}"
+
+    # Fallback to legacy format
+    if "." in s:
+        vendor, model = s.split(".", 1)
+        if vendor and model:
+            warnings.warn(
+                f"Using legacy model format {model_urn!r}; please switch to URN format "
+                f"'urn:comet:model:{vendor}:{model}'",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            model_prefixed = auto_prefix(vendor, model)
+            return f"{vendor}.{model_prefixed}"
+
+    raise ValueError(
+        f"Invalid model identifier (expected URN or vendor.model): {model_urn!r}"
+    )

@@ -32,8 +32,8 @@ pip install https://github.com/hephy-dd/comet/archive/refs/tags/v1.5.0.tar.gz
 from comet.station import Station
 
 config = {"instruments": {
-    "smu": {"resource_name": "GPIB::16", "model": "keithley.k2470"},
-    "dmm": {"resource_name": "GPIB::18", "model": "keithley.k2700"},
+    "smu": {"resource_name": "GPIB::16", "model": "urn:comet:model:keithley:2470"},
+    "dmm": {"resource_name": "GPIB::18", "model": "urn:comet:model:keithley:2700"},
 }}
 
 with Station.from_config(config) as station:
@@ -50,10 +50,10 @@ No instruments at hand? COMET comes with a powerful set of emulators using TCP s
 # emulators.yaml
 emulators:
   smu:
-    module: keithley.k2470
+    model: urn:comet:model:keithley:2470
     port: 11001
   dmm:
-    module: keithley.k2700
+    model: urn:comet:model:keithley:2700
     port: 11002
 ```
 
@@ -65,8 +65,8 @@ When using emulators, update the resource_name to point to the local TCP endpoin
 
 ```python
 config = {"instruments": {
-    "smu": {"resource_name": "TCPIP0::localhost::11001::SOCKET", "model": "keithley.k2470"},
-    "dmm": {"resource_name": "TCPIP0::localhost::11002::SOCKET", "model": "keithley.k2700"},
+    "smu": {"resource_name": "TCPIP0::localhost::11001::SOCKET", "model": "urn:comet:model:keithley:2470"},
+    "dmm": {"resource_name": "TCPIP0::localhost::11002::SOCKET", "model": "urn:comet:model:keithley:2700"},
 }}
 ```
 

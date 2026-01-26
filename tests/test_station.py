@@ -50,8 +50,8 @@ def test_station_from_config():
     assert station.instruments_config == {}
     station = Station.from_config({"instruments": {}})
     assert station.instruments_config == {}
-    station = Station.from_config({"instruments": {"smu": {"resource_name": "GPIB::16::INSTR", "model": "keithley.k2410"}}})
-    assert station.instruments_config == {"smu": {"resource_name": "GPIB::16::INSTR", "model": "keithley.k2410"}}
+    station = Station.from_config({"instruments": {"smu": {"resource_name": "GPIB::16::INSTR", "model": "urn:comet:model:keithley:2410"}}})
+    assert station.instruments_config == {"smu": {"resource_name": "GPIB::16::INSTR", "model": "urn:comet:model:keithley:2410"}}
 
 
 def test_station_from_file_json():
@@ -59,8 +59,8 @@ def test_station_from_file_json():
     assert station.instruments_config == {}
     station = Station.from_file(StringIO("{\"instruments\": {}}\n"))
     assert station.instruments_config == {}
-    station = Station.from_file(StringIO("{\"instruments\": {\"smu\": {\"resource_name\": \"GPIB::16::INSTR\", \"model\": \"keithley.k2410\"}}}\n"))
-    assert station.instruments_config == {"smu": {"resource_name": "GPIB::16::INSTR", "model": "keithley.k2410"}}
+    station = Station.from_file(StringIO("{\"instruments\": {\"smu\": {\"resource_name\": \"GPIB::16::INSTR\", \"model\": \"urn:comet:model:keithley:2410\"}}}\n"))
+    assert station.instruments_config == {"smu": {"resource_name": "GPIB::16::INSTR", "model": "urn:comet:model:keithley:2410"}}
 
 
 def test_station_from_file_yaml():
@@ -68,14 +68,14 @@ def test_station_from_file_yaml():
     assert station.instruments_config == {}
     station = Station.from_file(StringIO("instruments: {}\n"))
     assert station.instruments_config == {}
-    station = Station.from_file(StringIO("instruments:\n  smu:\n    resource_name: GPIB::16::INSTR\n    model: keithley.k2410\n"))
-    assert station.instruments_config == {"smu": {"resource_name": "GPIB::16::INSTR", "model": "keithley.k2410"}}
+    station = Station.from_file(StringIO("instruments:\n  smu:\n    resource_name: GPIB::16::INSTR\n    model: urn:comet:model:keithley:2410\n"))
+    assert station.instruments_config == {"smu": {"resource_name": "GPIB::16::INSTR", "model": "urn:comet:model:keithley:2410"}}
 
 
 def test_station_context(mock_resource_factory):
     with Station(resource_factory=mock_resource_factory) as station:
         assert station._instruments == {}
-    config = {"instruments": {"smu": {"resource_name": "GPIB::16::INSTR", "model": "keithley.k2410"}}}
+    config = {"instruments": {"smu": {"resource_name": "GPIB::16::INSTR", "model": "urn:comet:model:keithley:2410"}}}
     with Station.from_config(config, resource_factory=mock_resource_factory) as station:
         assert "smu" in station._instruments
         assert station.smu is station._instruments["smu"]
@@ -83,7 +83,7 @@ def test_station_context(mock_resource_factory):
 
 
 def test_instrument_attribute_is_readonly(mock_resource_factory):
-    config = {"instruments": {"smu": {"resource_name": "GPIB::16::INSTR", "model": "keithley.k2410"}}}
+    config = {"instruments": {"smu": {"resource_name": "GPIB::16::INSTR", "model": "urn:comet:model:keithley:2410"}}}
     station = Station.from_config(config, resource_factory=mock_resource_factory)
     with pytest.raises(AttributeError):
         station.smu
