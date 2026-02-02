@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Final, Optional
 
 from comet.driver.generic import InstrumentError
 from comet.driver.generic.motion_controller import (
@@ -95,6 +95,8 @@ class VenusAxis(MotionControllerAxis):
 
 
 class Venus(MotionController):
+    AXIS_IDS: Final = (1, 2, 3)
+
     def identify(self) -> str:
         result = self.resource.query("tango").strip()
         self.resource.read()  # 2nd line
@@ -109,6 +111,8 @@ class Venus(MotionController):
         return parse_error(response)
 
     def __getitem__(self, index: int) -> VenusAxis:
+        if index not in self.AXIS_IDS:
+            raise IndexError(f"invalid axis index {index}; valid: {self.AXIS_IDS}")
         return VenusAxis(self.resource, index)
 
     def calibrate(self) -> None:
@@ -120,8 +124,7 @@ class Venus(MotionController):
     @property
     def is_calibrated(self) -> bool:
         """Return True if all active axes are calibrated and range measured."""
-        values = self.resource.query("getcaldone").split()
-        return [int(value) for value in values].count(0x3) == len(values)
+        return all(self[axis].is_calibrated for axis in self.AXIS_IDS)
 
     def move_absolute(self, position: Position) -> None:
         values = " ".join([format(value, ".3f") for value in position])
