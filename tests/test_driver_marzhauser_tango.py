@@ -2,8 +2,6 @@ import pytest
 
 from comet.driver.marzhauser import Tango
 
-from .test_driver import resource
-
 
 @pytest.fixture
 def driver(resource):

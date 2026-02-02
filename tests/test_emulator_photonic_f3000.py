@@ -17,16 +17,16 @@ def test_read_brightness(emulator):
 
 
 def test_set_brightness(emulator):
-    assert emulator("B0") == None
+    assert emulator("B0") is None
     assert emulator("B?") == "B0"
 
-    assert emulator("B50") == None
+    assert emulator("B50") is None
     assert emulator("B?") == "B50"
 
-    assert emulator("B100") == None
+    assert emulator("B100") is None
     assert emulator("B?") == "B100"
 
-    assert emulator("B101") == None
+    assert emulator("B101") is None
     assert emulator("B?") == "B100"
 
 
@@ -35,8 +35,8 @@ def test_read_light_enabled(emulator):
 
 
 def test_set_light_enabled(emulator):
-    assert emulator("S1") == None
+    assert emulator("S1") is None
     assert emulator("S?") == "S1"
 
-    assert emulator("S0") == None
+    assert emulator("S0") is None
     assert emulator("S?") == "S0"

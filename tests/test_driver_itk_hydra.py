@@ -2,8 +2,6 @@ import pytest
 
 from comet.driver.itk import Hydra
 
-from .test_driver import resource
-
 
 @pytest.fixture
 def driver(resource):

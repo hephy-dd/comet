@@ -74,3 +74,7 @@ class AC3Emulator(Emulator):
     @message(r"^RE$")
     def get_error(self) -> str:
         return "E000"
+
+
+if __name__ == "__main__":
+    run(AC3Emulator())

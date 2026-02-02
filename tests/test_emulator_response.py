@@ -1,8 +1,6 @@
 import numpy as np
-import pytest
 
 from comet.emulator.response import (
-    Response,
     TextResponse,
     BinaryResponse,
     RawResponse,
