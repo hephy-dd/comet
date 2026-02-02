@@ -120,9 +120,9 @@ class CorvusTTEmulator(Emulator):
         if axis == "1":
             return f"{self.getcaldone[0]}"
         if axis == "2":
-            return f"{self.getcaldone[0]}"
+            return f"{self.getcaldone[1]}"
         if axis == "3":
-            return f"{self.getcaldone[0]}"
+            return f"{self.getcaldone[2]}"
         return None
 
     @message(r'^(-1|1|2|3)\s+getaxis$')
