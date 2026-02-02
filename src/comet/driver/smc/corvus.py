@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Final, Optional
 
 from comet.driver.generic import InstrumentError
 from comet.driver.generic.motion_controller import (
@@ -47,7 +47,7 @@ class CorvusAxis(MotionControllerAxis):
     @property
     def is_calibrated(self) -> bool:
         """Return True if axis is calibrated and range measured."""
-        result = self.resource.query(f"{self.index:d} getcaldone")
+        result = self.resource.query(f"{self.index:d} getcaldone").strip()
         return int(result) == 0x3
 
     def move_absolute(self, value: float) -> None:
@@ -58,17 +58,18 @@ class CorvusAxis(MotionControllerAxis):
 
     @property
     def position(self) -> float:
-        result = self.resource.query(f"{self.index:d} npos")
+        result = self.resource.query(f"{self.index:d} npos").strip()
         return float(result)
 
     @property
     def is_moving(self) -> bool:
-        result = self.resource.query("status")
+        result = self.resource.query("status").strip()
         return bool(int(result) & 0x1)
 
 
 class Corvus(MotionController):
     """Driver for SMC Corvus motion controller."""
+    AXIS_IDS: Final = (1, 2, 3)
 
     def identify(self) -> str:
         return self.resource.query("identify").strip()
@@ -78,10 +79,12 @@ class Corvus(MotionController):
     def clear(self) -> None: ...
 
     def next_error(self) -> Optional[InstrumentError]:
-        response = self.resource.query("geterror")
+        response = self.resource.query("geterror").strip()
         return parse_error(response)
 
     def __getitem__(self, index: int) -> CorvusAxis:
+        if index not in self.AXIS_IDS:
+            raise IndexError(f"invalid axis index {index}; valid: {self.AXIS_IDS}")
         return CorvusAxis(self.resource, index)
 
     def calibrate(self) -> None:
@@ -93,8 +96,7 @@ class Corvus(MotionController):
     @property
     def is_calibrated(self) -> bool:
         """Return True if all active axes are calibrated and range measured."""
-        values = self.resource.query("getcaldone").split()
-        return [int(value) for value in values].count(0x3) == len(values)
+        return all(self[axis].is_calibrated for axis in self.AXIS_IDS)
 
     def move_absolute(self, position: Position) -> None:
         values = " ".join([format(value, ".3f") for value in position])

@@ -40,7 +40,6 @@ def test_limits(emulator):
 
 
 def test_calibration(emulator):
-    assert emulator("-1 getcaldone") == "3 3 3"
     assert emulator("1 getcaldone") == "3"
     assert emulator("2 getcaldone") == "3"
     assert emulator("3 getcaldone") == "3"
@@ -81,16 +80,9 @@ def test_units(emulator):
 
 
 def test_calibrate_range_measure(emulator):
-    assert emulator("-1 getcaldone") == "3 3 3"
-    assert emulator("1 ncal") is None
-    assert emulator("-1 getcaldone") == "1 3 3"
-    assert emulator("2 ncal") is None
-    assert emulator("-1 getcaldone") == "1 1 3"
-    assert emulator("3 ncal") is None
-    assert emulator("-1 getcaldone") == "1 1 1"
-    assert emulator("1 nrm") is None
-    assert emulator("-1 getcaldone") == "3 1 1"
-    assert emulator("2 nrm") is None
-    assert emulator("-1 getcaldone") == "3 3 1"
-    assert emulator("3 nrm") is None
-    assert emulator("-1 getcaldone") == "3 3 3"
+    for axis in (1, 2, 3):
+        assert emulator(f"{axis} getcaldone") == "3"
+        assert emulator(f"{axis} ncal") is None
+        assert emulator(f"{axis} getcaldone") == "1"
+        assert emulator(f"{axis} nrm") is None
+        assert emulator(f"{axis} getcaldone") == "3"

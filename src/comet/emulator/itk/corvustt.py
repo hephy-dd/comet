@@ -43,7 +43,7 @@ class CorvusTTEmulator(Emulator):
 
     @message(r'^identify$')
     def get_identify(self) -> str:
-        return self.options.get("identity", self.IDENTITY)
+        return self.options.get("identify", self.IDENTITY)
 
     @message(r'^version$')
     def get_version(self) -> str:
@@ -112,17 +112,14 @@ class CorvusTTEmulator(Emulator):
         self.y_pos = random.uniform(b1, b2)
         self.z_pos = random.uniform(c1, c2)
 
-    @message(r'^(-1|1|2|3)\s+getcaldone$')
+    @message(r'^(1|2|3)\s+getcaldone$')
     def get_caldone(self, axis) -> Optional[str]:
-        if axis == "-1":
-            a1, a2, a3 = self.getcaldone
-            return f"{a1} {a2} {a3}"
         if axis == "1":
             return f"{self.getcaldone[0]}"
         if axis == "2":
-            return f"{self.getcaldone[0]}"
+            return f"{self.getcaldone[1]}"
         if axis == "3":
-            return f"{self.getcaldone[0]}"
+            return f"{self.getcaldone[2]}"
         return None
 
     @message(r'^(-1|1|2|3)\s+getaxis$')
