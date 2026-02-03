@@ -1,6 +1,6 @@
 import pytest
 
-from comet.parameter import Parameter, ParameterBase
+from comet.parameter import Parameter
 
 
 def test_parameter_empty():

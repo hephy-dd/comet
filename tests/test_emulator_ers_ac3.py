@@ -47,10 +47,10 @@ def test_get_dewpoint_control_status(emulator):
 
 def test_set_dewpoint_control_status(emulator):
     assert emulator("SD0") == "OK"
-    assert emulator.dewpoint_control_status == False
+    assert not emulator.dewpoint_control_status
 
     assert emulator("SD1") == "OK"
-    assert emulator.dewpoint_control_status == True
+    assert emulator.dewpoint_control_status
 
 
 def test_get_hold_mode(emulator):

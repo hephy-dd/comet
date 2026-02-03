@@ -70,7 +70,7 @@ def test_source_range_auto(emulator):
 
 
 def test_source_voltage_protection_level(emulator):
-    for command in (f"SOUR:VOLT:PROT", f":SOUR:VOLT:PROT", f"SOUR:VOLT:PROT:LEV", f":SOUR:VOLT:PROT:LEV"):
+    for command in ("SOUR:VOLT:PROT", ":SOUR:VOLT:PROT", "SOUR:VOLT:PROT:LEV", ":SOUR:VOLT:PROT:LEV"):
         assert float(emulator(f"{command}?")) == 210
         assert emulator(f"{command} 60") is None
         assert float(emulator(f"{command}?")) == 60
@@ -79,7 +79,7 @@ def test_source_voltage_protection_level(emulator):
 
 
 def test_sense_voltage_protection_level(emulator):
-    for command in (f":VOLT:PROT", f":SENS:VOLT:PROT", f"SENS:VOLT:PROT:LEV", f":SENS:VOLT:PROT:LEV"):
+    for command in (":VOLT:PROT", ":SENS:VOLT:PROT", "SENS:VOLT:PROT:LEV", ":SENS:VOLT:PROT:LEV"):
         assert float(emulator(f"{command}?")) == 2.1e+1
         assert emulator(f"{command} 1.5E-3") is None
         assert float(emulator(f"{command}?")) == 1.5e-3
@@ -88,12 +88,12 @@ def test_sense_voltage_protection_level(emulator):
 
 
 def test_sense_voltage_protection_tripped(emulator):
-    for command in (f":VOLT:PROT:TRIP", f":SENS:VOLT:PROT:TRIP", f"SENS:VOLT:PROT:TRIP"):
+    for command in (":VOLT:PROT:TRIP", ":SENS:VOLT:PROT:TRIP", "SENS:VOLT:PROT:TRIP"):
         assert float(emulator(f"{command}?")) == 0
 
 
 def test_sense_current_protection_level(emulator):
-    for command in (f":CURR:PROT", f":SENS:CURR:PROT", f"SENS:CURR:PROT:LEV", f":SENS:CURR:PROT:LEV"):
+    for command in (":CURR:PROT", ":SENS:CURR:PROT", "SENS:CURR:PROT:LEV", ":SENS:CURR:PROT:LEV"):
         assert float(emulator(f"{command}?")) == 1.05e-5
         assert emulator(f"{command} 0.0001") is None
         assert float(emulator(f"{command}?")) == 0.0001
@@ -102,12 +102,12 @@ def test_sense_current_protection_level(emulator):
 
 
 def test_sense_current_protection_tripped(emulator):
-    for command in (f":CURR:PROT:TRIP", f":SENS:CURR:PROT:TRIP", f"SENS:CURR:PROT:TRIP", ):
+    for command in (":CURR:PROT:TRIP", ":SENS:CURR:PROT:TRIP", "SENS:CURR:PROT:TRIP", ):
         assert float(emulator(f"{command}?")) == 0
 
 
 def test_sense_function(emulator):
-    for command in (f":FUNC", f":FUNC:ON", f"SENS:FUNC:ON", f":SENS:FUNC:ON"):
+    for command in (":FUNC", ":FUNC:ON", "SENS:FUNC:ON", ":SENS:FUNC:ON"):
         assert emulator(f"{command}?") == "\'CURR:DC\'"
         assert emulator(f"{command} \'CURR\'") is None
         assert emulator(f"{command}?") == "\'CURR:DC\'"  # TODO

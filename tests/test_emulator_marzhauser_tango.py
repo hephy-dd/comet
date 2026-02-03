@@ -19,21 +19,21 @@ def test_basic(emulator):
 
 
 def test_cal_rm(emulator):
-    assert emulator("!cal") == None
-    assert emulator("!cal x") == None
-    assert emulator("!rm") == None
-    assert emulator("!rm") == None
+    assert emulator("!cal") is None
+    assert emulator("!cal x") is None
+    assert emulator("!rm") is None
+    assert emulator("!rm") is None
 
 
 def test_move(emulator):
-    assert emulator("!moa x 0.000") == None
-    assert emulator("!mor x 0.000") == None
+    assert emulator("!moa x 0.000") is None
+    assert emulator("!mor x 0.000") is None
 
 
 def test_autostatus(emulator):
-    assert emulator("!autostatus 1") == None
+    assert emulator("!autostatus 1") is None
     assert emulator("?autostatus") == "1"
-    assert emulator("!autostatus 0") == None
+    assert emulator("!autostatus 0") is None
     assert emulator("?autostatus") == "0"
 
 

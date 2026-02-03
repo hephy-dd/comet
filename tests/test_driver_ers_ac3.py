@@ -1,8 +1,6 @@
 import pytest
 from comet.driver.ers import AC3
 
-from .test_driver import resource
-
 
 def test_identify(resource):
     """Test identify method."""
@@ -110,10 +108,10 @@ def test_dewpoint_getter(resource):
 def test_dewpoint_control_getter(resource):
     device = AC3(resource)
     resource.buffer = ["D1"]  # Dewpoint control on
-    assert device.dewpoint_control == True
+    assert device.dewpoint_control
 
     resource.buffer = ["D0"]  # Dewpoint control off
-    assert device.dewpoint_control == False
+    assert not device.dewpoint_control
 
 
 def test_dewpoint_control_setter(resource):
@@ -130,13 +128,13 @@ def test_dewpoint_control_setter(resource):
 def test_hold_mode_getter(resource):
     device = AC3(resource)
     resource.buffer = ["H10"]  # Hold mode on (but not yet reached)
-    assert device.hold_mode == True
+    assert device.hold_mode
 
     resource.buffer = ["H11"]  # Hold mode on (and reached)
-    assert device.hold_mode == True
+    assert device.hold_mode
 
     resource.buffer = ["H00"]  # Hold mode off
-    assert device.hold_mode == False
+    assert not device.hold_mode
 
 
 def test_hold_mode_setter(resource):
@@ -172,7 +170,7 @@ def test_control_status(resource):
 def test_next_error(resource):
     device = AC3(resource)
     resource.buffer = ["E000"]
-    assert device.next_error() == None
+    assert device.next_error() is None
     assert resource.buffer == ["RE"]
 
     resource.buffer = ["E001"]

@@ -2,8 +2,6 @@ import pytest
 
 from comet.driver.marzhauser import Venus
 
-from .test_driver import resource
-
 
 @pytest.fixture
 def driver(resource):

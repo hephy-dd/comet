@@ -71,7 +71,7 @@ def test_source_range_auto(emulator):
 
 
 def test_source_voltage_protection_level(emulator):
-    for command in (f"SOUR:VOLT:PROT", f":SOUR:VOLT:PROT", f"SOUR:VOLT:PROT:LEV", f":SOUR:VOLT:PROT:LEV"):
+    for command in ("SOUR:VOLT:PROT", ":SOUR:VOLT:PROT", "SOUR:VOLT:PROT:LEV", ":SOUR:VOLT:PROT:LEV"):
         assert float(emulator(f"{command}?")) == 1050
         assert emulator(f"{command} 60") is None
         assert float(emulator(f"{command}?")) == 60
@@ -80,7 +80,7 @@ def test_source_voltage_protection_level(emulator):
 
 
 def test_source_voltage_ilimit_level(emulator):
-    for command in (f"SOUR:VOLT:ILIM", f":SOUR:VOLT:ILIM", f"SOUR:VOLT:ILIM:LEV", f":SOUR:VOLT:ILIM:LEV"):
+    for command in ("SOUR:VOLT:ILIM", ":SOUR:VOLT:ILIM", "SOUR:VOLT:ILIM:LEV", ":SOUR:VOLT:ILIM:LEV"):
         assert float(emulator(f"{command}?")) == 1.05e-4
         assert emulator(f"{command} 2.1E-5") is None
         assert float(emulator(f"{command}?")) == 2.1e-5
@@ -89,12 +89,12 @@ def test_source_voltage_ilimit_level(emulator):
 
 
 def test_source_voltage_ilimit_level_tripped(emulator):
-    for command in (f"SOUR:VOLT:ILIM:TRIP", f":SOUR:VOLT:ILIM:TRIP", f"SOUR:VOLT:ILIM:LEV:TRIP", f":SOUR:VOLT:ILIM:LEV:TRIP"):
+    for command in ("SOUR:VOLT:ILIM:TRIP", ":SOUR:VOLT:ILIM:TRIP", "SOUR:VOLT:ILIM:LEV:TRIP", ":SOUR:VOLT:ILIM:LEV:TRIP"):
         assert float(emulator(f"{command}?")) == 0
 
 
 def test_source_current_vlimit_level(emulator):
-    for command in (f"SOUR:CURR:VLIM", f":SOUR:CURR:VLIM", f"SOUR:CURR:VLIM:LEV", f":SOUR:CURR:VLIM:LEV"):
+    for command in ("SOUR:CURR:VLIM", ":SOUR:CURR:VLIM", "SOUR:CURR:VLIM:LEV", ":SOUR:CURR:VLIM:LEV"):
         assert float(emulator(f"{command}?")) == 2.1e-1
         assert emulator(f"{command} 0.0001") is None
         assert float(emulator(f"{command}?")) == 0.0001
@@ -103,5 +103,5 @@ def test_source_current_vlimit_level(emulator):
 
 
 def test_source_current_vlimit_level_tripped(emulator):
-    for command in (f"SOUR:CURR:VLIM:TRIP", f":SOUR:CURR:VLIM:TRIP", f"SOUR:CURR:VLIM:LEV:TRIP", f":SOUR:CURR:VLIM:LEV:TRIP"):
+    for command in ("SOUR:CURR:VLIM:TRIP", ":SOUR:CURR:VLIM:TRIP", "SOUR:CURR:VLIM:LEV:TRIP", ":SOUR:CURR:VLIM:LEV:TRIP"):
         assert float(emulator(f"{command}?")) == 0

@@ -3,8 +3,6 @@ from datetime import datetime
 import pytest
 from comet.driver.cts import ITC
 
-from .test_driver import resource
-
 
 def to_bytes(s: str) -> bytes:
     return s.encode("ascii")
