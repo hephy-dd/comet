@@ -1,7 +1,5 @@
 import struct
 
-import pytest
-
 __all__ = [
     "pack_binary_values",
     "unpack_binary_values",
@@ -43,19 +41,23 @@ def unpack_binary_values(data: bytes) -> list[float]:
 
 class MockResource:
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.buffer = []
 
-    def clear(self):
+    def clear(self) -> None:
         ...  # VISA bus clear
 
-    def read(self):
-        return self.buffer.pop(0)
+    def read(self, encoding=None) -> str:
+        result = self.buffer.pop(0)
+        if isinstance(result, bytes):
+            return result.decode(encoding)
+        return result
 
-    def write(self, message):
+    def write(self, message: str) -> int:
         self.buffer.append(message)
+        return 1
 
-    def query(self, message):
+    def query(self, message: str) -> str:
         self.write(message)
         return self.read()
 
@@ -68,8 +70,3 @@ class MockResource:
     def query_binary_values(self, message: str, *, datatype="f", is_big_endian=False):
         self.write(message)
         return unpack_binary_values(self.buffer.pop(0))
-
-
-@pytest.fixture
-def resource():
-    return MockResource()
