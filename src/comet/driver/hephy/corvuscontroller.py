@@ -82,7 +82,7 @@ class CorvusController(MotionController):
     AXIS_IDS: Final = (1, 2, 3)
 
     def identify(self) -> str:
-        self.resource.query("???")  # test connection
+        self.resource.query("PO?")  # test connection
         return "Corvus Controller"  # Not supported
 
     def reset(self) -> None: ...  # Not supported

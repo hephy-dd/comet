@@ -9,9 +9,9 @@ def driver(resource):
 
 
 def test_basic(driver, resource):
-    resource.buffer = ["Command List:\n\r"]
+    resource.buffer = ["0.000000,0.000000,0.000000,0"]
     assert driver.identify() == "Corvus Controller"
-    assert resource.buffer == ["???"]
+    assert resource.buffer == ["PO?"]
 
 
 def test_move_absolute(driver, resource):

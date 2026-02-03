@@ -9,9 +9,9 @@ def driver(resource):
 
 
 def test_identify(driver, resource):
-    resource.buffer = ["Command List:\n\r"]
+    resource.buffer = ["0"]
     assert driver.identify() == "Picosecond Laser System"
-    assert resource.buffer == ["???"]
+    assert resource.buffer == ["LS?"]
 
 
 def test_output(driver, resource):

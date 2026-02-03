@@ -25,7 +25,7 @@ class PilasController(Driver):
     TUNE_AUTO: bool = True
 
     def identify(self) -> str:
-        self._query("???")  # test connection
+        self._query("LS?")  # test connection
         return "Picosecond Laser System"
 
     @property
