@@ -1,9 +1,8 @@
-import struct
 import pytest
 
 from comet.driver.rohde_schwarz.rtp164 import RTP164
 
-from .test_driver import resource, pack_binary_values
+from .helpers import pack_binary_values
 
 
 @pytest.fixture
@@ -30,7 +29,7 @@ def test_clear(driver, resource):
 
 def test_error(driver, resource):
     resource.buffer = ["0,\"No error\""]
-    assert driver.next_error() == None
+    assert driver.next_error() is None
     assert resource.buffer == ["SYST:ERR?"]
 
 

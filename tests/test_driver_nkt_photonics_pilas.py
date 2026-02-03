@@ -2,7 +2,7 @@ import pytest
 
 from comet.driver.nkt_photonics.pilas import PILAS
 
-from .test_driver import MockResource
+from .helpers import MockResource
 
 
 class PILASMock(MockResource):
@@ -12,7 +12,6 @@ class PILASMock(MockResource):
 
 @pytest.fixture
 def resource():
-
     return PILASMock()
 
 

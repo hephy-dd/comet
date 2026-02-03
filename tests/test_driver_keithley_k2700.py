@@ -2,8 +2,6 @@ import pytest
 
 from comet.driver.keithley import K2700
 
-from .test_driver import resource
-
 
 @pytest.fixture
 def driver(resource):
@@ -36,7 +34,7 @@ def test_measure_voltage(driver, resource):
     assert resource.buffer == [":SENS:FUNC 'VOLT:DC'", ":FORM:ELEM READ", ":READ?", ":READ?"]
 
 
-def test_measure_voltage(driver, resource):
+def test_measure_current(driver, resource):
     resource.buffer = ["+4.200000E-06", "-4.200000E-06"]
     assert driver.measure_current() == +4.2e-06
     assert driver.measure_current() == -4.2e-06

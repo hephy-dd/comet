@@ -2,8 +2,6 @@ import pytest
 
 from comet.driver.thorlabs import PM100
 
-from .test_driver import resource
-
 
 @pytest.fixture
 def driver(resource):

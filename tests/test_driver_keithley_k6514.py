@@ -2,8 +2,6 @@ import pytest
 
 from comet.driver.keithley import K6514
 
-from .test_driver import resource
-
 
 @pytest.fixture
 def driver(resource):

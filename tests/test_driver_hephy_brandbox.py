@@ -2,8 +2,6 @@ import pytest
 
 from comet.driver.hephy import BrandBox
 
-from .test_driver import resource
-
 
 @pytest.fixture
 def driver(resource):

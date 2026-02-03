@@ -55,7 +55,7 @@ def test_set_voltage(emulator):
         assert emulator("VOLTage?") == "1.0"
 
 
-def test_set_current_limit(emulator):
+def test_set_current(emulator):
 
     for channel in range(3):
         emulator(f"INSTrument {channel+1}")

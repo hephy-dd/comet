@@ -2,8 +2,6 @@ import pytest
 
 from comet.driver.itk import CorvusTT
 
-from .test_driver import resource
-
 
 @pytest.fixture
 def driver(resource):

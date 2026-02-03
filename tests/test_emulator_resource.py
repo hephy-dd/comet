@@ -1,5 +1,3 @@
-import pytest
-
 from comet.emulator import open_emulator
 
 

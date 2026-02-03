@@ -2,8 +2,6 @@ import pytest
 
 from comet.driver.rohde_schwarz.nge100 import NGE100
 
-from .test_driver import resource
-
 
 @pytest.fixture
 def driver(resource):
@@ -30,7 +28,7 @@ def test_clear(driver, resource):
 
 def test_error(driver, resource):
     resource.buffer = ["0, 'No error'"]
-    assert driver.next_error() == None
+    assert driver.next_error() is None
     assert resource.buffer == ["SYSTem:ERRor?"]
 
     resource.buffer = ["-222, 'Data out of range;INSTrument 5'"]

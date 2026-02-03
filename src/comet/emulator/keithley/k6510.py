@@ -1,5 +1,4 @@
 import random
-import time
 
 from comet.emulator import IEC60488Emulator, message, run
 from comet.emulator.utils import Error
