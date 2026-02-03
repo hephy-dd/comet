@@ -1,6 +1,6 @@
 from .brandbox import BrandBox
+from .corvuscontroller import CorvusController
 from .environbox import EnvironBox
 from .shuntbox import ShuntBox
-from .tablegui import TableGui
 
-__all__ = ["BrandBox", "EnvironBox", "ShuntBox", "TableGui"]
+__all__ = ["BrandBox", "CorvusController", "EnvironBox", "ShuntBox"]

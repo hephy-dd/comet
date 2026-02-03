@@ -1,12 +1,12 @@
 """
-HEPHY Table Control GUI
+HEPHY Corvus Controller GUI
 
-PO? - Get Table Position and Status
+PO? - Get Table Position and Status (moving)
 MA=x.xxx,x.xxx,x.xxx - Move absolute [X,Y,Z]
 MR=x.xxx,x - Move relative [StepWidth,Axis]
 """
 
-from typing import Optional
+from typing import Final, Optional, Protocol
 
 from comet.driver.generic import InstrumentError
 from comet.driver.generic.motion_controller import (
@@ -15,27 +15,36 @@ from comet.driver.generic.motion_controller import (
     MotionController,
 )
 
-__all__ = ["TableGui"]
+__all__ = ["CorvusController"]
 
 
-def get_position(resource) -> tuple[float, float, float]:
+class Resource(Protocol):
+    def query(self, message: str) -> str: ...
+    def write(self, message: str) -> None: ...
+
+
+def split_tokens(text: str) -> list[str]:
+    return [token.strip() for token in text.split(",")]
+
+
+def get_position_status(resource: Resource) -> tuple[float, float, float, bool]:
     reply = resource.query("PO?")
     try:
-        x, y, z = reply.split(",")[:3]
-        return float(x), float(y), float(z)
+        x, y, z, is_moving = split_tokens(reply)[:4]
+        return float(x), float(y), float(z), int(is_moving) == 1
     except Exception as exc:
-        raise InstrumentError(f"Failed to parse PO? reply: {reply!r}") from exc
+        raise RuntimeError(f"Failed to parse 'PO?' reply: {reply!r}") from exc
 
 
-def move_absolute(resource, x: float, y: float, z: float) -> None:
-    resource.write(f"MA={x:.3f},{y:.3f},{z:.3f}")
+def move_absolute(resource: Resource, x: float, y: float, z: float) -> None:
+    resource.write(f"MA={x:.6f},{y:.6f},{z:.6f}")
 
 
-def move_relative(resource, value: float, axis: int) -> None:
-    resource.write(f"MR={value:.3f},{axis:d}")
+def move_relative(resource: Resource, value: float, axis: int) -> None:
+    resource.write(f"MR={value:.6f},{axis:d}")
 
 
-class TableGuiAxis(MotionControllerAxis):
+class CorvusControllerAxis(MotionControllerAxis):
     def calibrate(self) -> None: ...  # Not supported
 
     def range_measure(self) -> None: ...  # Not supported
@@ -45,12 +54,12 @@ class TableGuiAxis(MotionControllerAxis):
         return True  # Not supported
 
     def move_absolute(self, value: float) -> None:
-        x, y, z = get_position(self.resource)
+        x, y, z = get_position_status(self.resource)[:3]
         if self.index == 1:
             x = value
-        if self.index == 2:
+        elif self.index == 2:
             y = value
-        if self.index == 3:
+        elif self.index == 3:
             z = value
         move_absolute(self.resource, x, y, z)
 
@@ -59,20 +68,22 @@ class TableGuiAxis(MotionControllerAxis):
 
     @property
     def position(self) -> float:
-        pos = get_position(self.resource)
+        pos = get_position_status(self.resource)[:3]
         return float(pos[self.index - 1])
 
     @property
     def is_moving(self) -> bool:
-        return False  # Not supported
+        return get_position_status(self.resource)[3]
 
 
-class TableGui(MotionController):
-    MOTION_AXES = [1, 2, 3]
+class CorvusController(MotionController):
+    """Driver for HEPHY Corvus Controller GUI."""
+
+    AXIS_IDS: Final = (1, 2, 3)
 
     def identify(self) -> str:
         self.resource.query("???")  # test connection
-        return "Table Control GUI"  # Not supported
+        return "Corvus Controller"  # Not supported
 
     def reset(self) -> None: ...  # Not supported
 
@@ -81,10 +92,10 @@ class TableGui(MotionController):
     def next_error(self) -> Optional[InstrumentError]:
         return None  # Not supported
 
-    def __getitem__(self, index: int) -> TableGuiAxis:
-        if index not in self.MOTION_AXES:
+    def __getitem__(self, index: int) -> CorvusControllerAxis:
+        if index not in self.AXIS_IDS:
             raise ValueError(f"Invalid axis: {index}")
-        return TableGuiAxis(self.resource, index)
+        return CorvusControllerAxis(self.resource, index)
 
     def calibrate(self) -> None: ...  # Not supported
 
@@ -113,12 +124,12 @@ class TableGui(MotionController):
 
     @property
     def position(self) -> Position:
-        x, y, z = get_position(self.resource)
+        x, y, z, _ = get_position_status(self.resource)
         return x, y, z
 
     @property
     def is_moving(self) -> bool:
-        return False  # Not supported
+        return get_position_status(self.resource)[3]
 
     @property
     def joystick_enabled(self) -> bool:
