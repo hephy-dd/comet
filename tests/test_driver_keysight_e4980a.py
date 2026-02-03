@@ -2,8 +2,6 @@ import pytest
 
 from comet.driver.keysight import E4980A
 
-from .test_driver import resource
-
 
 @pytest.fixture
 def driver(resource):

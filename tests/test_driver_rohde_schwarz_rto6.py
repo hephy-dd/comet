@@ -2,8 +2,6 @@ import pytest
 
 from comet.driver.rohde_schwarz.rto6 import RTO6
 
-from .test_driver import resource
-
 
 @pytest.fixture
 def driver(resource):

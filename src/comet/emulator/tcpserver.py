@@ -1,19 +1,16 @@
 import argparse
 import inspect
 import logging
-import os
 import re
 import socketserver
 import threading
 import time
 import signal
 from dataclasses import dataclass
-from typing import Callable, Iterable, Optional, Union
-
-from .. import __version__
+from typing import Iterable, Optional, Union
 
 from .emulator import Emulator
-from .response import Response, TextResponse
+from .response import Response
 
 __all__ = ["TCPRequestHandler", "TCPServer", "TCPServerThread", "TCPServerContext"]
 

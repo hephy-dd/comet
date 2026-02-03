@@ -3,8 +3,6 @@ import pytest
 from comet.driver.hephy import EnvironBox
 from comet.driver.hephy.environbox import parse_pc_data
 
-from .test_driver import resource
-
 
 @pytest.fixture
 def driver(resource):
@@ -182,7 +180,7 @@ def test_parse_pc_data():
     assert data["box_humidity"] == 1.23
     assert data["box_temperature"] == 2.34
     assert data["box_dewpoint"] == 11.1
-    assert data["pid_status"] == False
+    assert not data["pid_status"]
     assert data["pid_setpoint"] == 0.
     assert data["pid_input"] == 0.
     assert data["pid_output"] == 0.
@@ -201,25 +199,25 @@ def test_parse_pc_data():
     assert data["pid_threshold"] == 0.
     assert data["vac_valve_current"] == 0.
     assert data["vac_valve_count"] == 0
-    assert data["power_microscope_ctrl"] == True
-    assert data["power_box_light"] == False
-    assert data["power_probecard_light"] == True
-    assert data["power_laser_sensor"] == False
-    assert data["power_probecard_camera"] == True
-    assert data["power_microscope_camera"] == False
-    assert data["power_microscope_light"] == True
-    assert data["box_light"] == True
-    assert data["box_door"] == False
-    assert data["safety_alert"] == False
-    assert data["stepper_motor_control"] == False
-    assert data["air_flow_sensor"] == False
-    assert data["vac_flow_sensor"] == False
-    assert data["test_led"] == False
+    assert data["power_microscope_ctrl"]
+    assert not data["power_box_light"]
+    assert data["power_probecard_light"]
+    assert not data["power_laser_sensor"]
+    assert data["power_probecard_camera"]
+    assert not data["power_microscope_camera"]
+    assert data["power_microscope_light"]
+    assert data["box_light"]
+    assert not data["box_door"]
+    assert not data["safety_alert"]
+    assert not data["stepper_motor_control"]
+    assert not data["air_flow_sensor"]
+    assert not data["vac_flow_sensor"]
+    assert not data["test_led"]
     assert data["discharge_time"] == 3.45
     assert data["box_lux"] == 0.21
     assert data["pt100_1"] == 0.23
     assert data["pt100_2"] == 0.34
     assert data["pid_sample_time"] == 0.
     assert data["pid_prop_mode"] == 1
-    assert data["pt100_1_enabled"] == True
-    assert data["pt100_2_enabled"] == False
+    assert data["pt100_1_enabled"]
+    assert not data["pt100_2_enabled"]

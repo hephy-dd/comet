@@ -2,8 +2,6 @@ import pytest
 
 from comet.driver.rohde_schwarz import SMA100B
 
-from .test_driver import resource
-
 
 @pytest.fixture
 def driver(resource):

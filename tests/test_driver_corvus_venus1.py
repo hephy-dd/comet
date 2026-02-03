@@ -2,8 +2,6 @@ import pytest
 
 from comet.driver.corvus import Venus1
 
-from .test_driver import resource
-
 
 @pytest.fixture
 def driver(resource):
@@ -57,9 +55,9 @@ def test_umotgrad(driver, resource):
     assert resource.buffer == ["-1 getumotgrad"]
 
 
-def test_axes(driver, resource):
+def test_polepairs(driver, resource):
     resource.buffer = ["50", "51", "52"]
-    assert driver.axes == (50, 51, 52)
+    assert driver.polepairs == (50, 51, 52)
     assert resource.buffer == ["-1 getpolepairs"]
 
 
@@ -69,7 +67,7 @@ def test_axes(driver, resource):
     assert resource.buffer == ["-1 getaxis"]
 
 
-def test_axes(driver, resource):
+def test_powerup(driver, resource):
     for value in 0, 1, False, True:
         resource.buffer = [f"{value:d}"]
         assert driver.powerup == int(value)
@@ -168,33 +166,33 @@ def test_rmove(driver, resource):
 def test_stopspeed(driver, resource):
     resource.buffer = []
     driver.stopspeed()
-    assert resource.buffer == [f"stopspeed"]
+    assert resource.buffer == ["stopspeed"]
 
 
 def test_randmove(driver, resource):
     resource.buffer = []
     driver.randmove()
-    assert resource.buffer == [f"randmove"]
+    assert resource.buffer == ["randmove"]
 
 
 def test_calibrate(driver, resource):
     resource.buffer = []
     driver.calibrate()
-    assert resource.buffer == [f"calibrate"]
+    assert resource.buffer == ["calibrate"]
 
     resource.buffer = []
     driver.cal()
-    assert resource.buffer == [f"calibrate"]
+    assert resource.buffer == ["calibrate"]
 
 
 def test_rangemeasure(driver, resource):
     resource.buffer = []
     driver.rangemeasure()
-    assert resource.buffer == [f"rangemeasure"]
+    assert resource.buffer == ["rangemeasure"]
 
     resource.buffer = []
     driver.rm()
-    assert resource.buffer == [f"rangemeasure"]
+    assert resource.buffer == ["rangemeasure"]
 
 
 def test_sw(driver, resource):
@@ -307,7 +305,7 @@ def test_joyspeed(driver, resource):
 
     resource.buffer = []
     driver.joyspeed = 20.000001
-    assert resource.buffer == [f"20.000001 setjoyspeed"]
+    assert resource.buffer == ["20.000001 setjoyspeed"]
 
 
 def test_joybspeed(driver, resource):
@@ -317,7 +315,7 @@ def test_joybspeed(driver, resource):
 
     resource.buffer = []
     driver.joybspeed = .123456
-    assert resource.buffer == [f"0.123456 setjoybspeed"]
+    assert resource.buffer == ["0.123456 setjoybspeed"]
 
 
 def test_axis_pitch(driver, resource):
