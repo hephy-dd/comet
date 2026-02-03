@@ -2,18 +2,6 @@ import pytest
 
 from comet.driver.nkt_photonics.pilas import PILAS
 
-from .helpers import MockResource
-
-
-class PILASMock(MockResource):
-    def read(self, encoding=None):
-        return self.buffer.pop(0)
-
-
-@pytest.fixture
-def resource():
-    return PILASMock()
-
 
 @pytest.fixture
 def driver(resource):
@@ -125,6 +113,6 @@ def test_laser_diode_temperature(driver, resource):
 
 
 def test_laser_head_temperature(driver, resource):
-    resource.buffer = ["laser head temp.:\t     26.12 °C"]
+    resource.buffer = [b"laser head temp.:\t     26.12 \xb0C"]
     assert driver.laser_head_temperature == 26.12
     assert resource.buffer == ["lht?"]
