@@ -5,6 +5,7 @@ from contextlib import ExitStack
 from typing import Any, Callable, ContextManager, Optional, TextIO, Union
 
 import pyvisa
+import pyvisa.constants
 import yaml
 from pathlib import Path
 from schema import Schema, SchemaError, And, Optional as Opt, Use
@@ -18,10 +19,16 @@ ResourceFactory = Callable[[Config], ContextManager[Any]]
 
 logger = logging.getLogger(__name__)
 
+
 INSTRUMENT_SCHEMA: Schema = Schema({
     Opt("model"): And(str, lambda s: len(s) > 0),
     "resource_name": And(str, lambda s: len(s) > 0),
-    Opt("termination"): And(str, lambda s: len(s) > 0),
+    Opt("baud_rate"): And(Use(int), lambda x: x > 0),
+    Opt("data_bits"): And(Use(int), lambda x: x in (5, 6, 7, 8)),
+    Opt("parity"): And(Use(str), lambda s: s.lower() in ("none", "odd", "even", "mark", "space")),
+    Opt("stop_bits"): And(Use(str), lambda s: s.lower() in ("one", "one_and_a_half", "two")),
+    Opt("flow_control"): And(Use(str), lambda s: s.lower() in ("none", "xon_xoff", "rts_cts", "dtr_dsr")),
+    Opt("termination"): str,
     Opt("timeout"): And(Use(float), lambda t: t > 0),
     Opt("visa_library"): str,
 })
@@ -32,15 +39,72 @@ DEFAULT_CONFIG_FILES: list[str] = ["station.yaml", "station.yml", "station.json"
 def default_resource_factory(config: Config) -> pyvisa.Resource:
     visa_library = config.get("visa_library", "@py")
     rm = pyvisa.ResourceManager(visa_library)
+
     resource_name = config["resource_name"]
-    termination = config.get("termination", "\r\n")
-    timeout_ms = int(config.get("timeout", 8.0) * 1000)
-    return rm.open_resource(
+
+    baud_rate = int(config.get("baud_rate", 9600))
+    data_bits = int(config.get("data_bits", 8))
+
+    parity = str(config.get("parity", "none")).lower()
+    stop_bits = str(config.get("stop_bits", "one")).lower()
+    flow_control = str(config.get("flow_control", "none")).lower()
+
+    read_termination = config.get("termination", "\r\n")
+    write_termination = config.get("termination", "\r\n")
+
+    timeout_sec = float(config.get("timeout", 2.0))
+    timeout_ms = int(timeout_sec * 1000)
+
+    resource = rm.open_resource(
         resource_name,
-        read_termination=termination,
-        write_termination=termination,
-        timeout=timeout_ms
+        read_termination=read_termination,
+        write_termination=write_termination,
+        timeout=timeout_ms,
     )
+
+    if hasattr(resource, "baud_rate"):
+        resource.baud_rate = baud_rate
+
+    if hasattr(resource, "data_bits"):
+        resource.data_bits = data_bits
+
+    if hasattr(resource, "parity"):
+        if parity == "none":
+            resource.parity = pyvisa.constants.Parity.none
+        elif parity == "even":
+            resource.parity = pyvisa.constants.Parity.even
+        elif parity == "odd":
+            resource.parity = pyvisa.constants.Parity.odd
+        elif parity == "mark":
+            resource.parity = pyvisa.constants.Parity.mark
+        elif parity == "space":
+            resource.parity = pyvisa.constants.Parity.space
+        else:
+            raise ValueError(f"Invalid parity: {parity}")
+
+    if hasattr(resource, "stop_bits"):
+        if stop_bits == "one":
+            resource.stop_bits = pyvisa.constants.StopBits.one
+        elif stop_bits == "one_and_a_half":
+            resource.stop_bits = pyvisa.constants.StopBits.one_and_a_half
+        elif stop_bits == "two":
+            resource.stop_bits = pyvisa.constants.StopBits.two
+        else:
+            raise ValueError(f"Invalid stop_bits: {stop_bits}")
+
+    if hasattr(resource, "flow_control"):
+        if flow_control == "none":
+            resource.flow_control = pyvisa.constants.ControlFlow.none
+        elif flow_control == "xon_xoff":
+            resource.flow_control = pyvisa.constants.ControlFlow.xon_xoff
+        elif flow_control == "rts_cts":
+            resource.flow_control = pyvisa.constants.ControlFlow.rts_cts
+        elif flow_control == "dtr_dsr":
+            resource.flow_control = pyvisa.constants.ControlFlow.dtr_dsr
+        else:
+            raise ValueError(f"Invalid flow_control: {flow_control}")
+
+    return resource
 
 
 def find_filenames(default_filenames: list[str]) -> list[str]:
