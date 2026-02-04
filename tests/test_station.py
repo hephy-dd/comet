@@ -21,6 +21,9 @@ def mock_resource_factory():
 def test_default_resource_factory(mock_rm_cls):
     mock_rm = MagicMock()
     mock_resource = MagicMock()
+    mock_resource.read_termination = None
+    mock_resource.write_termination = None
+    mock_resource.timeout = None
 
     mock_rm_cls.return_value = mock_rm
     mock_rm.open_resource.return_value = mock_resource
@@ -29,17 +32,17 @@ def test_default_resource_factory(mock_rm_cls):
         "visa_library": "@sim",
         "resource_name": "GPIB::1::INSTR",
         "termination": "\n",
-        "timeout": 5.0
+        "timeout": 5.0,
     })
 
     mock_rm_cls.assert_called_once_with("@sim")
-    mock_rm.open_resource.assert_called_once_with(
-        "GPIB::1::INSTR",
-        read_termination="\n",
-        write_termination="\n",
-        timeout=5000  # 5.0 * 1000
-    )
+    mock_rm.open_resource.assert_called_once_with("GPIB::1::INSTR")
+
     assert result is mock_resource
+
+    assert mock_resource.read_termination == "\n"
+    assert mock_resource.write_termination == "\n"
+    assert mock_resource.timeout == 5000
 
 
 @patch("pyvisa.ResourceManager")

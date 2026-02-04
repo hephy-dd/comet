@@ -35,32 +35,48 @@ INSTRUMENT_SCHEMA: Schema = Schema({
 
 DEFAULT_CONFIG_FILES: list[str] = ["station.yaml", "station.yml", "station.json"]
 
+DEFAULT_BAUD_RATE: int = 9600
+DEFAULT_DATA_BITS: int = 8
+DEFAULT_PARITY: str = "none"
+DEFAULT_STOP_BITS: str = "one"
+DEFAULT_FLOW_CONTROL: str = "none"
+DEFAULT_TERMINATION: str = "\r\n"
+DEFAULT_TIMEOUT: float = 2.0
+DEFAULT_VISA_LIBRARY: str = "@py"
+
 
 def default_resource_factory(config: Config) -> pyvisa.Resource:
-    visa_library = config.get("visa_library", "@py")
-    rm = pyvisa.ResourceManager(visa_library)
-
     resource_name = config["resource_name"]
 
-    baud_rate = int(config.get("baud_rate", 9600))
-    data_bits = int(config.get("data_bits", 8))
+    baud_rate = int(config.get("baud_rate", DEFAULT_BAUD_RATE))
+    data_bits = int(config.get("data_bits", DEFAULT_DATA_BITS))
 
-    parity = str(config.get("parity", "none")).lower()
-    stop_bits = str(config.get("stop_bits", "one")).lower()
-    flow_control = str(config.get("flow_control", "none")).lower()
+    parity = str(config.get("parity", DEFAULT_PARITY)).lower()
+    stop_bits = str(config.get("stop_bits", DEFAULT_STOP_BITS)).lower()
+    flow_control = str(config.get("flow_control", DEFAULT_FLOW_CONTROL)).lower()
 
-    read_termination = config.get("termination", "\r\n")
-    write_termination = config.get("termination", "\r\n")
+    read_termination = config.get("termination", DEFAULT_TERMINATION)
+    write_termination = config.get("termination", DEFAULT_TERMINATION)
 
-    timeout_sec = float(config.get("timeout", 2.0))
+    timeout_sec = float(config.get("timeout", DEFAULT_TIMEOUT))
     timeout_ms = int(timeout_sec * 1000)
 
-    resource = rm.open_resource(
-        resource_name,
-        read_termination=read_termination,
-        write_termination=write_termination,
-        timeout=timeout_ms,
-    )
+    visa_library = config.get("visa_library", DEFAULT_VISA_LIBRARY)
+    if not visa_library:
+        rm = pyvisa.ResourceManager()
+    else:
+        rm = pyvisa.ResourceManager(visa_library)
+
+    resource = rm.open_resource(resource_name)
+
+    if hasattr(resource, "read_termination"):
+        resource.read_termination = read_termination
+
+    if hasattr(resource, "write_termination"):
+        resource.write_termination = write_termination
+
+    if hasattr(resource, "timeout"):
+        resource.timeout = timeout_ms
 
     if hasattr(resource, "baud_rate"):
         resource.baud_rate = baud_rate
