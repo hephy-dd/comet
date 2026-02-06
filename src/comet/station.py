@@ -55,8 +55,7 @@ def default_resource_factory(config: Config) -> pyvisa.Resource:
     stop_bits = str(config.get("stop_bits", DEFAULT_STOP_BITS)).lower()
     flow_control = str(config.get("flow_control", DEFAULT_FLOW_CONTROL)).lower()
 
-    read_termination = config.get("termination", DEFAULT_TERMINATION)
-    write_termination = config.get("termination", DEFAULT_TERMINATION)
+    termination = config.get("termination", DEFAULT_TERMINATION)
 
     timeout_sec = float(config.get("timeout", DEFAULT_TIMEOUT))
     timeout_ms = int(timeout_sec * 1000)
@@ -67,10 +66,12 @@ def default_resource_factory(config: Config) -> pyvisa.Resource:
     else:
         rm = pyvisa.ResourceManager(visa_library)
 
-    resource = rm.open_resource(resource_name)
-    resource.read_termination = read_termination
-    resource.write_termination = write_termination
-    resource.timeout = timeout_ms
+    resource = rm.open_resource(
+        resource_name,
+        read_termination=termination,
+        write_termination=termination,
+        timeout=timeout_ms,
+    )
 
     if hasattr(resource, "baud_rate"):
         resource.baud_rate = baud_rate
