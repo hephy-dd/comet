@@ -68,15 +68,9 @@ def default_resource_factory(config: Config) -> pyvisa.Resource:
         rm = pyvisa.ResourceManager(visa_library)
 
     resource = rm.open_resource(resource_name)
-
-    if hasattr(resource, "read_termination"):
-        resource.read_termination = read_termination
-
-    if hasattr(resource, "write_termination"):
-        resource.write_termination = write_termination
-
-    if hasattr(resource, "timeout"):
-        resource.timeout = timeout_ms
+    resource.read_termination = read_termination
+    resource.write_termination = write_termination
+    resource.timeout = timeout_ms
 
     if hasattr(resource, "baud_rate"):
         resource.baud_rate = baud_rate
