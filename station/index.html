@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="MBI" /><link rel="canonical" href="https://hephy-dd.github.io/comet/station/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Station - COMET</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../extra.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Station";
+        var mkdocs_page_input_path = "station.md";
+        var mkdocs_page_url = "/comet/station/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> COMET
+        </a>
+        <div class="version">
+          1.5.0
+        </div><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../drivers/">Drivers</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="#">Station</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#creation">Creation</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#from-api">From API</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#from-dict">From dict</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#from-config-file">From config file</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#usage">Usage</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../emulators/">Emulators</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../helpers/">Helpers</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">COMET</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">Station</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/hephy-dd/comet/edit/main/docs/station.md" class="icon icon-github"> Edit on GitHub</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="station">Station</h1>
+<p>A Station represents a physical arrangement of instruments that you can control and interact with programmatically.
+It serves as a centralized interface for managing multiple instruments in a safe way.</p>
+<h2 id="creation">Creation</h2>
+<h3 id="from-api">From API</h3>
+<p>Add instruments programmatically using API methods.
+This is useful when you want full control in code without relying on external config files.</p>
+<pre><code class="language-python">from comet.station import Station
+
+station = Station()
+station.add_instrument(&quot;smu&quot;, resource_name=&quot;GPIB::16&quot;, model=&quot;urn:comet:model:keithley:2410&quot;)
+station.add_instrument(&quot;dmm&quot;, resource_name=&quot;GPIB::18&quot;, model=&quot;urn:comet:model:keithley:2700&quot;)
+</code></pre>
+<h3 id="from-dict">From dict</h3>
+<p>Create a station from a config dict:</p>
+<pre><code class="language-python">from comet.station import Station
+
+station = Station.from_config({&quot;instruments&quot;: {
+    &quot;smu&quot;: {&quot;resource_name&quot;: &quot;GPIB::16&quot;, &quot;model&quot;: &quot;urn:comet:model:keithley:2410&quot;},
+    &quot;dmm&quot;: {&quot;resource_name&quot;: &quot;GPIB::18&quot;, &quot;model&quot;: &quot;urn:comet:model:keithley:2700&quot;},
+}})
+</code></pre>
+<h3 id="from-config-file">From config file</h3>
+<p>Create a station from a config file (either YAML or JSON):</p>
+<pre><code class="language-yaml"># station.yml
+instruments:
+  smu:
+    resource_name: GPIB::16
+    model: urn:comet:model:keithley:2410
+  dmm:
+    resource_name: GPIB::18
+    model: urn:comet:model:keithley:2700
+</code></pre>
+<pre><code class="language-python">from comet.station import Station
+
+station = Station.from_file(&quot;station.yml&quot;)
+</code></pre>
+<p>If filename is omitted a station tries to load <code>station.yaml</code>, <code>station.yml</code> or
+<code>station.json</code> relative to current working directory (in given order).</p>
+<pre><code class="language-python">station = Station.from_file()  # loads station.y[a]ml|json
+</code></pre>
+<p>Or pass a file like object to read from:</p>
+<pre><code class="language-python">with open(&quot;station.yml&quot;) as fp:
+    station = Station.from_file(fp)
+</code></pre>
+<h2 id="usage">Usage</h2>
+<p>A Station is used as a context manager.</p>
+<p>When entering the with block, it automatically opens connections to all configured instruments.
+When the block ends—whether normally or due to an error—it safely closes all connections.</p>
+<p>Within the block, instruments can be accessed as attributes or dictionary-style keys, and the station itself is iterable for convenient bulk operations.</p>
+<pre><code class="language-python">from comet.station import Station
+
+# Load station configuration (YAML, JSON, or dict)
+with Station.from_file() as station:
+    # Access instruments by attribute
+    print(station.smu.identify())
+    print(station.dmm.identify())
+
+    # Or by dictionary-style key access (Station implements Mapping)
+    print(station[&quot;smu&quot;].identify())
+    print(station[&quot;dmm&quot;].identify())
+
+    # Iterate over all instruments
+    for name, instrument in station.items():
+        print(f&quot;{name}: {instrument.identify()}&quot;)
+</code></pre>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../drivers/" class="btn btn-neutral float-left" title="Drivers"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../emulators/" class="btn btn-neutral float-right" title="Emulators">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+      <p>COMET is licensed under the <a href="https://github.com/hephy-dd/comet/LICENSE">GNU General Public License Version 3</a></p>
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/hephy-dd/comet/" class="fa fa-github" style="color: #fcfcfc"> GitHub</a>
+        </span>
+    
+    
+      <span><a href="../drivers/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../emulators/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

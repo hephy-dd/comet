@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="MBI" /><link rel="canonical" href="https://hephy-dd.github.io/comet/helpers/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Helpers - COMET</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../extra.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Helpers";
+        var mkdocs_page_input_path = "helpers.md";
+        var mkdocs_page_url = "/comet/helpers/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> COMET
+        </a>
+        <div class="version">
+          1.5.0
+        </div><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../drivers/">Drivers</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../station/">Station</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../emulators/">Emulators</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="#">Helpers</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#estimate">Estimate</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#filters">Filters</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#functions">Functions</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#parameter">Parameter</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#utils">Utils</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">COMET</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">Helpers</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/hephy-dd/comet/edit/main/docs/helpers.md" class="icon icon-github"> Edit on GitHub</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="helpers">Helpers</h1>
+<h2 id="estimate">Estimate</h2>
+<p>Estimate remaining time for loop operations using class <code>Estimate</code>.</p>
+<p>Call method <code>advance</code> to proceed to the next iteration and update average and
+remaining time calculation.</p>
+<pre><code class="language-python">from comet.estimate import Estimate
+
+n = 42
+e = Estimate(n)  # start stopwatch
+for i in range(n):
+    ...
+    e.advance()  # stop time since last step
+    print(&quot;passed:&quot;, e.passed)
+    print(&quot;remaining time:&quot;, e.remaining)
+    print(&quot;elapsed time:&quot;, e.elapsed)
+    print(&quot;average time:&quot;, e.average)
+</code></pre>
+<h2 id="filters">Filters</h2>
+<p>Test if standard deviation / mean &lt; threshold using function <code>std_mean_filter</code>.</p>
+<pre><code class="language-python">from comet.filters import std_mean_filter
+
+if std_mean_filter(readings, threshold=0.005):
+    ...
+</code></pre>
+<h2 id="functions">Functions</h2>
+<p>Voltage ramps using <code>LinearRange</code> generator class.</p>
+<pre><code class="language-python">from comet.functions import LinearRange
+
+for voltage in LinearRange(-10, +10, 0.25):
+    ...
+</code></pre>
+<h2 id="parameter">Parameter</h2>
+<p>Bind typed and bounded parameters to classes inheriting from class
+<code>ParameterBase</code>.</p>
+<pre><code class="language-python">from comet.parameter import ParameterBase, Parameter
+
+class Measurement(ParameterBase):
+
+    voltage_level = Parameter(unit=&quot;V&quot;, minimum=-1000, maximum=1000)
+    current_compliance = Parameter(default=&quot;25 uA&quot;, unit=&quot;A&quot;, minimum=0, maximum=&quot;10 mA&quot;)
+    terminal = Parameter(default=&quot;front&quot;, choice=[&quot;front&quot;, &quot;rear&quot;])
+    write_output = Parameter(default=True, type=bool)
+
+measurement = Measurement({&quot;voltage_level&quot;: &quot;100 V&quot;})  # supply required parameters
+
+# Get dictionary of all parameter values.
+print(measurement.parameters)
+# {'voltage_level': 100.0, 'current_compliance': 2.5e-05, 'terminal': 'front', 'write_output': True}
+
+# Update parameter values
+measurement.update_parameters({&quot;current_compliance&quot;: &quot;50 uA&quot;, &quot;terminal&quot;: &quot;rear&quot;})
+
+# Access individual parameter
+print(measurement.voltage_level)
+# 100.0
+print(measurement.current_compliance)
+# 5e-05
+print(measurement.terminal)
+# 'rear'
+
+measurement.write_output = False
+# AttributeError: can't set parameter: 'write_output'
+
+</code></pre>
+<h2 id="utils">Utils</h2>
+<p>Use <a href="https://pint.readthedocs.io/en/stable/">pint</a> unit registry to convert
+between units.</p>
+<pre><code class="language-python">from comet.utils import ureg, to_unit
+
+quantity = ureg(&quot;25 nA&quot;).to(&quot;A&quot;)
+
+print(to_unit(quantity, &quot;mA&quot;))
+# 2.5e-05
+
+print(to_unit(&quot;1200 V&quot;, &quot;kV&quot;))
+# 1.2
+
+print(to_unit(2.5, &quot;pA&quot;))
+# 2.5
+</code></pre>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../emulators/" class="btn btn-neutral float-left" title="Emulators"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+      <p>COMET is licensed under the <a href="https://github.com/hephy-dd/comet/LICENSE">GNU General Public License Version 3</a></p>
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/hephy-dd/comet/" class="fa fa-github" style="color: #fcfcfc"> GitHub</a>
+        </span>
+    
+    
+      <span><a href="../emulators/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
