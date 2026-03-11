@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - HEPHY Pilas Controller driver `urn:comet:model:hephy:pilascontroller` (#106).
 - HEPHY Corvus Controller driver `urn:comet:model:hephy:corvuscontroller` (#107).
 - MBI Table Control driver `urn:comet:model:mbi:tablecontrol` (#108).
+- Keithley 2470 emulator routes: `:TRAC:TRIG`, `:TRAC:DATA?`, and `:SENS:FUNC`.
 
 ### Changed
 
@@ -26,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Typo in CTS/ITC program command in driver and eumlator (#105).
 - ITK CorvusTT driver `-1 getcaldone` not working for all firmware versions (#109)
 - ITK CorvusTT emulator `[axis] getcaldone` returning correct values for axis 2 and 3 (#109)
+- Keithley 707B emulator error message format.
 
 ## [1.4.2] - 2026-03-10
 

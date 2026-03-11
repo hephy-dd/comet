@@ -24,6 +24,7 @@ class K2470Emulator(IEC60488Emulator):
         self.source_voltage_protection_level: float = self.DEFAULT_VOLTAGE_PROTECTION_LEVEL
         self.source_voltage_ilimit_level: float = 1.05e-4
         self.source_current_vlimit_level: float = 2.1e-1
+        self.sense_function_on: str = "CURR"
         self.sense_average_tcontrol: dict[str, str] = {"VOLT": "REP", "CURR": "REP"}
         self.sense_average_count: dict[str, int] = {"VOLT": 10, "CURR": 10}
         self.sense_average_state: dict[str, bool] = {"VOLT": False, "CURR": False}
@@ -50,6 +51,7 @@ class K2470Emulator(IEC60488Emulator):
         self.source_voltage_protection_level = self.DEFAULT_VOLTAGE_PROTECTION_LEVEL
         self.source_voltage_ilimit_level = 1.05e-4
         self.source_current_vlimit_level = 2.1e-1
+        self.sense_function_on = "CURR"
         self.sense_average_tcontrol.update({"VOLT": "REP", "CURR": "REP"})
         self.sense_average_count.update({"VOLT": 10, "CURR": 10})
         self.sense_average_state.update({"VOLT": False, "CURR": False})
@@ -201,6 +203,10 @@ class K2470Emulator(IEC60488Emulator):
     def get_source_current_vlimit_level_tripped(self) -> str:
         return format(False, "E")  # TODO
 
+    @message(r'^:?SENS:FUNC(?::ON)?\s+\"(CURR|RES|VOLT)\"$')
+    def set_sense_function_on(self, function: str) -> None:
+        self.sense_function_on = function
+
     # Average
 
     @message(r'^:?SENS:(VOLT|CURR):AVER:TCON\?$')
@@ -250,6 +256,20 @@ class K2470Emulator(IEC60488Emulator):
         curr_min = float(self.options.get("curr.min", 1e-6))
         curr_max = float(self.options.get("curr.max", 1e-7))
         return format(random.uniform(curr_min, curr_max), "E")
+
+    @message(r'^:?TRAC:TRIG \"defbuffer1\"$')
+    def set_trace_trigger(self) -> None:
+        ...
+
+    @message(r'^:?TRAC:DATA\? 1, 1, \"defbuffer1\", SOUR, READ$')
+    def get_trace_data(self) -> str:
+        volt_min = float(self.options.get("volt.min", 0))
+        volt_max = float(self.options.get("volt.max", 10))
+        curr_min = float(self.options.get("curr.min", 1e-6))
+        curr_max = float(self.options.get("curr.max", 1e-7))
+        sour = random.uniform(volt_min, volt_max)
+        read = random.uniform(curr_min, curr_max)
+        return f"{sour:E},{read:E}"
 
     # TSP
 

@@ -105,3 +105,20 @@ def test_source_current_vlimit_level(emulator):
 def test_source_current_vlimit_level_tripped(emulator):
     for command in ("SOUR:CURR:VLIM:TRIP", ":SOUR:CURR:VLIM:TRIP", "SOUR:CURR:VLIM:LEV:TRIP", ":SOUR:CURR:VLIM:LEV:TRIP"):
         assert float(emulator(f"{command}?")) == 0
+
+
+def test_sense_function_on(emulator):
+    for command in ("SENS:FUNC", ":SENS:FUNC", "SENS:FUNC:ON", ":SENS:FUNC:ON"):
+        assert emulator(f"{command} CURR") is None
+        assert emulator(f"{command} RES") is None
+        assert emulator(f"{command} VOLT") is None
+
+
+def test_trace_trigger(emulator):
+    assert emulator(":TRAC:TRIG \"defbuffer1\"") is None
+
+
+def test_trace_data(emulator):
+    result = emulator(":TRAC:DATA? 1, 1, \"defbuffer1\", SOUR, READ")
+    sour, read = str(result).split(",")
+    assert float(sour), float(read)
