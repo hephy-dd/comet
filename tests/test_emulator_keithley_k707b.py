@@ -22,6 +22,7 @@ def test_basic(emulator):
     assert emulator("*CLS") is None
     assert emulator("*OPC?") == "1"
     assert emulator("print(errorqueue.count)") == "0"
+    assert emulator("print(errorqueue.next())") == "0\t\"Queue is Empty\"\t0\t0"
 
 
 def test_channels(emulator):

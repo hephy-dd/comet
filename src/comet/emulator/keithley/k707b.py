@@ -35,7 +35,7 @@ class K707BEmulator(IEC60488Emulator):
             error = self.error_queue.pop(0)
         else:
             error = Error(0, "Queue is Empty")
-        return f"{error.code}, \"{error.message}\", 0, 0"
+        return f"{error.code}\t\"{error.message}\"\t0\t0"
 
     @message(tsp_print(r'channel\.getclose\(([^\)]+)\)'))
     def get_channel_getclose(self, channels) -> str:
