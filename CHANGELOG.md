@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - HEPHY Corvus Controller driver `urn:comet:model:hephy:corvuscontroller` (#107).
 - MBI Table Control driver `urn:comet:model:mbi:tablecontrol` (#108).
 - Keithley 2470 emulator routes: `:TRAC:TRIG`, `:TRAC:DATA?`, and `:SENS:FUNC`.
+- Temperature gradient logic for AC3 emulator (#116).
 
 ### Changed
 
