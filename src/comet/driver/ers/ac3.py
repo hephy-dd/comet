@@ -3,7 +3,6 @@
 from comet.driver.generic import Instrument, InstrumentError
 from typing import Optional
 
-
 __all__ = ["AC3"]
 
 
@@ -63,9 +62,6 @@ class AC3(Instrument):
             return InstrumentError(code, self.ERROR_MESSAGES.get(code, "unknown error"))
         return None
 
-    def __init__(self, resource):
-        self._resource = resource
-
     def _query(self, message: str) -> str:
         """Send query and validate response.
 
@@ -78,7 +74,7 @@ class AC3(Instrument):
         Raises:
             RuntimeError: If device returns error
         """
-        response = self._resource.query(message)
+        response = self.resource.query(message)
         if response.strip() == "?":
             raise RuntimeError(f"Command failed: {message}")
         return response.strip()
