@@ -22,13 +22,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Run Ruff with default rules and fix all reported issues (#110).
 - Refactored `test_driver` into `conftest` and `helpers` modules in tests (#110).
+- Emulator TCP server reimplemented using asyncio (#118).
 
 ### Fixed
 
 - Typo in CTS/ITC program command in driver and eumlator (#105).
-- ITK CorvusTT driver `-1 getcaldone` not working for all firmware versions (#109)
-- ITK CorvusTT emulator `[axis] getcaldone` returning correct values for axis 2 and 3 (#109)
+- ITK CorvusTT driver `-1 getcaldone` not working for all firmware versions (#109).
+- ITK CorvusTT emulator `[axis] getcaldone` returning correct values for axis 2 and 3 (#109).
 - Keithley 707B emulator error message format.
+- Use a monotonic clock in `Estimate` (#117).
+- Make `Estimate` forgiving for negative totals and extra `advance()` calls (#117).
 
 ## [1.4.2] - 2026-03-10
 
