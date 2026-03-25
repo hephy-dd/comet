@@ -2,6 +2,13 @@ from datetime import timedelta
 
 from comet.estimate import Estimate
 
+class FakeClock:
+    def __init__(self):
+        self.t = 0.0
+    def __call__(self):
+        self.t += 1.0
+        return self.t
+
 
 def test_initial_state():
     e = Estimate(5)
@@ -36,14 +43,14 @@ def test_advance_stops_at_total():
 
 
 def test_remaining_never_negative():
-    e = Estimate(1)
+    e = Estimate(1, clock=FakeClock())
     e.advance()
     e.advance()  # ignored
     assert e.remaining >= timedelta(0)
 
 
 def test_average_and_remaining_progression():
-    e = Estimate(2)
+    e = Estimate(2, clock=FakeClock())
 
     # before any work
     assert e.average == timedelta(0)
@@ -59,7 +66,7 @@ def test_average_and_remaining_progression():
 
 
 def test_elapsed_increases():
-    e = Estimate(1)
+    e = Estimate(1, clock=FakeClock())
     first = e.elapsed
     e.advance()
     second = e.elapsed

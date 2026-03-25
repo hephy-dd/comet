@@ -22,7 +22,7 @@ class Estimate:
     Calls to `advance()` after completion are ignored.
     """
 
-    def __init__(self, total: int, clock: Callable[[], float] = monotonic) -> None:
+    def __init__(self, total: int, *, clock: Callable[[], float] = monotonic) -> None:
         self._clock = clock
         self._total: int = max(0, total)
         self._passed: int = 0
