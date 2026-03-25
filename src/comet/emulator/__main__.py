@@ -1,5 +1,26 @@
 """Run instrument emulators as TCP sockets based on a simple `emulators.yaml`
 configuration file.
+
+Example configuration:
+
+```
+emulators:
+  smu:
+    model: urn:comet:model:keithley:2410
+    port: 10001
+  lcr:
+    model: urn:comet:model:keysight:e4980a
+    port: 11002
+```
+
+Loading a configuration filename (default filenames are `emulators.yaml` and `emulators.yml`).
+
+```
+python -m comet.emulator [-f emulators.yaml]
+```
+
+Hit Ctrl+C to stop all emulator sockets.
+
 """
 
 import argparse
@@ -112,7 +133,7 @@ def locate_config_filename() -> str:
     raise RuntimeError("No config file found.")
 
 
-async def amain() -> None:
+async def main() -> None:
     args = parse_args()
 
     logging.basicConfig(level=logging.INFO)
@@ -181,12 +202,9 @@ async def amain() -> None:
                 await task
 
 
-def main() -> None:
+if __name__ == "__main__":
     try:
-        asyncio.run(amain())
+        asyncio.run(main())
     except KeyboardInterrupt:
         # Fallback for platforms where asyncio signal handlers are unavailable.
         ...
-
-if __name__ == "__main__":
-    main()
