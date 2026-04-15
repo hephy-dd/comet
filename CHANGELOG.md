@@ -7,7 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.5.0] - 2026-01-26
+## [1.5.1] - 2026-04-15
+
+### Fixed
+
+- Restore `comet-emulator` CLI by providing a synchronous `main()` entry point (#119).
+
+## [1.5.0] - 2026-03-25
 
 ### Added
 
@@ -161,8 +167,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - ITK CorvusTT emulator.
 
-<<<<<<< HEAD
-[unreleased]: https://github.com/hephy-dd/comet/releases/tag/v1.5.0...HEAD
+[unreleased]: https://github.com/hephy-dd/comet/releases/tag/v1.5.1...HEAD
+[1.5.1]: https://github.com/hephy-dd/comet/compare/v1.5.0...v1.5.1
 [1.5.0]: https://github.com/hephy-dd/comet/compare/v1.4.2...v1.5.0
 [1.4.2]: https://github.com/hephy-dd/comet/compare/v1.4.1...v1.4.2
 [1.4.1]: https://github.com/hephy-dd/comet/compare/v1.4.0...v1.4.1
