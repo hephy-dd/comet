@@ -133,7 +133,7 @@ def locate_config_filename() -> str:
     raise RuntimeError("No config file found.")
 
 
-async def main() -> None:
+async def async_main() -> None:
     args = parse_args()
 
     logging.basicConfig(level=logging.INFO)
@@ -202,9 +202,13 @@ async def main() -> None:
                 await task
 
 
-if __name__ == "__main__":
+def main() -> None:
     try:
-        asyncio.run(main())
+        asyncio.run(async_main())
     except KeyboardInterrupt:
         # Fallback for platforms where asyncio signal handlers are unavailable.
         ...
+
+
+if __name__ == "__main__":
+    main()
