@@ -245,6 +245,10 @@ class K2470Emulator(IEC60488Emulator):
 
     # Measure
 
+    @message(r'^:?INIT$')
+    def set_init(self) -> None:
+        ...
+
     @message(r'^:?MEAS:VOLT\?$')
     def get_measure_voltage(self) -> str:
         volt_min = float(self.options.get("volt.min", 0))
@@ -257,11 +261,15 @@ class K2470Emulator(IEC60488Emulator):
         curr_max = float(self.options.get("curr.max", 1e-7))
         return format(random.uniform(curr_min, curr_max), "E")
 
-    @message(r'^:?TRAC:TRIG \"defbuffer1\"$')
+    @message(r'^:?TRAC:CLE \"[a-zA-Z0-9_]+\"$')
+    def set_trace_clear(self) -> None:
+        ...
+
+    @message(r'^:?TRAC:TRIG \"[a-zA-Z0-9_]+\"$')
     def set_trace_trigger(self) -> None:
         ...
 
-    @message(r'^:?TRAC:DATA\? 1, 1, \"defbuffer1\", SOUR, READ$')
+    @message(r'^:?TRAC:DATA\? 1, 1, \"[a-zA-Z0-9_]+\", SOUR, READ$')
     def get_trace_data(self) -> str:
         volt_min = float(self.options.get("volt.min", 0))
         volt_max = float(self.options.get("volt.max", 10))
