@@ -114,6 +114,18 @@ def test_sense_function_on(emulator):
         assert emulator(f"{command} VOLT") is None
 
 
+def test_read(emulator):
+    result = emulator(":READ?")
+    read = str(result)
+    assert float(read)
+
+
+def test_read_elements(emulator):
+    result = emulator(":READ? \"defbuffer1\", SOUR, READ")
+    sour, read = str(result).split(",")
+    assert float(sour), float(read)
+
+
 def test_trace_trigger(emulator):
     assert emulator(":TRAC:TRIG \"defbuffer1\"") is None
 

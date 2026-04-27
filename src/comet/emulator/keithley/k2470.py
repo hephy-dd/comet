@@ -245,21 +245,30 @@ class K2470Emulator(IEC60488Emulator):
 
     # Measure
 
+    @message(r':?READ\?$')
+    def get_read(self) -> str:
+        read = self._read_current()
+        return format(read, "E")
+
+    @message(r':?READ\? \"[a-zA-Z0-9_]+\", SOUR, READ$')
+    def get_read_elements(self) -> str:
+        sour = self._read_voltage()
+        read = self._read_current()
+        return f"{sour:E},{read:E}"
+
     @message(r'^:?INIT$')
     def set_init(self) -> None:
         ...
 
     @message(r'^:?MEAS:VOLT\?$')
     def get_measure_voltage(self) -> str:
-        volt_min = float(self.options.get("volt.min", 0))
-        volt_max = float(self.options.get("volt.max", 10))
-        return format(random.uniform(volt_min, volt_max), "E")
+        volt = self._read_voltage()
+        return format(volt, "E")
 
     @message(r'^:?MEAS:CURR\?$')
     def get_measure_current(self) -> str:
-        curr_min = float(self.options.get("curr.min", 1e-6))
-        curr_max = float(self.options.get("curr.max", 1e-7))
-        return format(random.uniform(curr_min, curr_max), "E")
+        curr = self._read_current()
+        return format(curr, "E")
 
     @message(r'^:?TRAC:CLE \"[a-zA-Z0-9_]+\"$')
     def set_trace_clear(self) -> None:
@@ -271,12 +280,8 @@ class K2470Emulator(IEC60488Emulator):
 
     @message(r'^:?TRAC:DATA\? 1, 1, \"[a-zA-Z0-9_]+\", SOUR, READ$')
     def get_trace_data(self) -> str:
-        volt_min = float(self.options.get("volt.min", 0))
-        volt_max = float(self.options.get("volt.max", 10))
-        curr_min = float(self.options.get("curr.min", 1e-6))
-        curr_max = float(self.options.get("curr.max", 1e-7))
-        sour = random.uniform(volt_min, volt_max)
-        read = random.uniform(curr_min, curr_max)
+        sour = self._read_voltage()
+        read = self._read_current()
         return f"{sour:E},{read:E}"
 
     # TSP
@@ -321,6 +326,16 @@ class K2470Emulator(IEC60488Emulator):
     @message(r'^.*$')
     def unknown_message(self) -> None:
         self.error_queue.append(Error(101, "malformed command"))
+
+    def _read_voltage(self) -> float:
+        volt_min = float(self.options.get("volt.min", 0))
+        volt_max = float(self.options.get("volt.max", 10))
+        return random.uniform(volt_min, volt_max)
+
+    def _read_current(self) -> float:
+        curr_min = float(self.options.get("curr.min", 1e-6))
+        curr_max = float(self.options.get("curr.max", 1e-7))
+        return random.uniform(curr_min, curr_max)
 
 
 if __name__ == "__main__":
