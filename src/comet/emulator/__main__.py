@@ -151,7 +151,7 @@ async def async_main() -> None:
         options = params.get("options", {})
 
         emulator = emulator_factory(model)()
-        emulator.options.update(options)
+        emulator.load_options(options)
 
         context = TCPServerContext(
             name=name,

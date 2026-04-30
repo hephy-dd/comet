@@ -2,6 +2,7 @@ import importlib
 import inspect
 import logging
 import re
+from collections.abc import Mapping
 from typing import Any, Callable, Optional, Union
 
 from ..utils import parse_model_urn
@@ -95,6 +96,9 @@ def message(route: str) -> Callable[[Callable[..., Any]], Route]:
 class Emulator:
     def __init__(self) -> None:
         self.options: dict[str, Any] = {}
+
+    def load_options(self, options: Mapping[str, Any]) -> None:
+        self.options.update(options)
 
     def __call__(self, message: str) -> Union[None, Response, list[Response]]:
         logger.debug("handle message: %s", message)

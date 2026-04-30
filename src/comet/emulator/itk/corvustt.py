@@ -2,23 +2,35 @@
 
 import random
 import time
-from typing import Optional
+from dataclasses import dataclass, astuple
+from collections.abc import Mapping
+from typing import Any, Optional
 
 from comet.emulator import Emulator, message, run
 
 __all__ = ["CorvusTTEmulator"]
 
 
+@dataclass
+class TableLimits:
+    a1: float
+    b1: float
+    c1: float
+    a2: float
+    b2: float
+    c2: float
+
+
 class CorvusTTEmulator(Emulator):
     """Corvus TT (Venus-1) emulator."""
 
-    IDENTITY: str = "Corvus 0 0 0 0"
-    VERSION: str = "1.0"
-    MAC_ADDR: str = "00:00:00:00:00:00"
-    SERIAL_NO: str = "01011234"
-
     def __init__(self) -> None:
         super().__init__()
+
+        self.identity: str = "Corvus 0 0 0 0"
+        self.version: str = "1.0"
+        self.mac_address: str = "00:00:00:00:00:00"
+        self.serial_no: str = "01011234"
 
         self.x_pos: float = 0.0
         self.y_pos: float = 0.0
@@ -28,7 +40,7 @@ class CorvusTTEmulator(Emulator):
         self.y_unit: int = 1
         self.z_unit: int = 1
 
-        self.table_limits = [0.0, 0.0, 0.0, 1000000.0, 100000.0, 25000.0]
+        self.table_limits = TableLimits(0.0, 0.0, 0.0, 1000000.0, 100000.0, 25000.0)
 
         self.getcaldone: list[int] = [3, 3, 3]
         self.getaxis: list[int] = [1, 1, 1]
@@ -41,21 +53,47 @@ class CorvusTTEmulator(Emulator):
 
         self.ticks_t0: float = time.monotonic()
 
+    def load_options(self, options: Mapping[str, Any]) -> None:
+        if isinstance(identity := options.get("identity"), str):
+            self.identity = identity
+        if isinstance(version := options.get("version"), str):
+            self.version = version
+        if isinstance(mac_address := options.get("mac_address"), str):
+            self.mac_address = mac_address
+        if isinstance(serial_no := options.get("serial_no"), str):
+            self.serial_no = serial_no
+
+        if isinstance(position := options.get("position"), dict):
+            if isinstance(x := position.get("x"), (int, float)):
+                self.x_pos = float(x)
+            if isinstance(y := position.get("y"), (int, float)):
+                self.y_pos = float(y)
+            if isinstance(z := position.get("z"), (int, float)):
+                self.z_pos = float(z)
+
+        if isinstance(unit := options.get("unit"), dict):
+            if isinstance(x := unit.get("x"), int):
+                self.x_unit = int(max(1, min(3, x)))
+            if isinstance(y := unit.get("y"), int):
+                self.y_unit = int(max(1, min(3, y)))
+            if isinstance(z := unit.get("z"), int):
+                self.z_unit = int(max(1, min(3, z)))
+
     @message(r'^identify$')
     def get_identify(self) -> str:
-        return self.options.get("identify", self.IDENTITY)
+        return self.identity
 
     @message(r'^version$')
     def get_version(self) -> str:
-        return self.options.get("version", self.VERSION)
+        return self.version
 
     @message(r'^getmacadr$')
     def get_macadr(self) -> str:
-        return self.options.get("macaddr", self.MAC_ADDR)
+        return self.mac_address
 
     @message(r'^getserialno$')
     def get_serialno(self) -> str:
-        return self.options.get("serialno", self.SERIAL_NO)
+        return self.serial_no
 
     @message(r'^getoptions$')
     def get_options(self) -> int:
@@ -86,11 +124,11 @@ class CorvusTTEmulator(Emulator):
     @message(r'^(.+)\s+setlimit$')
     def set_limit(self, value) -> None:
         a1, b1, c1, a2, b2, c2 = map(float, value.split())
-        self.table_limits = [a1, b1, c1, a2, b2, c2]
+        self.table_limits = TableLimits(a1, b1, c1, a2, b2, c2)
 
     @message(r'^getlimit$')
     def get_limit(self) -> tuple[str, str, str]:
-        a1, b1, c1, a2, b2, c2 = self.table_limits
+        a1, b1, c1, a2, b2, c2 = astuple(self.table_limits)
         return f"{a1:.6f} {b1:.6f}", f"{c1:.6f} {a2:.6f}", f"{b2:.6f} {c2:.6f}"
 
     @message(r'^([+-]?\d+(?:\.\d+)?)\s+([+-]?\d+(?:\.\d+)?)\s+([+-]?\d+(?:\.\d+)?)\s+(?:move|m)$')
@@ -107,7 +145,7 @@ class CorvusTTEmulator(Emulator):
 
     @message(r'^randmove$')
     def set_randmove(self) -> None:
-        a1, b1, c1, a2, b2, c2 = self.table_limits
+        a1, b1, c1, a2, b2, c2 = astuple(self.table_limits)
         self.x_pos = random.uniform(a1, a2)
         self.y_pos = random.uniform(b1, b2)
         self.z_pos = random.uniform(c1, c2)
