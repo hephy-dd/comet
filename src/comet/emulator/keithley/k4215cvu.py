@@ -100,11 +100,11 @@ class K4215CVUEmulator(IEC60488Emulator):
     def _effective_bias(self) -> float:
         return self.dcv + self.dcv_offset
 
-    @message(r'^\*IDN\?$')
+    @message(r"\*IDN\?$")
     def get_idn(self) -> str:
         return self.IDENTITY
 
-    @message(r'^\*RST$')
+    @message(r"\*RST$")
     def set_rst(self) -> None:
         self.error_queue.clear()
 
@@ -134,15 +134,15 @@ class K4215CVUEmulator(IEC60488Emulator):
         # keep drift seed but reset time reference
         self._t0 = time.time()
 
-    @message(r'^\*CLS$')
+    @message(r"\*CLS$")
     def set_cls(self) -> None:
         self.error_queue.clear()
 
-    @message(r"^BC\s*$")
+    @message(r"BC$")
     def set_buffer_clear(self) -> None:
         ...
 
-    @message(r'^:?ERROR:LAST:GET$')
+    @message(r":?ERROR:LAST:GET$")
     def get_last_error(self) -> str:
         if self.error_queue:
             error = self.error_queue[-1]
@@ -150,12 +150,12 @@ class K4215CVUEmulator(IEC60488Emulator):
             error = Error(0, "No error")
         return f'{error.code}, "{error.message}"'
 
-    @message(r'^:?ERROR:LAST:CLEAR$')
+    @message(r":?ERROR:LAST:CLEAR$")
     def clear_last_error(self) -> None:
         if self.error_queue:
             self.error_queue.pop()
 
-    @message(r'^:CVU:MODE\s(\d+)$')
+    @message(r":CVU:MODE\s+(\d+)$")
     def set_mode(self, mode: str) -> None:
         m = self._parse_int(mode)
         if m is None:
@@ -166,27 +166,27 @@ class K4215CVUEmulator(IEC60488Emulator):
             return
         self.cvu_mode = m
 
-    @message(r'^:CVU:MODE\?$')
+    @message(r":CVU:MODE\?$")
     def get_mode(self) -> str:
         return str(self.cvu_mode)
 
-    @message(r"^:CVU:CONFIG:ACVHI\s(1|2)$")
+    @message(r":CVU:CONFIG:ACVHI\s+(1|2)$")
     def set_config_acvhi(self, val: str) -> None:
         self.config_acvhi = int(val)
 
-    @message(r"^:CVU:CONFIG:ACVHI\?$")
+    @message(r":CVU:CONFIG:ACVHI\?$")
     def get_config_acvhi(self) -> str:
         return str(self.config_acvhi)
 
-    @message(r"^:CVU:CONFIG:DCVHI\s(1|2)$")
+    @message(r":CVU:CONFIG:DCVHI\s+(1|2)$")
     def set_config_dcvhi(self, val: str) -> None:
         self.config_dcvhi = int(val)
 
-    @message(r"^:CVU:CONFIG:DCVHI\?$")
+    @message(r":CVU:CONFIG:DCVHI\?$")
     def get_config_dcvhi(self) -> str:
         return str(self.config_dcvhi)
 
-    @message(r"^:CVU:ACZ:RANGE\s(.+)$")
+    @message(r":CVU:ACZ:RANGE\s+(.+)$")
     def set_acz_range(self, level: str) -> None:
         v = self._parse_float(level)
         if v is None:
@@ -196,28 +196,28 @@ class K4215CVUEmulator(IEC60488Emulator):
             return
         self.cvu_acz_range = v
 
-    @message(r"^:CVU:ACZ:RANGE\?$")
+    @message(r":CVU:ACZ:RANGE\?$")
     def get_acz_range(self) -> str:
         return f"{self.cvu_acz_range:g}"
 
-    @message(r"^:CVU:OUTPUT\s(0|1)$")
+    @message(r":CVU:OUTPUT\s+(0|1)$")
     def set_cvu_output(self, state: str) -> None:
         self.cvu_output = bool(int(state))
 
-    @message(r"^:CVU:OUTPUT\?$")
+    @message(r":CVU:OUTPUT\?$")
     def get_cvu_output(self) -> str:
         return "1" if self.cvu_output else "0"
 
-    @message(r"^:CVU:CORRECT\s(0|1),(0|1),(0|1)$")
+    @message(r":CVU:CORRECT\s+(0|1),(0|1),(0|1)$")
     def set_correction(self, open_val: str, short_val: str, load_val: str) -> None:
         self.cvu_correction = Correction(int(open_val), int(short_val), int(load_val))
 
-    @message(r"^:CVU:CORRECT\?$")
+    @message(r":CVU:CORRECT\?$")
     def get_correction(self) -> str:
         open_val, short_val, load_val = astuple(self.cvu_correction)
         return f"{open_val},{short_val},{load_val}"
 
-    @message(r"^:CVU:LENGTH\s(.+)$")
+    @message(r":CVU:LENGTH\s+(.+)$")
     def set_length(self, length_m: str) -> None:
         v = self._parse_float(length_m)
         if v is None:
@@ -230,12 +230,12 @@ class K4215CVUEmulator(IEC60488Emulator):
             return
         self.cvu_length_m = v
 
-    @message(r"^:CVU:LENGTH\?$")
+    @message(r":CVU:LENGTH\?$")
     def get_length(self) -> str:
         # keep one decimal like typical instruments
         return f"{self.cvu_length_m:.1f}"
 
-    @message(r"^:CVU:ACV\s(.+)$")
+    @message(r":CVU:ACV\s+(.+)$")
     def set_acv(self, voltage: str) -> None:
         v = self._parse_float(voltage)
         if v is None:
@@ -245,11 +245,11 @@ class K4215CVUEmulator(IEC60488Emulator):
             return
         self.acv = v
 
-    @message(r"^:CVU:ACV\?$")
+    @message(r":CVU:ACV\?$")
     def get_acv(self) -> str:
         return f"{self.acv:.6E}"
 
-    @message(r"^:CVU:FREQ\s(.+)$")
+    @message(r":CVU:FREQ\s+(.+)$")
     def set_freq(self, frequency: str) -> None:
         v = self._parse_float(frequency)
         if v is None:
@@ -259,11 +259,11 @@ class K4215CVUEmulator(IEC60488Emulator):
             return
         self.freq_hz = int(round(v))
 
-    @message(r"^:CVU:FREQ\?$")
+    @message(r":CVU:FREQ\?$")
     def get_freq(self) -> str:
         return str(self.freq_hz)
 
-    @message(r"^:CVU:DCV\s(.+)$")
+    @message(r":CVU:DCV\s+(.+)$")
     def set_dcv(self, level: str) -> None:
         v = self._parse_float(level)
         if v is None:
@@ -273,11 +273,11 @@ class K4215CVUEmulator(IEC60488Emulator):
             return
         self.dcv = v
 
-    @message(r"^:CVU:DCV\?$")
+    @message(r":CVU:DCV\?$")
     def get_dcv(self) -> str:
         return f"{self.dcv:.3E}"
 
-    @message(r"^:CVU:DCV:OFFSET\s(.+)$")
+    @message(r":CVU:DCV:OFFSET\s+(.+)$")
     def set_dcv_offset(self, offset: str) -> None:
         v = self._parse_float(offset)
         if v is None:
@@ -287,11 +287,11 @@ class K4215CVUEmulator(IEC60488Emulator):
             return
         self.dcv_offset = v
 
-    @message(r"^:CVU:DCV:OFFSET\?$")
+    @message(r":CVU:DCV:OFFSET\?$")
     def get_dcv_offset(self) -> str:
         return f"{self.dcv_offset:.3E}"
 
-    @message(r"^:CVU:SPEED\s(\d+),(.+),(.+),(.+)$")
+    @message(r":CVU:SPEED\s+(\d+),(.+),(.+),(.+)$")
     def set_speed(self, mode: str, delay_factor: str, filter_factor: str, aperture: str) -> None:
         m = self._parse_int(mode)
         d = self._parse_float(delay_factor)
@@ -318,12 +318,12 @@ class K4215CVUEmulator(IEC60488Emulator):
         self.filter_factor = f
         self.aperture_plc = a
 
-    @message(r"^:CVU:SPEED\?$")
+    @message(r":CVU:SPEED\?$")
     def get_speed(self) -> str:
         # Keep scientific formatting like typical SCPI
         return f"{self.speed_mode},{self.delay_factor:.3E},{self.filter_factor:.3E},{self.aperture_plc:.3E}"
 
-    @message(r"^:CVU:MODEL\s(.+)$")
+    @message(r":CVU:MODEL\s+(.+)$")
     def set_model(self, model: str) -> None:
         token = model.strip().upper()
         if token in self.MODEL_MAP:
@@ -338,12 +338,12 @@ class K4215CVUEmulator(IEC60488Emulator):
             return
         self.model_code = code
 
-    @message(r"^:CVU:MODEL\?$")
+    @message(r":CVU:MODEL\?$")
     def get_model(self) -> str:
         # return numeric code like many instruments do
         return str(self.model_code)
 
-    @message(r"^:CVU:MEASZ\?$")
+    @message(r":CVU:MEASZ\?$")
     def get_measz(self) -> str:
         """
         Return two comma-separated values.
@@ -457,7 +457,7 @@ class K4215CVUEmulator(IEC60488Emulator):
 
         return f"{a:.6E},{b:.6E}"
 
-    @message(r'^(.*)$')
+    @message(r"(.*)$")
     def unknown_message(self, request: str) -> None:
         # ignore empty lines quietly
         if request.strip() == "":

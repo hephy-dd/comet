@@ -39,34 +39,34 @@ class BrandBoxEmulator(Emulator):
     def opened_channels(self) -> set[str]:
         return set(self.CHANNELS) - self.closed_channels
 
-    @message(r'\*IDN\?')
+    @message(r"\*IDN\?$")
     def get_idn(self) -> str:
         return self.options.get("identity", self.IDENTITY)
 
-    @message(r'\*RST')
+    @message(r"\*RST$")
     def set_rst(self) -> str:
         return self.SUCCESS
 
-    @message(r'\*CLS')
+    @message(r"\*CLS$")
     def set_cls(self) -> str:
         return self.SUCCESS
 
-    @message(r'\*STB\?')
+    @message(r"\*STB\?$")
     def get_stb(self) -> str:
         states = []
         for channel in self.CHANNELS:
             states.append("1" if channel in self.closed_channels else "0")
         return ",".join(states)
 
-    @message(r'\*STR\?')
+    @message(r"\*STR\?$")
     def get_str(self) -> str:
         return "0"
 
-    @message(r'\*OPC\?')
+    @message(r"\*OPC\?$")
     def get_opc(self) -> str:
         return "1"
 
-    @message(r':CLOS (.+)')
+    @message(r":CLOS (.+)$")
     def set_close(self, channels) -> str:
         for channel in split_channels(channels):
             if self.has_channel(channel):
@@ -75,7 +75,7 @@ class BrandBoxEmulator(Emulator):
                 return self.COMMAND_ERROR
         return self.SUCCESS
 
-    @message(r':OPEN (.+)')
+    @message(r":OPEN (.+)$")
     def set_open(self, channels) -> str:
         for channel in split_channels(channels):
             if self.has_channel(channel):
@@ -85,19 +85,19 @@ class BrandBoxEmulator(Emulator):
                 return self.COMMAND_ERROR
         return self.SUCCESS
 
-    @message(r':CLOS:STAT\?')
+    @message(r":CLOS:STAT\?$")
     def get_close_state(self) -> str:
         return join_channels(sorted(self.closed_channels))
 
-    @message(r':OPEN:STAT\?')
+    @message(r":OPEN:STAT\?$")
     def get_open_state(self) -> str:
         return join_channels(sorted(self.opened_channels))
 
-    @message(r':DEBUG?')
+    @message(r":DEBUG?$")
     def get_debug(self) -> str:
         return self.COMMAND_ERROR
 
-    @message(r'SET:A_(ON|OFF)')
+    @message(r"SET:A_(ON|OFF)$")
     def set_a(self, state) -> str:
         for channel in ("A1", "A2"):
             if state == "ON":
@@ -107,7 +107,7 @@ class BrandBoxEmulator(Emulator):
                     self.closed_channels.remove(channel)
         return self.SUCCESS
 
-    @message(r'SET:B_(ON|OFF)')
+    @message(r"SET:B_(ON|OFF)$")
     def set_b(self, state) -> str:
         for channel in ("B1", "B2"):
             if state == "ON":
@@ -117,7 +117,7 @@ class BrandBoxEmulator(Emulator):
                     self.closed_channels.remove(channel)
         return self.SUCCESS
 
-    @message(r'SET:C_(ON|OFF)')
+    @message(r"SET:C_(ON|OFF)$")
     def set_c(self, state) -> str:
         for channel in ("C1", "C2"):
             if state == "ON":
@@ -127,7 +127,7 @@ class BrandBoxEmulator(Emulator):
                     self.closed_channels.remove(channel)
         return self.SUCCESS
 
-    @message(r'SET:(A1|A2|B1|B2|C1|C2)_(ON|OFF)')
+    @message(r"SET:(A1|A2|B1|B2|C1|C2)_(ON|OFF)$")
     def set_abc(self, channel, state) -> str:
         if state == "ON":
             self.closed_channels.add(channel)
@@ -136,52 +136,52 @@ class BrandBoxEmulator(Emulator):
                 self.closed_channels.remove(channel)
         return self.SUCCESS
 
-    @message(r'SET:MOD (IV|CV)')
+    @message(r"SET:MOD (IV|CV)$")
     def set_mod(self, mod) -> str:
         if mod not in self.MODS:
             return self.COMMAND_ERROR
         self.mod = mod
         return self.SUCCESS
 
-    @message(r'GET:A \?')
+    @message(r"GET:A \?$")
     def get_a(self) -> str:
         states = []
         for channel in ("A1", "A2"):
             states.append(format_state(channel in self.closed_channels))
         return ",".join(states)
 
-    @message(r'GET:B \?')
+    @message(r"GET:B \?$")
     def get_b(self) -> str:
         states = []
         for channel in ("B1", "B2"):
             states.append(format_state(channel in self.closed_channels))
         return ",".join(states)
 
-    @message(r'GET:C \?')
+    @message(r"GET:C \?$")
     def get_c(self) -> str:
         states = []
         for channel in ("C1", "C2"):
             states.append(format_state(channel in self.closed_channels))
         return ",".join(states)
 
-    @message(r'GET:(A1|A2|B1|B2|C1|C2) \?')
+    @message(r"GET:(A1|A2|B1|B2|C1|C2) \?$")
     def get_abc(self, channel) -> str:
         return format_state(channel in self.closed_channels)
 
-    @message(r'GET:MOD \?')
+    @message(r"GET:MOD \?$")
     def get_mod(self) -> str:
         return format(self.mod)
 
-    @message(r'GET:TST \?')
+    @message(r"GET:TST \?$")
     def get_test(self) -> str:
         return {False: "OFF", True: "ON"}[self.test_state]
 
-    @message(r'SET:TST (ON|OFF)')
+    @message(r"SET:TST (ON|OFF)$")
     def set_test(self, value) -> str:
         self.test_state = value == "ON"
         return self.SUCCESS
 
-    @message(r'.*')
+    @message(r".*")
     def unknown_message(self) -> str:
         return self.COMMAND_ERROR
 

@@ -29,51 +29,51 @@ class PILASEmulator(Emulator):
         self.laser_head_temperature: float = 25.0
         self.laser_diode_temperature: bool = True
 
-    @message(r"^version\?$")
+    @message(r"version\?$")
     def get_version(self) -> str:
         return self.IDENTITY
 
-    @message(r"^ld\?$")
+    @message(r"ld\?$")
     def get_output(self) -> str:
         return "pulsed laser emission: " + ("on" if self.output else "off")
 
-    @message(r"^ld=(0|1)$")
+    @message(r"ld=(0|1)$")
     def set_output(self, output: str) -> str:
         self.output = bool(int(output))
         return "done"
 
-    @message(r"^tm\?$")
+    @message(r"tm\?$")
     def get_tune_mode(self) -> str:
         return "tune mode:\t" + ("auto" if self.tune_mode else "manual")
 
-    @message(r"^tm=(0|1)$")
+    @message(r"tm=(0|1)$")
     def set_tune_mode(self, tune_mode: str) -> str:
         self.tune_mode = bool(int(tune_mode))
         return "done"
 
-    @message(r"^tune\?$")
+    @message(r"tune\?$")
     def get_tune(self) -> str:
         return f"tune value:\t\t     {self.tune:.2f} %"
 
-    @message(r"^tune=(\d{1,4})$")
+    @message(r"tune=(\d{1,4})$")
     def set_tune(self, tune: int) -> str:
         self.tune = int(tune) / 10
         return "done"
 
-    @message(r"^f\?$")
+    @message(r"f\?$")
     def get_frequency(self) -> str:
         return f"int. frequency:\t       {self.frequency} Hz"
 
-    @message(r"^f=(\d+)$")
+    @message(r"f=(\d+)$")
     def set_frequency(self, frequency: int) -> str:
         self.frequency = int(frequency)
         return "done"
 
-    @message(r"^lht\?$")
+    @message(r"lht\?$")
     def get_laser_head_temperature(self) -> TextResponse:
         return TextResponse(f"laser head temp.:\t     {self.laser_head_temperature} °C", encoding="latin-1")
 
-    @message(r"^ldtemp\?$")
+    @message(r"ldtemp\?$")
     def get_laser_diode_temperature(self) -> str:
         return "LD temp.:\t\t" + ("good" if self.laser_diode_temperature else "bad")
 

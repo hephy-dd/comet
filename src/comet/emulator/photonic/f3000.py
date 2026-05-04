@@ -15,24 +15,24 @@ class F3000Emulator(Emulator):
         self.current_brightness: int = 50
         self.light_enabled: bool = False
 
-    @message(r"^V\?$")
+    @message(r"V\?$")
     def get_version(self) -> str:
         return self.IDENTITY
 
-    @message(r"^B(\d{1,3})$")
+    @message(r"B(\d{1,3})$")
     def set_brightness(self, brightness: int) -> None:
         brightness = max(0, min(int(brightness), 100))
         self.current_brightness = int(brightness)
 
-    @message(r"^B\?$")
+    @message(r"B\?$")
     def get_brightness(self) -> str:
         return "B" + str(self.current_brightness)
 
-    @message(r"^S\?$")
+    @message(r"S\?$")
     def get_light_enabled(self) -> str:
         return "S0" if self.light_enabled else "S1"
 
-    @message(r"^S(0|1)$")
+    @message(r"S(0|1)$")
     def set_light_enabled(self, light_enabled: str) -> None:
         self.light_enabled = not bool(int(light_enabled))
 

@@ -14,19 +14,19 @@ class K6510Emulator(IEC60488Emulator):
         super().__init__()
         self.error_queue: list[Error] = []
 
-    @message(r'^\*RST$')
+    @message(r"\*RST$")
     def set_rst(self) -> None:
         self.error_queue.clear()
 
-    @message(r'^\*CLS$')
+    @message(r"\*CLS$")
     def set_cls(self) -> None:
         self.error_queue.clear()
 
-    @message(r'^:?SYST:ERR:COUN\?$')
+    @message(r":?SYST:ERR(?:or)?:COUN[T]?\?$")
     def get_system_error_count(self) -> str:
         return format(len(self.error_queue), "d")
 
-    @message(r'^:?SYST:ERR(?::NEXT)?\?$')
+    @message(r":?SYST:ERR(?:or)?(?::NEXT)?\?$")
     def get_system_error_next(self) -> str:
         if self.error_queue:
             error = self.error_queue.pop(0)
@@ -36,7 +36,7 @@ class K6510Emulator(IEC60488Emulator):
 
     # Route terminal
 
-    @message(r'^:?ROUT(?:e)?:TERM(?:inal(?:s)?)?\?$')
+    @message(r":?ROUT(?:e)?:TERM(?:inal(?:s)?)?\?$")
     def get_route_terminals(self) -> str:
         value = self.options.get("route.terminals", "front")
         if value.lower().startswith("rear"):
@@ -45,20 +45,20 @@ class K6510Emulator(IEC60488Emulator):
 
     # Measure
 
-    @message(r'^:?MEAS(?:ure)?:VOLT(?:age)?\?$')
+    @message(r":?MEAS(?:ure)?:VOLT(?:age)?\?$")
     def get_measure_voltage(self) -> str:
         volt_min = float(self.options.get("volt.min", 1e3))
         volt_max = float(self.options.get("volt.max", 1e2))
         return format(random.uniform(volt_min, volt_max), "E")
 
-    @message(r'^:?MEAS(?:ure)?:CURR(?:ent)?\?$')
+    @message(r":?MEAS(?:ure)?:CURR(?:ent)?\?$")
     def get_measure_current(self) -> str:
         curr_min = float(self.options.get("curr.min", 1e-6))
         curr_max = float(self.options.get("curr.max", 1e-7))
         return format(random.uniform(curr_min, curr_max), "E")
 
-    @message(r'^(.*)$')
-    def unknown_message(self, request) -> None:
+    @message(r".*")
+    def unknown_message(self) -> None:
         self.error_queue.append(Error(101, "malformed command"))
 
 

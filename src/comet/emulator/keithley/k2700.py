@@ -84,7 +84,7 @@ class K2700Emulator(IEC60488Emulator):
         self.trigger_delay_auto: bool = True
         self.trigger_delay: float = 0.001
 
-    @message(r'^\*RST$')
+    @message(r"\*RST$")
     def set_rst(self) -> None:
         self.reading_number = 0
         self.format_elements = FormatElements()
@@ -97,17 +97,17 @@ class K2700Emulator(IEC60488Emulator):
         self.trigger_delay = 0.001
         self.error_queue.clear()
 
-    @message(r'^\*CLS$')
+    @message(r"\*CLS$")
     def set_cls(self) -> None:
         self.error_queue.clear()
 
     # Format
 
-    @message(r'^:?FORM(?:AT)?:ELEM(?:ENTS)?\?$')
+    @message(r":?FORM(?:AT)?:ELEM(?:ENTS)?\?$")
     def get_format_elements(self) -> str:
         return str(self.format_elements)
 
-    @message(r'^:?FORM(?:AT)?:ELEM(?:ENTS)?\s+(.*)$')
+    @message(r":?FORM(?:AT)?:ELEM(?:ENTS)?\s+(.*)$")
     def set_format_elements(self, elements) -> None:
         error = self.format_elements.from_text(elements)
         if error:
@@ -115,39 +115,39 @@ class K2700Emulator(IEC60488Emulator):
 
     # Sense
 
-    @message(r'^:?SENS(?:E)?:FUNC(?:TION)?\?$')
+    @message(r":?SENS(?:E)?:FUNC(?:TION)?\?$")
     def get_sense_function(self) -> str:
         return f"\"{self.sense_function}\""
 
-    @message(r'^:?SENS(?:E)?:FUNC(?:TION)\s+\"(VOLT|CURR|VOLT:DC|CURR:DC|TEMP)\"$')
+    @message(r":?SENS(?:E)?:FUNC(?:TION)\s+\"(VOLT|CURR|VOLT:DC|CURR:DC|TEMP)\"$")
     def set_sense_function(self, function: str) -> None:
         self.sense_function = {"VOLT": "VOLT:DC", "CURR": "CURR:DC"}.get(function, function)
 
-    @message(r'^:?SENS(?:E)?:VOLT:AVER:TCON\?$')
+    @message(r":?SENS(?:E)?:VOLT:AVER:TCON\?$")
     def get_sense_average_tcontrol(self) -> str:
         return self.sense_voltage_average_tcontrol
 
-    @message(r'^:?SENS(?:E)?:VOLT:AVER:TCON\s+(REP|MOV)$')
+    @message(r":?SENS(?:E)?:VOLT:AVER:TCON\s+(REP|MOV)$")
     def set_sense_average_tcontrol(self, name: str) -> None:
         self.sense_voltage_average_tcontrol = name
 
-    @message(r'^:?SENS(?:E)?:VOLT:AVER:COUN[T]?\?$')
+    @message(r":?SENS(?:E)?:VOLT:AVER:COUN[T]?\?$")
     def get_sense_average_count(self) -> str:
         return format(self.sense_voltage_average_count, "d")
 
-    @message(r'^:?SENS(?:E)?:VOLT:AVER:COUN[T]?\s+(\d+)$')
+    @message(r":?SENS(?:E)?:VOLT:AVER:COUN[T]?\s+(\d+)$")
     def set_sense_average_count(self, count: str) -> None:
         self.sense_voltage_average_count = int(count)
 
-    @message(r'^:?SENS(?:E)?:VOLT:AVER(?::STAT[E]?)?\?$')
+    @message(r":?SENS(?:E)?:VOLT:AVER(?::STAT[E]?)?\?$")
     def get_sense_voltage_average_state(self) -> str:
         return format(self.sense_voltage_average_state, "d")
 
-    @message(r'^:?SENS(?:E)?:VOLT:AVER(?::STAT[E]?)?\s+(OFF|ON|0|1)$')
+    @message(r":?SENS(?:E)?:VOLT:AVER(?::STAT[E]?)?\s+(OFF|ON|0|1)$")
     def set_sense_voltage_average_state(self, value) -> None:
         self.sense_voltage_average_state = {"0": False, "1": True, "OFF": False, "ON": True}[value]
 
-    @message(r'^:?SYST:ERR\?$')
+    @message(r":?SYST:ERR\?$")
     def get_system_error(self) -> str:
         if self.error_queue:
             error = self.error_queue.pop(0)
@@ -155,65 +155,65 @@ class K2700Emulator(IEC60488Emulator):
             error = Error(0, "no error")
         return f'{error.code}, "{error.message}"'
 
-    @message(r'^:?SYST:BEEP(?::STAT)?\?$')
+    @message(r":?SYST:BEEP(?::STAT)?\?$")
     def get_beeper_state(self) -> str:
         return format(self.system_beeper_state, "d")
 
-    @message(r'^:?SYST:BEEP(?::STAT)? (OFF|ON|0|1)$')
+    @message(r":?SYST:BEEP(?::STAT)? (OFF|ON|0|1)$")
     def set_beeper_state(self, value) -> None:
         self.system_beeper_state = {'0': False, '1': True, 'OFF': False, 'ON': True}[value]
 
-    @message(r'^:?INIT(?::IMM)$')
+    @message(r":?INIT(?::IMM)$")
     def set_init(self) -> None: ...
 
-    @message(r'^:?READ\?$')
+    @message(r":?READ\?$")
     def get_read(self) -> None:
         return self._read()
 
-    @message(r'^:?FETC[H]?\?$')
+    @message(r":?FETC[H]?\?$")
     def get_fetch(self) -> str:
         return self._read()
 
     # Measure
 
-    @message(r'^:?MEAS:VOLT\?$')
+    @message(r":?MEAS:VOLT\?$")
     def get_measure_voltage(self) -> str:
         self.sense_function = "VOLT:DC"
         return self._read()
 
-    @message(r'^:?MEAS:CURR\?$')
+    @message(r":?MEAS:CURR\?$")
     def get_measure_current(self) -> str:
         self.sense_function = "CURR:DC"
         return self._read()
 
-    @message(r'^:?MEAS:TEMP\?$')
+    @message(r":?MEAS:TEMP\?$")
     def get_measure_temperature(self) -> str:
         self.sense_function = "TEMP"
         return self._read()
 
     # Trigger
 
-    @message(r':?TRIG:DEL:AUTO\?$')
+    @message(r":?TRIG:DEL:AUTO\?$")
     def get_trigger_delay_auto(self) -> str:
         return format(self.trigger_delay_auto, "d")
 
-    @message(r':?TRIG:DEL:AUTO\s+(OFF|ON|0|1)$')
+    @message(r":?TRIG:DEL:AUTO\s+(OFF|ON|0|1)$")
     def set_trigger_delay_auto(self, value) -> None:
         self.trigger_delay_auto = {'0': False, '1': True, 'OFF': False, 'ON': True}[value]
 
-    @message(r':?TRIG:DEL\?$')
+    @message(r":?TRIG:DEL\?$")
     def get_trigger_delay(self) -> str:
         return format(self.trigger_delay, "E")
 
-    @message(r':?TRIG:DEL\s+(.+)$')
-    def set_trigger_delay(self, value) -> None:
+    @message(r":?TRIG:DEL\s+(.+)$")
+    def set_trigger_delay(self, value: str) -> None:
         try:
             self.trigger_delay = min(999999.999, max(0.001, float(value)))
         except ValueError:
             self.error_queue.append(Error(-113, "undefined header"))
 
-    @message(r'^(.*)$')
-    def unknown_message(self, request) -> None:
+    @message(r".*")
+    def unknown_message(self) -> None:
         self.error_queue.append(Error(101, "malformed command"))
 
     def _read(self):

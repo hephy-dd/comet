@@ -80,8 +80,8 @@ class RTP164Emulator(IEC60488Emulator):
         big_endian = self.format_border == "MSBF"
         return BinaryResponse.pack_real32(y, big_endian=big_endian)
 
-    @message(r"(.*)$")
-    def undefined_header(self, command) -> None:
+    @message(r".*")
+    def undefined_header(self) -> None:
         self.error_queue.append(SCPIError(-113, "Undefined header"))
 
 

@@ -85,47 +85,47 @@ class AC3Emulator(Emulator):
         self.state = State()
         self.logic = Logic(self.state)
 
-    @message(r"^RC$")
+    @message(r"RC$")
     def get_temperature(self) -> str:
         self.logic.update_state()
         return f"C{int(self.state.temperature * 10):+05d}"
 
-    @message(r"^RT$")
+    @message(r"RT$")
     def get_target_temperature(self) -> str:
         return f"T{int(self.state.target_temperature * 10):+05d}"
 
-    @message(r"^ST([+-]\d{4})$")
+    @message(r"ST([+-]\d{4})$")
     def set_target_temperature(self, value: str) -> str:
         self.state.target_temperature = float(value) / 10
         return "OK"
 
-    @message(r"^RO$")
+    @message(r"RO$")
     def get_mode(self) -> str:
         return f"O{self.state.mode:d}"
 
-    @message(r"^SO([1234])$")
+    @message(r"SO([1234])$")
     def set_mode(self, value: str) -> str:
         self.state.mode = Mode(int(value))
         return "OK"
 
-    @message(r"^RF$")
+    @message(r"RF$")
     def get_dewpoint(self) -> str:
         return f"F{int(self.state.dewpoint * 10):+05d}"
 
-    @message(r"^RD$")
+    @message(r"RD$")
     def get_dewpoint_control_status(self) -> str:
         return f"D{int(self.state.dewpoint_control_status)}"
 
-    @message(r"^SD([01])$")
+    @message(r"SD([01])$")
     def set_dewpoint_control_status(self, value: str) -> str:
         self.state.dewpoint_control_status = bool(int(value))
         return "OK"
 
-    @message(r"^RH$")
+    @message(r"RH$")
     def get_hold_mode(self) -> str:
         return f"H{self.state.hold_mode:02d}"
 
-    @message(r"^SH([01])$")
+    @message(r"SH([01])$")
     def set_hold_mode(self, value: str) -> str:
         val = int(value)
         if val == 0:
@@ -134,12 +134,12 @@ class AC3Emulator(Emulator):
             self.state.hold_mode = 11
         return "OK"
 
-    @message(r"^RI$")
+    @message(r"RI$")
     def get_control_status(self) -> str:
         self.logic.update_state()
         return f"I{self.state.control_status:d}"
 
-    @message(r"^RE$")
+    @message(r"RE$")
     def get_error(self) -> str:
         return "E000"
 

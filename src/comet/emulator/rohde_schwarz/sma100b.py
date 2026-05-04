@@ -21,20 +21,20 @@ class SMA100BEmulator(Emulator):
         self.power: float = 0
         self.output: bool = False
 
-    @message(r"^\*IDN\?$")
+    @message(r"\*IDN\?$")
     def identify(self) -> str:
         return self.IDENTITY
 
-    @message(r"^\*RST$")
+    @message(r"\*RST$")
     def set_reset(self) -> None:
         self.average_count = 100
         self.wavelength = 370
 
-    @message(r"^\*CLS$")
+    @message(r"\*CLS$")
     def set_clear(self) -> None:
         self.error_queue.clear()
 
-    @message(r"^:?SYST(?:em)?:ERR(?::NEXT)?\?$")
+    @message(r":?SYST(?:em)?:ERR(?::NEXT)?\?$")
     def get_system_error_next(self) -> str:
         if self.error_queue:
             error = self.error_queue.pop(0)
@@ -42,19 +42,19 @@ class SMA100BEmulator(Emulator):
             error = Error(0, "no error")
         return f'{error.code}, "{error.message}"'
 
-    @message(r"^(?:SOUR(?:ce)?1)?:FREQ(?:uency)?:MODE\?$")
+    @message(r"(?:SOUR(?:ce)?1)?:FREQ(?:uency)?:MODE\?$")
     def get_frequency_mode(self) -> str:
         return self.frequency_mode
 
-    @message(r"^(?:SOUR(?:ce)?1)?:FREQ(?:uency)?:MODE (\w+)$")
-    def set_frequency_mode(self, mode) -> None:
+    @message(r"(?:SOUR(?:ce)?1)?:FREQ(?:uency)?:MODE\s+(\w+)$")
+    def set_frequency_mode(self, mode: str) -> None:
         self.frequency_mode = mode
 
-    @message(r"^(?:SOUR(?:ce)?1)?:FREQuency:(?:CW|FIX(?:ed)?)\?$")
+    @message(r"(?:SOUR(?:ce)?1)?:FREQuency:(?:CW|FIX(?:ed)?)\?$")
     def get_frequency(self) -> float:
         return self.frequency
 
-    @message(r"^(?:SOUR(?:ce)?1)?:FREQuency:(?:CW|FIX(?:ed)?) ([\d.]+(?:[eE][+-]?\d+)?)$")
+    @message(r"(?:SOUR(?:ce)?1)?:FREQuency:(?:CW|FIX(?:ed)?) ([\d.]+(?:[eE][+-]?\d+)?)$")
     def set_frequency(self, frequency) -> None:
         frequency = float(frequency)
         if frequency < 8e3 or frequency > 12.75e9:
@@ -62,11 +62,11 @@ class SMA100BEmulator(Emulator):
         else:
             self.frequency = frequency
 
-    @message(r"^(?:SOUR(?:ce)?1)?:POW(?:er)?:POW(?:er)?\?$")
+    @message(r"(?:SOUR(?:ce)?1)?:POW(?:er)?:POW(?:er)?\?$")
     def get_power(self) -> float:
         return self.power
 
-    @message(r"^(?:SOUR(?:ce)?1)?:POW(?:er)?:POW(?:er)? ([+-]?[\d.]+(?:[eE][+-]?\d+)?)$")
+    @message(r"(?:SOUR(?:ce)?1)?:POW(?:er)?:POW(?:er)? ([+-]?[\d.]+(?:[eE][+-]?\d+)?)$")
     def set_power(self, power) -> None:
         power = float(power)
         if power < -145 or power > 40:
@@ -74,11 +74,11 @@ class SMA100BEmulator(Emulator):
         else:
             self.power = power
 
-    @message(r"^(?:SOUR(?:ce)?1:)?OUTP(?:ut)?:STAT(?:e)?\?$")
+    @message(r"(?:SOUR(?:ce)?1:)?OUTP(?:ut)?:STAT(?:e)?\?$")
     def get_output(self) -> str:
         return "1" if self.output else "0"
 
-    @message(r"^(?:SOUR(?:ce)?1:)?OUTP(?:ut)?:STAT(?:e)? (ON|OFF)$")
+    @message(r"(?:SOUR(?:ce)?1:)?OUTP(?:ut)?:STAT(?:e)?\s+(ON|OFF)$")
     def set_output(self, state) -> None:
         self.output = True if state == "ON" else False
 
