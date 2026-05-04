@@ -20,24 +20,24 @@ class PM100Emulator(Emulator):
         self.average_count: int = 100
         self.wavelength: int = 370
 
-    @message(r"^\*IDN\?$")
+    @message(r"\*IDN\?$")
     def identify(self) -> str:
         return self.IDENTITY
 
-    @message(r"^\*RST$")
+    @message(r"\*RST$")
     def set_reset(self) -> None:
         self.average_count = 100
         self.wavelength = 370
 
-    @message(r"^\*CLS$")
+    @message(r"\*CLS$")
     def set_clear(self) -> None:
         self.error_queue.clear()
 
-    @message(r"^\*OPC\?$")
+    @message(r"\*OPC\?$")
     def get_opc(self) -> int:
         return 1
 
-    @message(r"^:?SYST:ERR(?::NEXT)?\?$")
+    @message(r":?SYST:ERR(?::NEXT)?\?$")
     def get_system_error_next(self) -> str:
         if self.error_queue:
             error = self.error_queue.pop(0)
@@ -45,23 +45,23 @@ class PM100Emulator(Emulator):
             error = Error(0, "no error")
         return f'{error.code}, "{error.message}"'
 
-    @message(r"^(?:SENS(?:e)?)?:AVER(?:age)?:COUN(?:t)?\?$")
+    @message(r"(?:SENS(?:e)?)?:AVER(?:age)?:COUN(?:t)?\?$")
     def get_average_count(self) -> int:
         return self.average_count
 
-    @message(r"^(?:SENS(?:e)?)?:AVER(?:age)?:COUN(?:t)? (\d+)$")
+    @message(r"(?:SENS(?:e)?)?:AVER(?:age)?:COUN(?:t)?\s+(\d+)$")
     def set_average_count(self, average_count) -> None:
         self.average_count = average_count
 
-    @message(r"^(?:SENS(?:e)?)?:CORR(?:ection)?:WAV(?:elength)?\?$")
+    @message(r"(?:SENS(?:e)?)?:CORR(?:ection)?:WAV(?:elength)?\?$")
     def get_wavelength(self) -> int:
         return self.wavelength
 
-    @message(r"^(?:SENS(?:e)?)?:CORR(?:ection)?:WAV(?:elength)? (\d+)$")
+    @message(r"(?:SENS(?:e)?)?:CORR(?:ection)?:WAV(?:elength)?\s+(\d+)$")
     def set_wavelength(self, wavelength) -> None:
         self.wavelength = wavelength
 
-    @message(r"^MEAS(?:ure)?(?::SCAL(?:ar)?)?(?::POW(?:er)?)?")
+    @message(r"MEAS(?:ure)?(?::SCAL(?:ar)?)?(?::POW(?:er)?)?$")
     def measure_power(self) -> str:
         power = random.uniform(1e-9, 2e-9)
         return format(power, "E")

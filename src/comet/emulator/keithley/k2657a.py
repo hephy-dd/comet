@@ -25,7 +25,7 @@ class K2657AEmulator(IEC60488Emulator):
         self.smua_measure_nplc: float = 1.0
         self.source_protectv: float = 0.
 
-    @message(r'^reset\(\)$')
+    @message(r"reset\(\)$")
     def set_reset(self):
         self.error_queue.clear()
         self.beeper_enable = True
@@ -42,23 +42,23 @@ class K2657AEmulator(IEC60488Emulator):
         self.smua_measure_nplc = 1.0
         self.source_protectv = 0.
 
-    @message(r'^status.reset\(\)$')
+    @message(r"status.reset\(\)$")
     def set_status_reset(self) -> None:
         self.error_queue.clear()
 
-    @message(r'^clear\(\)$')
+    @message(r"clear\(\)$")
     def set_clear(self) -> None:
         self.error_queue.clear()
 
-    @message(r'^errorqueue\.clear\(\)$')
+    @message(r"errorqueue\.clear\(\)$")
     def set_errorqueue_clear(self) -> None:
         self.error_queue.clear()
 
-    @message(tsp_print(r'errorqueue\.count'))
+    @message(tsp_print(r"errorqueue\.count"))
     def get_errorqueue_count(self) -> str:
         return format(len(self.error_queue), "d")
 
-    @message(tsp_print(r'errorqueue\.next\(\)'))
+    @message(tsp_print(r"errorqueue\.next\(\)"))
     def get_errorqueue_next(self) -> str:
         if self.error_queue:
             error = self.error_queue.pop(0)
@@ -68,11 +68,11 @@ class K2657AEmulator(IEC60488Emulator):
 
     # Beeper
 
-    @message(tsp_print(r'beeper\.enabled'))
+    @message(tsp_print(r"beeper\.enabled"))
     def get_beeper_enabled(self) -> str:
         return format(self.beeper_enable, "d")
 
-    @message(tsp_assign(r'beeper\.enable'))
+    @message(tsp_assign(r"beeper\.enable"))
     def set_beeper_enable(self, enable: str) -> None:
         try:
             self.beeper_enable = {
@@ -84,11 +84,11 @@ class K2657AEmulator(IEC60488Emulator):
 
     # Display
 
-    @message(tsp_print(r'display\.smua\.measure\.func'))
+    @message(tsp_print(r"display\.smua\.measure\.func"))
     def get_display_measure_function(self) -> str:
         return format(self.display_measure_function, "E")
 
-    @message(tsp_assign(r'display\.smua\.measure\.func'))
+    @message(tsp_assign(r"display\.smua\.measure\.func"))
     def set_display_measure_function(self, func) -> None:
         try:
             self.display_measure_function = {
@@ -102,11 +102,11 @@ class K2657AEmulator(IEC60488Emulator):
 
     # Source output
 
-    @message(tsp_print(r'smua\.source\.output'))
+    @message(tsp_print(r"smua\.source\.output"))
     def get_source_output(self) -> str:
         return format(self.smua_source_output, "E")
 
-    @message(tsp_assign(r'smua\.source\.output'))
+    @message(tsp_assign(r"smua\.source\.output"))
     def set_source_output(self, state) -> None:
         try:
             self.smua_source_output = {
@@ -118,11 +118,11 @@ class K2657AEmulator(IEC60488Emulator):
 
     # Source function
 
-    @message(tsp_print(r'smua\.source\.func'))
+    @message(tsp_print(r"smua\.source\.func"))
     def get_source_function(self) -> str:
         return format({"DCAMPS": 0, "DCVOLTS": 1}[self.smua_source_function], "E")
 
-    @message(tsp_assign(r'smua\.source\.func'))
+    @message(tsp_assign(r"smua\.source\.func"))
     def set_source_function(self, function) -> None:
         try:
             self.smua_source_function = {
@@ -134,11 +134,11 @@ class K2657AEmulator(IEC60488Emulator):
 
     # Source levels
 
-    @message(tsp_print(r'smua\.source\.level([iv])'))
+    @message(tsp_print(r"smua\.source\.level([iv])"))
     def get_source_level(self, function) -> str:
         return format(self.smua_source_level[function], "E")
 
-    @message(tsp_assign(r'smua\.source\.level([iv])'))
+    @message(tsp_assign(r"smua\.source\.level([iv])"))
     def set_source_level(self, function, level) -> None:
         try:
             self.smua_source_level[function] = float(level)
@@ -147,11 +147,11 @@ class K2657AEmulator(IEC60488Emulator):
 
     # Source ranges
 
-    @message(tsp_print(r'smua\.source\.range([iv])'))
+    @message(tsp_print(r"smua\.source\.range([iv])"))
     def get_source_range(self, function) -> str:
         return format(self.smua_source_range[function], "E")
 
-    @message(tsp_assign(r'smua\.source\.range([iv])'))
+    @message(tsp_assign(r"smua\.source\.range([iv])"))
     def set_source_range(self, function, level) -> None:
         try:
             self.smua_source_range[function] = float(level)
@@ -160,11 +160,11 @@ class K2657AEmulator(IEC60488Emulator):
 
     # Source autoranges
 
-    @message(tsp_print(r'smua\.source\.autorange([iv])'))
+    @message(tsp_print(r"smua\.source\.autorange([iv])"))
     def get_source_autorange(self, function) -> str:
         return format(self.smua_source_autorange[function], "E")
 
-    @message(tsp_assign(r'smua\.source\.autorange([iv])'))
+    @message(tsp_assign(r"smua\.source\.autorange([iv])"))
     def set_source_autorange(self, function, state) -> None:
         try:
             self.smua_source_autorange[function] = {
@@ -176,11 +176,11 @@ class K2657AEmulator(IEC60488Emulator):
 
     # Source voltage limit
 
-    @message(tsp_print(r'smua\.source\.protectv'))
+    @message(tsp_print(r"smua\.source\.protectv"))
     def get_source_protectv(self) -> str:
         return format(self.source_protectv, "E")
 
-    @message(tsp_assign(r'smua\.source\.protectv'))
+    @message(tsp_assign(r"smua\.source\.protectv"))
     def set_source_protectv(self, level) -> None:
         try:
             self.source_protectv = float(level)
@@ -189,38 +189,38 @@ class K2657AEmulator(IEC60488Emulator):
 
     # Compliance
 
-    @message(tsp_print(r'smua.source.compliance'))
+    @message(tsp_print(r"smua.source.compliance"))
     def get_source_compliance(self) -> str:
         return "false"
 
-    @message(tsp_print(r'smua\.source\.limit([iv])'))
+    @message(tsp_print(r"smua\.source\.limit([iv])"))
     def get_source_limit(self, function) -> str:
         return format(self.smua_source_limit[function], "E")
 
-    @message(tsp_assign(r'smua\.source\.limit([iv])'))
+    @message(tsp_assign(r"smua\.source\.limit([iv])"))
     def set_source_limit(self, function, level) -> None:
         try:
             self.smua_source_limit[function] = float(level)
         except ValueError:
             self.error_queue.append(Error(117, "malformed command"))
 
-    @message(tsp_print(r'smua\.measure\.i\(\)'))
+    @message(tsp_print(r"smua\.measure\.i\(\)"))
     def get_measure_i(self) -> str:
         curr_min = float(self.options.get("curr.min", 1e-6))
         curr_max = float(self.options.get("curr.max", 1e-7))
         return format(random.uniform(curr_min, curr_max), "E")
 
-    @message(tsp_print(r'smua\.measure\.v\(\)'))
+    @message(tsp_print(r"smua\.measure\.v\(\)"))
     def get_measure_v(self) -> str:
         return format(self.smua_source_level.get("v", 0) + random.uniform(-.25, +.25), "E")
 
     # Average
 
-    @message(tsp_print(r'smua\.measure\.filter\.enable'))
+    @message(tsp_print(r"smua\.measure\.filter\.enable"))
     def get_measure_filter_enable(self) -> str:
         return format(self.smua_measure_filter_enable, "d")
 
-    @message(tsp_assign(r'smua\.measure\.filter\.enable'))
+    @message(tsp_assign(r"smua\.measure\.filter\.enable"))
     def set_measure_filter_enable(self, enable: str) -> None:
         try:
             self.smua_measure_filter_enable = {
@@ -230,22 +230,22 @@ class K2657AEmulator(IEC60488Emulator):
         except KeyError:
             self.error_queue.append(Error(118, "malformed command"))
 
-    @message(tsp_print(r'smua\.measure\.filter\.count'))
+    @message(tsp_print(r"smua\.measure\.filter\.count"))
     def get_measure_filter_count(self) -> str:
         return format(self.smua_measure_filter_count, "d")
 
-    @message(tsp_assign(r'smua\.measure\.filter\.count'))
+    @message(tsp_assign(r"smua\.measure\.filter\.count"))
     def set_measure_filter_count(self, count: str) -> None:
         try:
             self.smua_measure_filter_count = int(count)
         except KeyError:
             self.error_queue.append(Error(119, "malformed command"))
 
-    @message(tsp_print(r'smua\.measure\.filter\.type'))
+    @message(tsp_print(r"smua\.measure\.filter\.type"))
     def get_measure_filter_type(self) -> str:
         return format(self.smua_measure_filter_type, "d")
 
-    @message(tsp_assign(r'smua\.measure\.filter\.type'))
+    @message(tsp_assign(r"smua\.measure\.filter\.type"))
     def set_measure_filter_type(self, enable: str) -> None:
         try:
             self.smua_measure_filter_type = {
@@ -258,18 +258,18 @@ class K2657AEmulator(IEC60488Emulator):
 
     # Integration time
 
-    @message(tsp_print(r'smua\.measure\.nplc'))
+    @message(tsp_print(r"smua\.measure\.nplc"))
     def get_measure_nplc(self) -> str:
         return format(self.smua_measure_nplc, "E")
 
-    @message(tsp_assign(r'smua\.measure\.nplc'))
+    @message(tsp_assign(r"smua\.measure\.nplc"))
     def set_measure_nplc(self, nplc: str) -> None:
         try:
             self.smua_measure_nplc = round(float(nplc), 3)
         except KeyError:
             self.error_queue.append(Error(120, "malformed command"))
 
-    @message(r'^.*$')
+    @message(r".*")
     def unknown_message(self) -> None:
         self.error_queue.append(Error(100, "malformed command"))
 

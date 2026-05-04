@@ -35,11 +35,11 @@ class K2470Emulator(IEC60488Emulator):
     def output_interlock_tripped(self) -> bool:
         return bool(self.options.get("interlock.tripped", True))
 
-    @message(r'^\*LANG\?$')
+    @message(r"\*LANG\?$")
     def get_lang(self) -> str:
         return self.language
 
-    @message(r'^\*RST$')
+    @message(r"\*RST$")
     def set_rst(self) -> None:
         self.error_queue.clear()
         self.route_terminals = "FRON"
@@ -58,11 +58,11 @@ class K2470Emulator(IEC60488Emulator):
         self.sense_nplc = 1.0
         self.system_breakdown_protection = "OFF"
 
-    @message(r'^\*CLS$')
+    @message(r"\*CLS$")
     def set_cls(self) -> None:
         self.error_queue.clear()
 
-    @message(r'^:?SYST:ERR(?::NEXT)?\?$')
+    @message(r":?SYST:ERR(?::NEXT)?\?$")
     def get_system_error_next(self) -> str:
         if self.error_queue:
             error = self.error_queue.pop(0)
@@ -70,48 +70,48 @@ class K2470Emulator(IEC60488Emulator):
             error = Error(0, "no error")
         return f'{error.code}, "{error.message}"'
 
-    @message(r'^:?SYST:BRE:PROT\?$')
+    @message(r":?SYST:BRE:PROT\?$")
     def get_system_breakdown_protection(self) -> str:
         return self.system_breakdown_protection
 
-    @message(r'^:?SYST:BRE:PROT (AUTO|OFF|ON)$')
+    @message(r":?SYST:BRE:PROT\s+(AUTO|OFF|ON)$")
     def set_system_breakdown_protection(self, state) -> None:
         self.system_breakdown_protection = state
 
     # Route terminal
 
-    @message(r'^:?ROUT:TERM\?$')
+    @message(r":?ROUT:TERM\?$")
     def get_route_terminals(self) -> str:
         return self.route_terminals
 
-    @message(r'^:?ROUT:TERM (FRON|REAR)$')
+    @message(r":?ROUT:TERM\s+(FRON|REAR)$")
     def set_route_terminals(self, terminal) -> None:
         self.route_terminals = terminal
 
     # Output state
 
-    @message(r'^:?OUTP(?::STAT)?\?$')
+    @message(r":?OUTP(?::STAT)?\?$")
     def get_output_state(self) -> str:
         return {False: "0", True: "1"}[self.output_state]
 
-    @message(r'^:?OUTP(?::STAT)? (.+)$')
+    @message(r":?OUTP(?::STAT)?\s+(.+)$")
     def set_output_state(self, state) -> None:
         try:
             self.output_state = {"ON": True, "OFF": False, "0": False, "1": True}[state]
         except KeyError:
             self.error_queue.append(Error(101, "malformed command"))
 
-    @message(r'^:?OUTP:INT:TRIP\?$')
+    @message(r":?OUTP:INT:TRIP\?$")
     def get_output_interlock_tripped(self) -> str:
         return {False: "0", True: "1"}[self.output_interlock_tripped]
 
     # Source function mode
 
-    @message(r'^:?SOUR:FUNC(?::MODE)?\?$')
+    @message(r":?SOUR:FUNC(?::MODE)?\?$")
     def get_source_function_mode(self) -> str:
         return self.source_function_mode
 
-    @message(r'^:?SOUR:FUNC(?::MODE)? (VOLT|CURR)$')
+    @message(r":?SOUR:FUNC(?::MODE)?\s+(VOLT|CURR)$")
     def set_source_function_mode(self, function) -> None:
         try:
             self.source_function_mode = function
@@ -120,11 +120,11 @@ class K2470Emulator(IEC60488Emulator):
 
     # Source levels
 
-    @message(r'^:?SOUR:(VOLT|CURR)(?::LEV)?\?$')
+    @message(r":?SOUR:(VOLT|CURR)(?::LEV)?\?$")
     def get_source_level(self, function) -> str:
         return format(self.source_level[function], "E")
 
-    @message(r'^:?SOUR:(VOLT|CURR)(?::LEV)? (.+)$')
+    @message(r":?SOUR:(VOLT|CURR)(?::LEV)?\s+(.+)$")
     def set_source_level(self, function, level) -> None:
         try:
             self.source_level[function] = float(level)
@@ -133,11 +133,11 @@ class K2470Emulator(IEC60488Emulator):
 
     # Source range levels
 
-    @message(r'^:?SOUR:(VOLT|CURR):RANG\?$')
+    @message(r":?SOUR:(VOLT|CURR):RANG\?$")
     def get_source_range_level(self, function) -> str:
         return format(self.source_range[function], "E")
 
-    @message(r'^:?SOUR:(VOLT|CURR):RANG (.+)$')
+    @message(r":?SOUR:(VOLT|CURR):RANG\s+(.+)$")
     def set_source_range_level(self, function, level) -> None:
         try:
             self.source_range[function] = float(level)
@@ -147,11 +147,11 @@ class K2470Emulator(IEC60488Emulator):
 
     # Source auto ranges
 
-    @message(r'^:?SOUR:(VOLT|CURR):RANG:AUTO\?$')
+    @message(r":?SOUR:(VOLT|CURR):RANG:AUTO\?$")
     def get_source_range_auto(self, function) -> int:
         return int(self.source_range_auto[function])
 
-    @message(r'^:?SOUR:(VOLT|CURR):RANG:AUTO (.+)$')
+    @message(r":?SOUR:(VOLT|CURR):RANG:AUTO\s+(.+)$")
     def set_source_range_auto(self, function, state) -> None:
         try:
             self.source_range_auto[function] = {"ON": True, "OFF": False, "0": False, "1": True}[state]
@@ -160,11 +160,11 @@ class K2470Emulator(IEC60488Emulator):
 
     # Source voltage limit
 
-    @message(r'^:?SOUR:VOLT:PROT(?::LEV)?\?$')
+    @message(r":?SOUR:VOLT:PROT(?::LEV)?\?$")
     def get_source_voltage_protection_level(self) -> str:
         return format(self.source_voltage_protection_level, "E")
 
-    @message(r'^:?SOUR:VOLT:PROT(?::LEV)? (.+)$')
+    @message(r":?SOUR:VOLT:PROT(?::LEV)?\s+(.+)$")
     def set_source_voltage_protection_level(self, level) -> None:
         try:
             self.source_voltage_protection_level = float(level)
@@ -173,147 +173,147 @@ class K2470Emulator(IEC60488Emulator):
 
     # Source compliance
 
-    @message(r'^:?SOUR:VOLT:ILIM(?::LEV)?\?$')
+    @message(r":?SOUR:VOLT:ILIM(?::LEV)?\?$")
     def get_source_voltage_ilimit_level(self) -> str:
         return format(self.source_voltage_ilimit_level, "E")
 
-    @message(r'^:?SOUR:VOLT:ILIM(?::LEV)? (.+)$')
+    @message(r":?SOUR:VOLT:ILIM(?::LEV)?\s+(.+)$")
     def set_source_voltage_ilimit_level(self, level) -> None:
         try:
             self.source_voltage_ilimit_level = float(level)
         except ValueError:
             self.error_queue.append(Error(101, "malformed command"))
 
-    @message(r'^:?SOUR:VOLT:ILIM(?::LEV)?:TRIP\?$')
+    @message(r":?SOUR:VOLT:ILIM(?::LEV)?:TRIP\?$")
     def get_source_voltage_ilimit_level_tripped(self) -> str:
         return format(False, "E")  # TODO
 
-    @message(r'^:?SOUR:CURR:VLIM(?::LEV)?\?$')
+    @message(r":?SOUR:CURR:VLIM(?::LEV)?\?$")
     def get_source_current_vlimit_level(self) -> str:
         return format(self.source_current_vlimit_level, "E")
 
-    @message(r'^:?SOUR:CURR:VLIM(?::LEV)? (.+)$')
+    @message(r":?SOUR:CURR:VLIM(?::LEV)?\s+(.+)$")
     def set_source_current_vlimit_level(self, level) -> None:
         try:
             self.source_current_vlimit_level = float(level)
         except ValueError:
             self.error_queue.append(Error(101, "malformed command"))
 
-    @message(r'^:?SOUR:CURR:VLIM(?::LEV)?:TRIP\?$')
+    @message(r":?SOUR:CURR:VLIM(?::LEV)?:TRIP\?$")
     def get_source_current_vlimit_level_tripped(self) -> str:
         return format(False, "E")  # TODO
 
-    @message(r'^:?SENS:FUNC(?::ON)?\s+\"(CURR|RES|VOLT)\"$')
+    @message(r":?SENS:FUNC(?::ON)?\s+\"(CURR|RES|VOLT)\"$")
     def set_sense_function_on(self, function: str) -> None:
         self.sense_function_on = function
 
     # Average
 
-    @message(r'^:?SENS:(VOLT|CURR):AVER:TCON\?$')
+    @message(r":?SENS:(VOLT|CURR):AVER:TCON\?$")
     def get_sense_average_tcontrol(self, function: str) -> str:
         return format(self.sense_average_tcontrol[function], "E")
 
-    @message(r'^:?SENS:(VOLT|CURR):AVER:TCON (MOV|REP)$')
+    @message(r":?SENS:(VOLT|CURR):AVER:TCON\s+(MOV|REP)$")
     def set_sense_average_tcontrol(self, function: str, tcontrol: str) -> None:
         self.sense_average_tcontrol[function] = tcontrol
 
-    @message(r'^:?SENS:(VOLT|CURR):AVER:COUN[T]?\?$')
+    @message(r":?SENS:(VOLT|CURR):AVER:COUN[T]?\?$")
     def get_sense_average_count(self, function: str) -> str:
         return format(self.sense_average_count[function], "E")
 
-    @message(r':?SENS:(VOLT|CURR):AVER:COUN[T]? (\d+)$')
+    @message(r":?SENS:(VOLT|CURR):AVER:COUN[T]?\s+(\d+)$")
     def set_sense_average_count(self, function: str, count: str) -> None:
         self.sense_average_count[function] = int(count)
 
-    @message(r'^:?SENS:(VOLT|CURR):AVER:STAT[E]?\?$')
+    @message(r":?SENS:(VOLT|CURR):AVER:STAT[E]?\?$")
     def get_sense_average_state(self, function: str) -> str:
         return format(self.sense_average_state[function], "E")
 
-    @message(r'^:?SENS:(VOLT|CURR):AVER:STAT[E]? (OFF|ON|0|1)$')
+    @message(r":?SENS:(VOLT|CURR):AVER:STAT[E]?\s+(OFF|ON|0|1)$")
     def set_sense_average_state(self, function: str, state: str) -> None:
         self.sense_average_state[function] = {"OFF": False, "ON": True, "0": False, "1": True}[state]
 
     # Integration time
 
-    @message(r'^(?::?SENS)?:(?:VOLT|CURR|RES):NPLC\?$')
+    @message(r"(?::?SENS)?:(?:VOLT|CURR|RES):NPLC\?$")
     def get_sense_nplc(self) -> str:
         return format(self.sense_nplc, "E")
 
-    @message(r'^(?::?SENS)?:(?:VOLT|CURR|RES):NPLC (.+)$')
+    @message(r"(?::?SENS)?:(?:VOLT|CURR|RES):NPLC\s+(.+)$")
     def set_sense_nplc(self, nplc: str) -> None:
         self.sense_nplc = round(float(nplc), 2)
 
     # Measure
 
-    @message(r':?READ\?$')
+    @message(r":?READ\?$")
     def get_read(self) -> str:
         read = self._read_current()
         return format(read, "E")
 
-    @message(r':?READ\? \"[a-zA-Z0-9_]+\", SOUR, READ$')
-    def get_read_elements(self) -> str:
+    @message(r":?READ\?\s+\"([a-zA-Z0-9_]+)\",\s+SOUR,\s+READ$")
+    def get_read_elements(self, _buffer: str) -> str:
         sour = self._read_voltage()
         read = self._read_current()
         return f"{sour:E},{read:E}"
 
-    @message(r'^:?INIT$')
+    @message(r":?INIT(:?IMM)?$")
     def set_init(self) -> None:
         ...
 
-    @message(r'^:?MEAS:VOLT\?$')
+    @message(r":?MEAS:VOLT\?$")
     def get_measure_voltage(self) -> str:
         volt = self._read_voltage()
         return format(volt, "E")
 
-    @message(r'^:?MEAS:CURR\?$')
+    @message(r":?MEAS:CURR\?$")
     def get_measure_current(self) -> str:
         curr = self._read_current()
         return format(curr, "E")
 
-    @message(r'^:?TRAC:CLE \"[a-zA-Z0-9_]+\"$')
-    def set_trace_clear(self) -> None:
+    @message(r":?TRAC[E]?:CLE\s+\"([a-zA-Z0-9_]+)\"$")
+    def set_trace_clear(self, _buffer: str) -> None:
         ...
 
-    @message(r'^:?TRAC:TRIG \"[a-zA-Z0-9_]+\"$')
-    def set_trace_trigger(self) -> None:
+    @message(r":?TRAC[E]?:TRIG\s+\"([a-zA-Z0-9_]+)\"$")
+    def set_trace_trigger(self, _buffer: str) -> None:
         ...
 
-    @message(r'^:?TRAC:DATA\? 1, 1, \"[a-zA-Z0-9_]+\", SOUR, READ$')
-    def get_trace_data(self) -> str:
+    @message(r":?TRAC[E]?:DATA\?\s+1,\s+1,\s+\"([a-zA-Z0-9_]+)\",\s+SOUR,\s+READ$")
+    def get_trace_data(self, _buffer: str) -> str:
         sour = self._read_voltage()
         read = self._read_current()
         return f"{sour:E},{read:E}"
 
     # TSP
 
-    @message(r'^reset\(\)$')
+    @message(r"reset\(\)$")
     def write_reset(self) -> None:
         self.error_queue.clear()
 
-    @message(r'^clear\(\)$')
+    @message(r"clear\(\)$")
     def write_clear(self) -> None:
         self.error_queue.clear()
 
-    @message(r'^errorqueue\.clear\(\)$')
+    @message(r"errorqueue\.clear\(\)$")
     def set_errorqueue_clear(self) -> None:
         self.error_queue.clear()
 
-    @message(tsp_print(r'errorqueue\.count'))
+    @message(tsp_print(r"errorqueue\.count"))
     def get_errorqueue_count(self) -> int:
         return len(self.error_queue)
 
-    @message(tsp_print(r'errorqueue\.next\(\)'))
+    @message(tsp_print(r"errorqueue\.next\(\)"))
     def get_errorqueue_next(self) -> str:
         if self.error_queue:
             error = self.error_queue.pop(0)
             return f"{error.code}, \"{error.message}\", 0, 0"
         return "0, \"Queue is Empty\", 0, 0"
 
-    @message(tsp_print(r'smu\.source\.output'))
+    @message(tsp_print(r"smu\.source\.output"))
     def get_tsp_source_output(self) -> int:
         return {False: 0, True: 1}[self.smu_source_output]
 
-    @message(tsp_assign(r'smu\.source\.output'))
+    @message(tsp_assign(r"smu\.source\.output"))
     def set_tsp_source_output(self, value) -> None:
         try:
             self.smu_source_output = {
@@ -323,7 +323,7 @@ class K2470Emulator(IEC60488Emulator):
         except KeyError:
             self.error_queue.append(Error(101, "malformed command"))
 
-    @message(r'^.*$')
+    @message(r".*")
     def unknown_message(self) -> None:
         self.error_queue.append(Error(101, "malformed command"))
 

@@ -49,34 +49,34 @@ class HydraEmulator(Emulator):
         if isinstance(cpu_temperature := options.get("cpu_temperature"), float):
             self.cpu_temperature = cpu_temperature
 
-    @message(r'^identify$')
+    @message(r"identify$")
     def get_identify(self) -> str:
         return self.identity
 
-    @message(r'^getversion|version$')
+    @message(r"getversion|version$")
     def get_version(self) -> float:
         return self.version  # double!
 
-    @message(r'^getmacadr$')
+    @message(r"getmacadr$")
     def get_macadr(self) -> str:
         return self.mac_address
 
-    @message(r'^getserialno$')
+    @message(r"getserialno$")
     def get_serialno(self) -> str:
         return self.serial_no
 
-    @message(r'^getproductid$')
+    @message(r"getproductid$")
     def get_productid(self) -> str:
         return "hydra"
 
-    @message(r'^getcputemp$')
+    @message(r"getcputemp$")
     def get_cputemp(self) -> float:
         return self.cpu_temperature
 
-    @message(r'^reset$')
+    @message(r"reset$")
     def set_reset(self) -> None: ...
 
-    @message(r'^status|st$')
+    @message(r"status|st$")
     def get_status(self) -> int:
         status = 0
         all_cal = int(all([value & 0x1 for value in self.calibrate.values()]))
@@ -87,7 +87,7 @@ class HydraEmulator(Emulator):
         status |= ((all_rm & 0x1) << 4)
         return status
 
-    @message(r'^(1|2)\s+(?:nstatus|nst|est|ast)$')
+    @message(r"(1|2)\s+(?:nstatus|nst|est|ast)$")
     def get_nstatus(self, axis) -> int:
         status = 0
         cal = int(self.calibrate[axis] & 0x1 == 0x1)
@@ -98,24 +98,24 @@ class HydraEmulator(Emulator):
         status |= ((rm & 0x1) << 4)
         return status
 
-    @message(r'^(1|2)\s+np$')
+    @message(r"(1|2)\s+np$")
     def get_np(self, axis) -> float:
         if axis == "1":
             return self.x_pos
         else:
             return self.y_pos
 
-    @message(r'^([+-]?\d+(?:\.\d+)?)\s+([+-]?\d+(?:\.\d+)?)\s+m$')
+    @message(r"([+-]?\d+(?:\.\d+)?)\s+([+-]?\d+(?:\.\d+)?)\s+m$")
     def set_move(self, x, y) -> None:
         self.x_pos = float(x)
         self.y_pos = float(y)
 
-    @message(r'^([+-]?\d+(?:\.\d+)?)\s+([+-]?\d+(?:\.\d+)?)\s+r$')
+    @message(r"([+-]?\d+(?:\.\d+)?)\s+([+-]?\d+(?:\.\d+)?)\s+r$")
     def set_rmove(self, x, y) -> None:
         self.x_pos += float(x)
         self.y_pos += float(y)
 
-    @message(r'^(1|2)\s+nrandmove$')
+    @message(r"(1|2)\s+nrandmove$")
     def set_nrandmove(self, axis) -> None:
         pos = random.uniform(0, 100)
         if axis == "1":
@@ -123,11 +123,11 @@ class HydraEmulator(Emulator):
         elif axis == "2":
             self.y_pos = pos
 
-    @message(r'^(1|2)\s+(?:ncalibrate|ncal)$')
+    @message(r"(1|2)\s+(?:ncalibrate|ncal)$")
     def set_ncalibrate(self, axis) -> None:
         self.calibrate[axis] = 0x1
 
-    @message(r'^(1|2)\s+(?:nrangemeasure|nrm)$')
+    @message(r"(1|2)\s+(?:nrangemeasure|nrm)$")
     def set_nrangemeasure(self, axis) -> None:
         self.calibrate[axis] |= 0x2
 

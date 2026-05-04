@@ -13,23 +13,23 @@ class K707BEmulator(IEC60488Emulator):
         self.error_queue: list[Error] = []
         self.closed_channels: set[str] = set()
 
-    @message(r'^reset\(\)|\*RST$')
+    @message(r"reset\(\)|\*RST$")
     def set_reset(self) -> None:
         self.error_queue.clear()
 
-    @message(r'^clear\(\)|\*CLS$')
+    @message(r"clear\(\)|\*CLS$")
     def set_clear(self) -> None:
         self.error_queue.clear()
 
-    @message(r'errorqueue\.clear\(\)')
+    @message(r"errorqueue\.clear\(\)$")
     def set_errorqueue_clear(self) -> None:
         self.error_queue.clear()
 
-    @message(tsp_print(r'errorqueue\.count'))
+    @message(tsp_print(r"errorqueue\.count"))
     def get_errorqueue_count(self) -> str:
         return format(len(self.error_queue), "d")
 
-    @message(tsp_print(r'errorqueue\.next\(\)'))
+    @message(tsp_print(r"errorqueue\.next\(\)"))
     def get_errorqueue_next(self) -> str:
         if self.error_queue:
             error = self.error_queue.pop(0)
@@ -37,29 +37,29 @@ class K707BEmulator(IEC60488Emulator):
             error = Error(0, "Queue is Empty")
         return f"{error.code}\t\"{error.message}\"\t0\t0"
 
-    @message(tsp_print(r'channel\.getclose\(([^\)]+)\)'))
-    def get_channel_getclose(self, channels) -> str:
+    @message(tsp_print(r"channel\.getclose\(([^\)]+)\)"))
+    def get_channel_getclose(self, channels: str) -> str:
         if not self.closed_channels:
             return "nil"
         return ";".join(sorted(self.closed_channels))
 
-    @message(r'channel\.close\(([^\)]+)\)')
-    def set_channel_close(self, channels) -> None:
-        channels = channels.strip('"').split(',')
-        self.closed_channels.update(channels)
+    @message(r"channel\.close\(([^\)]+)\)$")
+    def set_channel_close(self, channels: str) -> None:
+        channels_ = channels.strip('"').split(',')
+        self.closed_channels.update(channels_)
 
-    @message(r'channel\.open\(([^\)]+)\)')
-    def set_channel_open(self, channels) -> None:
-        channels = channels.strip('"').split(',')
-        if "allslots" in channels:
+    @message(r"channel\.open\(([^\)]+)\)$")
+    def set_channel_open(self, channels: str) -> None:
+        channels_ = channels.strip('"').split(',')
+        if "allslots" in channels_:
             self.closed_channels.clear()
         else:
             for channel in channels:
                 if channel in self.closed_channels:
                     self.closed_channels.remove(channel)
 
-    @message(r'^(.*)$')
-    def unknown_message(self, v) -> None:
+    @message(r".*")
+    def unknown_message(self) -> None:
         self.error_queue.append(Error(101, "malformed command"))
 
 
