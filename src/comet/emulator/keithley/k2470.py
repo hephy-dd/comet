@@ -256,7 +256,7 @@ class K2470Emulator(IEC60488Emulator):
         read = self._read_current()
         return f"{sour:E},{read:E}"
 
-    @message(r":?INIT(:?IMM)?$")
+    @message(r":?INIT(?::IMM)?$")
     def set_init(self) -> None:
         ...
 

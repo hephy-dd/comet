@@ -167,7 +167,7 @@ class K6514Emulator(IEC60488Emulator):
     def get_sense_nplc(self) -> str:
         return format(self.sense_nplc, "f")  # TODO precision?
 
-    @message(r"(?::?SENS)?:(:?CURR|VOLT|RES|CHAR):NPLC\s+(.+)$")
+    @message(r"(?::?SENS)?:(CURR|VOLT|RES|CHAR):NPLC\s+(.+)$")
     def set_sense_nplc(self, mode: str, value: str) -> None:
         try:
             self.sense_nplc = max(0.01, min(10.0, float(value)))
