@@ -9,11 +9,9 @@
 from __future__ import annotations
 
 import time
-from typing import Self, TypeVar
+from typing import Self
 
 from .emulator import Emulator, emulator_factory
-
-T = TypeVar("T")
 
 
 def open_emulator(module_name: str, options: dict | None = None) -> EmulatorResource:
