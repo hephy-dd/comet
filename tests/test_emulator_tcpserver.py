@@ -1,6 +1,5 @@
 import argparse
 import asyncio
-import inspect
 import logging
 import types
 from dataclasses import dataclass
@@ -8,7 +7,7 @@ from typing import cast
 
 import pytest
 
-from comet.emulator import Emulator, tcpserver
+from comet.emulator import Context, Emulator, tcpserver
 from comet.emulator.response import Response, TextResponse
 from comet.emulator.tcpserver import TCPRequestHandler, TCPServer, TCPServerContext
 
@@ -225,7 +224,7 @@ async def test_context_handle_message_waits_only_when_response(monkeypatch):
 
     class TestEmulator(Emulator):
         def __init__(self, response: Response | list[Response] | None):
-            super().__init__()
+            super().__init__(Context())
             self.response = response
 
         def __call__(self, message: str) -> Response | list[Response] | None:
@@ -357,52 +356,3 @@ def test_parse_args_defaults(monkeypatch):
     assert args.termination == "\n"
     assert args.request_delay == 0.1
     assert args.option == []
-
-
-def test_run_rejects_non_emulator():
-    with pytest.raises(TypeError, match="Emulator must inherit from"):
-        tcpserver.run(object())  # type: ignore
-
-
-def test_run_configures_options_and_returns_zero(monkeypatch):
-    class BaseEmulator:
-        def __init__(self):
-            self.options = {}
-
-    monkeypatch.setattr(tcpserver, "Emulator", BaseEmulator)
-
-    emulator = BaseEmulator()
-
-    monkeypatch.setattr(
-        tcpserver,
-        "parse_args",
-        lambda: argparse.Namespace(
-            host="127.0.0.1",
-            port=9999,
-            termination="\n",
-            request_delay=0.01,
-            option=[("mode", "test"), ("version", "1")],
-        ),
-    )
-
-    monkeypatch.setattr(
-        inspect,
-        "getmodule",
-        lambda cls: types.SimpleNamespace(
-            __spec__=types.SimpleNamespace(name="pkg.tcpserver")
-        ),
-    )
-
-    ran = {}
-
-    def fake_asyncio_run(coro):
-        ran["called"] = True
-        coro.close()
-
-    monkeypatch.setattr(asyncio, "run", fake_asyncio_run)
-
-    rc = tcpserver.run(cast(Emulator, emulator))
-
-    assert rc == 0
-    assert ran["called"] is True
-    assert emulator.options == {"mode": "test", "version": "1"}

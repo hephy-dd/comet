@@ -1,6 +1,6 @@
 """TANGO emulator."""
 
-from comet.emulator import Emulator, message, run
+from comet.emulator import Context, Emulator, message, run
 
 __all__ = ["TangoEmulator"]
 
@@ -10,19 +10,37 @@ class TangoEmulator(Emulator):
 
     VERSION: str = "TANGO-MINI3-EMULATOR, Version 1.00, Mar 11 2022, 13:51:01"
 
-    def __init__(self) -> None:
-        super().__init__()
-        self.position: dict[str, float] = {"x": 0.0, "y": 0.0, "z": 0.0}
+    def __init__(self, context: Context) -> None:
+        super().__init__(context)
+
+        options = context.options
+
+        self.version = options.get("version", self.VERSION)
+
+        position = options.get("position", {})
+
+        self.position: dict[str, float] = {
+            "x": position.get("x", 0.0),
+            "y": position.get("y", 0.0),
+            "z": position.get("z", 0.0),
+        }
         self.calst: dict[str, int] = {"x": 3, "y": 3, "z": 3}
         self.statusaxis: dict[str, str] = {"x": "@", "y": "@", "z": "@"}
-        self.velocity: dict[str, float] = {"x": 10.0, "y": 10.0, "z": 10.0}
+
+        velocity = options.get("velocity", {})
+
+        self.velocity: dict[str, float] = {
+            "x": velocity.get("x", 10.0),
+            "y": velocity.get("y", 10.0),
+            "z": velocity.get("z", 10.0),
+        }
         self.autostatus: bool = True
 
     # Controller informations
 
     @message(r"\??version$")
     def get_version(self) -> str:
-        return format(self.options.get("version", self.VERSION))
+        return format(self.version)
 
     @message(r"\?autostatus$")
     def get_autostatus(self) -> str:
@@ -170,4 +188,4 @@ class TangoEmulator(Emulator):
 
 
 if __name__ == "__main__":
-    run(TangoEmulator())
+    run(TangoEmulator)

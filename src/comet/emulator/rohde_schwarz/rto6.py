@@ -1,8 +1,7 @@
 """Rohde Schwarz RTO6 oscilloscope emulator"""
 
 from comet.emulator import run
-
-from .rtp164 import RTP164Emulator
+from comet.emulator.rohde_schwarz.rtp164 import RTP164Emulator
 
 __all__ = ["RTO6Emulator"]
 
@@ -12,4 +11,4 @@ class RTO6Emulator(RTP164Emulator):
 
 
 if __name__ == "__main__":
-    run(RTO6Emulator())
+    run(RTO6Emulator)

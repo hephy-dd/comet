@@ -4,20 +4,21 @@ import importlib
 import inspect
 import logging
 import re
-from collections.abc import Callable, Mapping
+from collections.abc import Callable
+from dataclasses import dataclass, field
 from typing import Any
 
 from ..utils import parse_model_urn
 from .response import Response, make_response
 
-__all__ = ["Emulator", "emulator_factory", "message"]
+__all__ = ["Emulator", "Context", "emulator_cls_factory", "message"]
 
 logger = logging.getLogger(__name__)
 
 emulator_registry: dict[str, type[Emulator]] = {}
 
 
-def emulator_factory(model_urn: str) -> type[Emulator]:
+def emulator_cls_factory(model_urn: str) -> type[Emulator]:
     """Returns emulator class from model specified by URN."""
     module_name: str = parse_model_urn(model_urn)
     key: str = module_name
@@ -99,12 +100,14 @@ def message(route: str) -> Callable[[Callable[..., Any]], Route]:
     return decorator
 
 
-class Emulator:
-    def __init__(self) -> None:
-        self.options: dict[str, Any] = {}
+@dataclass
+class Context:
+    options: dict[str, Any] = field(default_factory=dict)
 
-    def load_options(self, options: Mapping[str, Any]) -> None:
-        self.options.update(options)
+
+class Emulator:
+    def __init__(self, context: Context) -> None:
+        self.context = context
 
     def __call__(self, message: str) -> Response | list[Response] | None:
         logger.debug("handle message: %s", message)

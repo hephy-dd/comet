@@ -1,14 +1,17 @@
 import random
 
-from comet.emulator import IEC60488Emulator, message, run
+from comet.emulator import Context, IEC60488Emulator, message, run
 from comet.emulator.utils import Error, tsp_assign, tsp_print
 
 
 class K2657AEmulator(IEC60488Emulator):
     IDENTITY: str = "Keithley Inc., Model 2657A, 43768438, v1.0 (Emulator)"
 
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, context: Context) -> None:
+        super().__init__(context)
+
+        options = context.options
+
         self.error_queue: list[Error] = []
         self.beeper_enable: bool = True
         self.display_measure_function: int = 1
@@ -23,6 +26,9 @@ class K2657AEmulator(IEC60488Emulator):
         self.smua_measure_filter_type: int = 1
         self.smua_measure_nplc: float = 1.0
         self.source_protectv: float = 0.0
+
+        self.curr_min = float(options.get("curr.min", 1e-6))
+        self.curr_max = float(options.get("curr.max", 1e-7))
 
     @message(r"reset\(\)$")
     def set_reset(self):
@@ -217,9 +223,7 @@ class K2657AEmulator(IEC60488Emulator):
 
     @message(tsp_print(r"smua\.measure\.i\(\)"))
     def get_measure_i(self) -> str:
-        curr_min = float(self.options.get("curr.min", 1e-6))
-        curr_max = float(self.options.get("curr.max", 1e-7))
-        return format(random.uniform(curr_min, curr_max), "E")
+        return format(random.uniform(self.curr_min, self.curr_max), "E")
 
     @message(tsp_print(r"smua\.measure\.v\(\)"))
     def get_measure_v(self) -> str:
@@ -293,4 +297,4 @@ class K2657AEmulator(IEC60488Emulator):
 
 
 if __name__ == "__main__":
-    run(K2657AEmulator())
+    run(K2657AEmulator)

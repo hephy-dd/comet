@@ -1,15 +1,18 @@
 import random
 import time
 
-from comet.emulator import IEC60488Emulator, message, run
+from comet.emulator import Context, IEC60488Emulator, message, run
 from comet.emulator.utils import Error
 
 
 class K6514Emulator(IEC60488Emulator):
     IDENTITY: str = "Keithley Inc., Model 5614, 43768438, v1.0 (Emulator)"
 
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, context: Context) -> None:
+        super().__init__(context)
+
+        options = context.options
+
         self.error_queue: list[Error] = []
         self.zero_check: bool = False
         self.zero_correction: bool = False
@@ -20,6 +23,11 @@ class K6514Emulator(IEC60488Emulator):
         self.sense_current_range: float = 2.1e-4
         self.sense_current_range_auto: int = 1
         self.sense_nplc: float = 5.0
+
+        self.curr_min = float(options.get("curr.min", 2.5e-10))
+        self.curr_max = float(options.get("curr.max", 2.5e-9))
+        self.volt_min = float(options.get("volt.min", -5))
+        self.volt_max = float(options.get("volt.max", +5))
 
     @message(r"\*RST$")
     def set_rst(self) -> None:
@@ -63,13 +71,9 @@ class K6514Emulator(IEC60488Emulator):
 
     def _reading(self) -> float:
         if self.sense_function == "CURR":
-            curr_min = float(self.options.get("curr.min", 2.5e-10))
-            curr_max = float(self.options.get("curr.max", 2.5e-9))
-            return random.uniform(curr_min, curr_max)
+            return random.uniform(self.curr_min, self.curr_max)
         elif self.sense_function == "VOLT":
-            volt_min = float(self.options.get("volt.min", -5))
-            volt_max = float(self.options.get("volt.max", +5))
-            return random.uniform(volt_min, volt_max)
+            return random.uniform(self.volt_min, self.volt_max)
         return 0
 
     @message(r":?FETC[H]?\?$")
@@ -177,4 +181,4 @@ class K6514Emulator(IEC60488Emulator):
 
 
 if __name__ == "__main__":
-    run(K6514Emulator())
+    run(K6514Emulator)

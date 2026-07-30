@@ -1,11 +1,12 @@
 import pytest
 
+from comet.emulator import Context
 from comet.emulator.keysight.e4980a import E4980AEmulator
 
 
 @pytest.fixture
 def emulator():
-    return E4980AEmulator()
+    return E4980AEmulator(Context())
 
 
 def test_basic(emulator):

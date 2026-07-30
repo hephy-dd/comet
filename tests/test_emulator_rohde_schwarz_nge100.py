@@ -1,11 +1,12 @@
 import pytest
 
+from comet.emulator import Context
 from comet.emulator.rohde_schwarz.nge100 import NGE100Emulator
 
 
 @pytest.fixture
 def emulator():
-    return NGE100Emulator()
+    return NGE100Emulator(Context())
 
 
 def test_identify(emulator):

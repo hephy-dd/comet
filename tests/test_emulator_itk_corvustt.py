@@ -1,11 +1,12 @@
 import pytest
 
+from comet.emulator import Context
 from comet.emulator.itk.corvustt import CorvusTTEmulator
 
 
 @pytest.fixture
 def emulator():
-    return CorvusTTEmulator()
+    return CorvusTTEmulator(Context())
 
 
 def test_basic(emulator):

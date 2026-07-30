@@ -1,7 +1,7 @@
 import random
 import time
 
-from comet.emulator import IEC60488Emulator, message, run
+from comet.emulator import Context, IEC60488Emulator, message, run
 from comet.emulator.utils import Error
 
 
@@ -69,8 +69,11 @@ class FormatElements:
 class K2700Emulator(IEC60488Emulator):
     IDENTITY: str = "Keithley Inc., Model 2700, 43768438, v1.0 (Emulator)"
 
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, context: Context) -> None:
+        super().__init__(context)
+
+        options = context.options
+
         self.reading_number: int = 0
         self.format_elements: FormatElements = FormatElements()
         self.sense_function: str = "VOLT:DC"
@@ -81,6 +84,13 @@ class K2700Emulator(IEC60488Emulator):
         self.system_beeper_state: bool = True
         self.trigger_delay_auto: bool = True
         self.trigger_delay: float = 0.001
+
+        self.volt_min = float(options.get("volt.min", 0))
+        self.volt_max = float(options.get("volt.max", 10))
+        self.curr_min = float(options.get("curr.min", 1e-6))
+        self.curr_max = float(options.get("curr.max", 1e-7))
+        self.temp_min = float(options.get("temp.min", 24))
+        self.temp_max = float(options.get("temp.max", 25))
 
     @message(r"\*RST$")
     def set_rst(self) -> None:
@@ -228,17 +238,11 @@ class K2700Emulator(IEC60488Emulator):
     def _read(self) -> str:
         """Returns formatted reading."""
         if self.sense_function == "VOLT:DC":
-            volt_min = float(self.options.get("volt.min", 0))
-            volt_max = float(self.options.get("volt.max", 10))
-            reading = Reading(random.uniform(volt_min, volt_max), "VDC")
+            reading = Reading(random.uniform(self.volt_min, self.volt_max), "VDC")
         elif self.sense_function == "CURR:DC":
-            curr_min = float(self.options.get("curr.min", 1e-6))
-            curr_max = float(self.options.get("curr.max", 1e-7))
-            reading = Reading(random.uniform(curr_min, curr_max), "ADC")
+            reading = Reading(random.uniform(self.curr_min, self.curr_max), "ADC")
         else:
-            temp_min = float(self.options.get("temp.min", 24))
-            temp_max = float(self.options.get("temp.max", 25))
-            reading = Reading(random.uniform(temp_min, temp_max), "")  # TEMP
+            reading = Reading(random.uniform(self.temp_min, self.temp_max), "")  # TEMP
         time.sleep(random.uniform(0.5, 1.0))  # rev B10 ;)
         reading.reading_number = self.reading_number
         self.reading_number += 1
@@ -246,4 +250,4 @@ class K2700Emulator(IEC60488Emulator):
 
 
 if __name__ == "__main__":
-    run(K2700Emulator())
+    run(K2700Emulator)

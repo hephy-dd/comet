@@ -2,7 +2,7 @@
 
 import math
 
-from comet.emulator import Emulator, message, run
+from comet.emulator import Context, Emulator, message, run
 
 __all__ = ["NGE100Emulator"]
 
@@ -10,8 +10,8 @@ __all__ = ["NGE100Emulator"]
 class NGE100Emulator(Emulator):
     IDENTITY: str = "Rohde&Schwarz,NGE103B,5601.3800k03/101863,1.54"
 
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, context: Context) -> None:
+        super().__init__(context)
 
         self.voltage_levels: list[float] = [0.0, 0.0, 0.0]
         self.current_limits: list[float] = [0.0, 00.0, 0.0]
@@ -97,4 +97,4 @@ class NGE100Emulator(Emulator):
 
 
 if __name__ == "__main__":
-    run(NGE100Emulator())
+    run(NGE100Emulator)

@@ -1,11 +1,12 @@
 import pytest
 
+from comet.emulator import Context
 from comet.emulator.rohde_schwarz.rtp164 import RTP164Emulator
 
 
 @pytest.fixture
 def emulator():
-    return RTP164Emulator()
+    return RTP164Emulator(Context())
 
 
 def test_identify(emulator):

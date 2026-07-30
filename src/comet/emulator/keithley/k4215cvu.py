@@ -4,7 +4,7 @@ import time
 from dataclasses import astuple, dataclass
 from typing import ClassVar
 
-from comet.emulator import IEC60488Emulator, message, run
+from comet.emulator import Context, IEC60488Emulator, message, run
 from comet.emulator.utils import Error
 
 
@@ -30,12 +30,15 @@ class K4215CVUEmulator(IEC60488Emulator):
     }
     MODEL_MAP_INV: ClassVar[dict[int, str]] = {v: k for k, v in MODEL_MAP.items()}
 
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, context: Context) -> None:
+        super().__init__(context)
+
+        options = context.options
+
         self.error_queue: list[Error] = []
 
         # Core state
-        self.cvu_mode: int = 0  # 0=user mode
+        self.cvu_mode: int = int(options.get("cvu_mode", 0))  # 0=user mode
         self.cvu_output: bool = False
 
         self.config_acvhi: int = 1
@@ -477,4 +480,4 @@ class K4215CVUEmulator(IEC60488Emulator):
 
 
 if __name__ == "__main__":
-    run(K4215CVUEmulator())
+    run(K4215CVUEmulator)

@@ -1,11 +1,12 @@
 import pytest
 
+from comet.emulator import Context
 from comet.emulator.hephy.shuntbox import ShuntBoxEmulator
 
 
 @pytest.fixture
 def emulator():
-    return ShuntBoxEmulator()
+    return ShuntBoxEmulator(Context())
 
 
 def test_basic(emulator):

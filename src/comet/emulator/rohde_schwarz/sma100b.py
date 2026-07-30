@@ -1,6 +1,6 @@
 """Rohde Schwarz SMA100B signal generator emulator"""
 
-from comet.emulator import Emulator, message, run
+from comet.emulator import Context, Emulator, message, run
 from comet.emulator.utils import Error
 
 __all__ = ["SMA100BEmulator"]
@@ -9,8 +9,8 @@ __all__ = ["SMA100BEmulator"]
 class SMA100BEmulator(Emulator):
     IDENTITY: str = "Rohde&Schwarz,SMA100B,1419.8888K02/120399,5.00.122.24 SP1"
 
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, context: Context) -> None:
+        super().__init__(context)
 
         self.error_queue: list[Error] = []
 
@@ -84,4 +84,4 @@ class SMA100BEmulator(Emulator):
 
 
 if __name__ == "__main__":
-    run(SMA100BEmulator())
+    run(SMA100BEmulator)

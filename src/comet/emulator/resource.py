@@ -11,13 +11,14 @@ from __future__ import annotations
 import time
 from typing import Self
 
-from .emulator import Emulator, emulator_factory
+from .emulator import Context, Emulator, emulator_cls_factory
 
 
-def open_emulator(module_name: str, options: dict | None = None) -> EmulatorResource:
-    emulator = emulator_factory(module_name)()
-    if options:
-        emulator.options.update(options)
+def open_emulator(model_urn: str, options: dict | None = None) -> EmulatorResource:
+    if options is None:
+        options = {}
+    context = Context(options=options)
+    emulator = emulator_cls_factory(model_urn)(context)
     return EmulatorResource(emulator)
 
 

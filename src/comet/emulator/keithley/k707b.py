@@ -1,6 +1,6 @@
 from typing import ClassVar
 
-from comet.emulator import IEC60488Emulator, message, run
+from comet.emulator import Context, IEC60488Emulator, message, run
 from comet.emulator.utils import Error, tsp_print
 from comet.utils import combine_matrix
 
@@ -11,8 +11,9 @@ class K707BEmulator(IEC60488Emulator):
         "1234", "ABCDEFGH", (format(i, "02d") for i in range(1, 13))
     )
 
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, context: Context) -> None:
+        super().__init__(context)
+
         self.error_queue: list[Error] = []
         self.closed_channels: set[str] = set()
 
@@ -67,4 +68,4 @@ class K707BEmulator(IEC60488Emulator):
 
 
 if __name__ == "__main__":
-    run(K707BEmulator())
+    run(K707BEmulator)

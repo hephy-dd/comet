@@ -1,11 +1,12 @@
 import pytest
 
+from comet.emulator import Context
 from comet.emulator.keithley.k2700 import K2700Emulator
 
 
 @pytest.fixture
 def emulator():
-    return K2700Emulator()
+    return K2700Emulator(Context())
 
 
 def test_basic(emulator):

@@ -1,11 +1,12 @@
 import pytest
 
+from comet.emulator import Context
 from comet.emulator.keithley.k708b import K708BEmulator
 
 
 @pytest.fixture
 def emulator():
-    return K708BEmulator()
+    return K708BEmulator(Context())
 
 
 def test_constants(emulator):

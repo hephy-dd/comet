@@ -2,7 +2,7 @@
 
 import random
 
-from comet.emulator import Emulator, message, run
+from comet.emulator import Context, Emulator, message, run
 from comet.emulator.utils import Error
 
 __all__ = ["PM100Emulator"]
@@ -11,8 +11,8 @@ __all__ = ["PM100Emulator"]
 class PM100Emulator(Emulator):
     IDENTITY: str = "Thorlabs,PM100USB,P2004525,1.4.0"
 
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, context: Context) -> None:
+        super().__init__(context)
 
         self.error_queue: list[Error] = []
 
@@ -60,11 +60,11 @@ class PM100Emulator(Emulator):
     def set_wavelength(self, wavelength) -> None:
         self.wavelength = wavelength
 
-    @message(r"MEAS(?:ure)?(?::SCAL(?:ar)?)?(?::POW(?:er)?)?$")
+    @message(r"MEAS(?:ure)?(?::SCAL(?:ar)?)?(?::POW(?:er)?)?\?$")
     def measure_power(self) -> str:
         power = random.uniform(1e-9, 2e-9)
         return format(power, "E")
 
 
 if __name__ == "__main__":
-    run(PM100Emulator())
+    run(PM100Emulator)

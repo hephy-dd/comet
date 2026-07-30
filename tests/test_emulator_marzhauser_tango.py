@@ -1,11 +1,12 @@
 import pytest
 
+from comet.emulator import Context
 from comet.emulator.marzhauser.tango import TangoEmulator
 
 
 @pytest.fixture
 def emulator():
-    emulator = TangoEmulator()
+    emulator = TangoEmulator(Context())
     emulator("!autostatus 0")
     return emulator
 

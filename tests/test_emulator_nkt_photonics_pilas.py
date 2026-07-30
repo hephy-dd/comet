@@ -1,11 +1,12 @@
 import pytest
 
+from comet.emulator import Context
 from comet.emulator.nkt_photonics.pilas import PILASEmulator
 
 
 @pytest.fixture
 def emulator():
-    return PILASEmulator()
+    return PILASEmulator(Context())
 
 
 def test_identify(emulator):

@@ -10,7 +10,7 @@ class IEC60488Emulator(Emulator):
 
     @message(r"\*IDN\?$")
     def get_idn(self):
-        return self.options.get("identity", self.IDENTITY)
+        return self.context.options.get("identity", self.IDENTITY)
 
     @message(r"\*ESR\?$")
     def get_esr(self):

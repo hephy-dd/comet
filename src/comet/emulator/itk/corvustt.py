@@ -2,16 +2,14 @@
 
 import random
 import time
-from collections.abc import Mapping
 from dataclasses import astuple, dataclass
-from typing import Any
 
-from comet.emulator import Emulator, message, run
+from comet.emulator import Context, Emulator, message, run
 
 __all__ = ["CorvusTTEmulator"]
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class TableLimits:
     a1: float
     b1: float
@@ -24,21 +22,27 @@ class TableLimits:
 class CorvusTTEmulator(Emulator):
     """Corvus TT (Venus-1) emulator."""
 
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, context: Context) -> None:
+        super().__init__(context)
 
-        self.identity: str = "Corvus 0 0 0 0"
-        self.version: str = "1.0"
-        self.mac_address: str = "00:00:00:00:00:00"
-        self.serial_no: str = "01011234"
+        options = context.options
 
-        self.x_pos: float = 0.0
-        self.y_pos: float = 0.0
-        self.z_pos: float = 0.0
+        self.identity: str = options.get("identity", "Corvus 0 0 0 0")
+        self.version: str = options.get("version", "1.0")
+        self.mac_address: str = options.get("mac_address", "00:00:00:00:00:00")
+        self.serial_no: str = options.get("serial_no", "01011234")
 
-        self.x_unit: int = 1
-        self.y_unit: int = 1
-        self.z_unit: int = 1
+        position = options.get("position", {})
+
+        self.x_pos: float = position.get("x", 0.0)
+        self.y_pos: float = position.get("y", 0.0)
+        self.z_pos: float = position.get("z", 0.0)
+
+        unit = options.get("unit", {})
+
+        self.x_unit: int = max(1, min(3, unit.get("x", 1)))
+        self.y_unit: int = max(1, min(3, unit.get("y", 1)))
+        self.z_unit: int = max(1, min(3, unit.get("z", 1)))
 
         self.table_limits = TableLimits(0.0, 0.0, 0.0, 1000000.0, 100000.0, 25000.0)
 
@@ -47,37 +51,11 @@ class CorvusTTEmulator(Emulator):
         self.geterror: int = 0
         self.getmerror: int = 0
 
-        self.joystick: bool = False
+        self.joystick: bool = options.get("joystick", False)
 
         self.status: int = 0
 
         self.ticks_t0: float = time.monotonic()
-
-    def load_options(self, options: Mapping[str, Any]) -> None:
-        if isinstance(identity := options.get("identity"), str):
-            self.identity = identity
-        if isinstance(version := options.get("version"), str):
-            self.version = version
-        if isinstance(mac_address := options.get("mac_address"), str):
-            self.mac_address = mac_address
-        if isinstance(serial_no := options.get("serial_no"), str):
-            self.serial_no = serial_no
-
-        if isinstance(position := options.get("position"), dict):
-            if isinstance(x := position.get("x"), (int, float)):
-                self.x_pos = float(x)
-            if isinstance(y := position.get("y"), (int, float)):
-                self.y_pos = float(y)
-            if isinstance(z := position.get("z"), (int, float)):
-                self.z_pos = float(z)
-
-        if isinstance(unit := options.get("unit"), dict):
-            if isinstance(x := unit.get("x"), int):
-                self.x_unit = int(max(1, min(3, x)))
-            if isinstance(y := unit.get("y"), int):
-                self.y_unit = int(max(1, min(3, y)))
-            if isinstance(z := unit.get("z"), int):
-                self.z_unit = int(max(1, min(3, z)))
 
     @message(r"identify$")
     def get_identify(self) -> str:
@@ -234,4 +212,4 @@ class CorvusTTEmulator(Emulator):
 
 
 if __name__ == "__main__":
-    run(CorvusTTEmulator())
+    run(CorvusTTEmulator)

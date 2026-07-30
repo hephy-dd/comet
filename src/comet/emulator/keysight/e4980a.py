@@ -1,17 +1,18 @@
 import random
 import time
 
-from comet.emulator import IEC60488Emulator, message, run
+from comet.emulator import Context, IEC60488Emulator, message, run
 from comet.emulator.utils import Error
 
 
 class E4980AEmulator(IEC60488Emulator):
     IDENTITY: str = "Keysight Inc., Model E4980A, v1.0 (Emulator)"
 
-    CORRECTION_OPEN_DELAY: float = 4.0
+    def __init__(self, context: Context) -> None:
+        super().__init__(context)
 
-    def __init__(self) -> None:
-        super().__init__()
+        options = context.options
+
         self.error_queue: list[Error] = []
         self.function_impedance_type: str = "CPD"
         self.correction_open_state: int = 0
@@ -21,6 +22,12 @@ class E4980AEmulator(IEC60488Emulator):
         self.correction_length: int = 4
         self.bias_voltage_level: float = 0.0
         self.bias_state: bool = False
+
+        self.cp_min = float(options.get("cp.min", 2.5e-10))
+        self.cp_max = float(options.get("cp.max", 2.5e-9))
+        self.rp_min = float(options.get("rp.min", 100))
+        self.rp_max = float(options.get("rp.max", 120))
+        self.correction_open_delay = float(options.get("correction_open_delay", 4.0))
 
     @message(r"\*RST$")
     def set_rst(self) -> None:
@@ -66,8 +73,7 @@ class E4980AEmulator(IEC60488Emulator):
 
     @message(r":?CORR:OPEN$")
     def get_correction_open(self) -> None:
-        delay = self.options.get("correction_open_delay", self.CORRECTION_OPEN_DELAY)
-        time.sleep(delay)
+        time.sleep(self.correction_open_delay)
 
     @message(r":?CORR:USE\?$")
     def get_correction_use(self) -> str:
@@ -99,13 +105,8 @@ class E4980AEmulator(IEC60488Emulator):
 
     @message(r":?FETC[H]?(?:(?::IMP)?:FORM)?\?$")
     def get_fetch(self) -> str:
-        # TODO
-        cp_min = float(self.options.get("cp.min", 2.5e-10))
-        cp_max = float(self.options.get("cp.max", 2.5e-9))
-        rp_min = float(self.options.get("rp.min", 100))
-        rp_max = float(self.options.get("rp.max", 120))
-        prim = random.uniform(cp_min, cp_max)
-        sec = random.uniform(rp_min, rp_max)
+        prim = random.uniform(self.cp_min, self.cp_max)
+        sec = random.uniform(self.rp_min, self.rp_max)
         return f"{prim:E},{sec:E},{0:+d}"
 
     @message(r":?BIAS:POL:CURR(\::LEV)?\?$")
@@ -138,4 +139,4 @@ class E4980AEmulator(IEC60488Emulator):
 
 
 if __name__ == "__main__":
-    run(E4980AEmulator())
+    run(E4980AEmulator)
