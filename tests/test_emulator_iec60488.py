@@ -1,11 +1,12 @@
 import pytest
 
+from comet.emulator import Context
 from comet.emulator.iec60488 import IEC60488Emulator
 
 
 @pytest.fixture
 def emulator():
-    return IEC60488Emulator()
+    return IEC60488Emulator(Context())
 
 
 def test_basic(emulator):

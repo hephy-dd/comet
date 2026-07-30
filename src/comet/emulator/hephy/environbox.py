@@ -1,7 +1,7 @@
 import random
 import time
 
-from comet.emulator import Emulator, message, run
+from comet.emulator import Context, Emulator, message, run
 from comet.utils import t_dew
 
 __all__ = ["EnvironBoxEmulator"]
@@ -19,14 +19,18 @@ def split_seconds(delta_seconds: float) -> tuple[int, int, int, int]:
 
 
 class EnvironBoxEmulator(Emulator):
-    IDENTITY: str = "EnvironBox, v2.0 (Emulator)"
-    VERSION: str = "V2.0"
     SUCCESS: str = "OK"
     PC_DATA_SIZE: int = 39
     SENSOR_ADRESSES: tuple[int, ...] = (40, 41, 42, 43, 44, 45)
 
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, context: Context) -> None:
+        super().__init__(context)
+
+        options = context.options
+
+        self._identity = options.get("identity", "EnvironBox, v2.0 (Emulator)")
+        self._version = options.get("version", "V2.0")
+
         self.boot_timestamp: float = time.time()
 
         self.sensor_address: list[int] = [40, 41, 42]
@@ -81,6 +85,15 @@ class EnvironBoxEmulator(Emulator):
         self.pid_door_stop: bool = False
         self.door_auto_light: bool = False
 
+        self._temp_min = float(options.get("box_temperature.min", 23.5))
+        self._temp_max = float(options.get("box_temperature.max", 24.5))
+        self._humid_min = float(options.get("box_humidity.min", 39.5))
+        self._humid_max = float(options.get("box_humidity.max", 40.5))
+        self._pt100_1_min = float(options.get("pt100_1.min", 21.0))
+        self._pt100_1_max = float(options.get("pt100_1.max", 21.5))
+        self._pt100_2_min = float(options.get("pt100_2.min", 22.0))
+        self._pt100_2_max = float(options.get("pt100_2.max", 22.5))
+
     @property
     def pid_control_mode_index(self) -> int:
         return {"HUM": 1, "DEW": 2}[self.pid_control_mode]
@@ -91,15 +104,11 @@ class EnvironBoxEmulator(Emulator):
 
     @property
     def box_temperature(self) -> float:
-        minimum = float(self.options.get("box_temperature.min", 24.0))
-        maximum = float(self.options.get("box_temperature.max", 24.5))
-        return round(random.uniform(minimum, maximum), 1)
+        return round(random.uniform(self._temp_min, self._temp_max), 1)
 
     @property
     def box_humidity(self) -> float:
-        minimum = float(self.options.get("box_humidity.min", 40.0))
-        maximum = float(self.options.get("box_humidity.max", 40.5))
-        return round(random.uniform(minimum, maximum), 1)
+        return round(random.uniform(self._humid_min, self._humid_max), 1)
 
     @property
     def box_dewpoint(self) -> float:
@@ -116,17 +125,13 @@ class EnvironBoxEmulator(Emulator):
     @property
     def pt100_1(self) -> float:
         if self.pt100_1_enabled:
-            minimum = float(self.options.get("pt100_1.min", 21.0))
-            maximum = float(self.options.get("pt100_1.max", 21.5))
-            return round(random.uniform(minimum, maximum), 1)
+            return round(random.uniform(self._pt100_1_min, self._pt100_1_max), 1)
         return float("nan")
 
     @property
     def pt100_2(self) -> float:
         if self.pt100_2_enabled:
-            minimum = float(self.options.get("pt100_2.min", 22.0))
-            maximum = float(self.options.get("pt100_2.max", 22.5))
-            return round(random.uniform(minimum, maximum), 1)
+            return round(random.uniform(self._pt100_2_min, self._pt100_2_max), 1)
         return float("nan")
 
     @property
@@ -203,7 +208,7 @@ class EnvironBoxEmulator(Emulator):
 
     @message(r"\*IDN\?$")
     def get_idn(self) -> str:
-        return self.options.get("identity", self.IDENTITY)
+        return self._identity
 
     @message(r"SET:NEW_ADDR (\d+)$")
     def set_new_addr(self, address) -> str:
@@ -586,7 +591,7 @@ class EnvironBoxEmulator(Emulator):
 
     @message(r"GET:VERSION \?$")
     def get_version(self) -> str:
-        return self.options.get("version", self.VERSION)
+        return self._version
 
     @message(r".*")
     def unknown_message(self) -> str:
@@ -594,4 +599,4 @@ class EnvironBoxEmulator(Emulator):
 
 
 if __name__ == "__main__":
-    run(EnvironBoxEmulator())
+    run(EnvironBoxEmulator)

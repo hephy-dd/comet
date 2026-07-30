@@ -1,11 +1,12 @@
 import pytest
 
+from comet.emulator import Context
 from comet.emulator.hephy.brandbox import BrandBoxEmulator
 
 
 @pytest.fixture
 def emulator():
-    return BrandBoxEmulator()
+    return BrandBoxEmulator(Context())
 
 
 def test_basic(emulator):

@@ -3,7 +3,7 @@
 import random
 from datetime import UTC, datetime
 
-from comet.emulator import Emulator, message, run
+from comet.emulator import Context, Emulator, message, run
 
 __all__ = ["ITCEmulator"]
 
@@ -18,14 +18,16 @@ def fake_analog_channel(channel, minimum, maximum):
 class ITCEmulator(Emulator):
     IDENTITY: str = "ITS Climate Chamber, v1.0 (Emulator)"
 
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, context: Context) -> None:
+        super().__init__(context)
 
-        self.current_temp: float = 24.0
-        self.target_temp: float = 24.0
+        options = context.options
 
-        self.current_humid: float = 55.0
-        self.target_humid: float = 55.0
+        self.current_temp: float = float(options.get("current_temp", 24.0))
+        self.target_temp: float = float(options.get("target_temp", 24.0))
+
+        self.current_humid: float = float(options.get("current_humid", 55.0))
+        self.target_humid: float = float(options.get("target_humid", 55.0))
 
         self.program: int = 0
 
@@ -121,4 +123,4 @@ class ITCEmulator(Emulator):
 
 
 if __name__ == "__main__":
-    run(ITCEmulator())
+    run(ITCEmulator)

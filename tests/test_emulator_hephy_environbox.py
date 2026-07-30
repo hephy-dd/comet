@@ -2,25 +2,23 @@ import re
 
 import pytest
 
+from comet.emulator import Context
 from comet.emulator.hephy.environbox import EnvironBoxEmulator
 
 
 @pytest.fixture
 def emulator():
-    emulator = EnvironBoxEmulator()
-    emulator.options.update(
-        {
-            "box_temperature.min": 24.0,
-            "box_temperature.max": 24.0,
-            "box_humidity.min": 40.0,
-            "box_humidity.max": 40.0,
-            "pt100_1.min": 21.5,
-            "pt100_1.max": 21.5,
-            "pt100_2.min": 22.5,
-            "pt100_2.max": 22.5,
-        }
-    )
-    return emulator
+    options = {
+        "box_temperature.min": 24.0,
+        "box_temperature.max": 24.0,
+        "box_humidity.min": 40.0,
+        "box_humidity.max": 40.0,
+        "pt100_1.min": 21.5,
+        "pt100_1.max": 21.5,
+        "pt100_2.min": 22.5,
+        "pt100_2.max": 22.5,
+    }
+    return EnvironBoxEmulator(Context(options=options))
 
 
 def test_basic(emulator):

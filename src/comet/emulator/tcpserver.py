@@ -10,7 +10,7 @@ import signal
 from collections.abc import Iterable
 from dataclasses import dataclass
 
-from .emulator import Emulator
+from .emulator import Context, Emulator
 from .response import Response
 
 __all__ = ["TCPRequestHandler", "TCPServer", "TCPServerContext"]
@@ -194,23 +194,20 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def run(emulator: Emulator) -> int:
+def run(cls: type[Emulator]) -> int:
     """Convenience emulator runner using asyncio TCP server."""
-    if not isinstance(emulator, Emulator):
-        raise TypeError(f"Emulator must inherit from {Emulator}")
 
     args = parse_args()
-    emulator.options.update({key: value for key, value in args.option})
+    options = {key: value for key, value in args.option}
+    context = Context(options=options)
+    emulator = cls(context)
 
     logging.basicConfig(level=logging.INFO)
 
-    mod = inspect.getmodule(emulator.__class__)
-    name = (
-        getattr(getattr(mod, "__spec__", None), "name", None)
-        or emulator.__class__.__module__
-    )
+    mod = inspect.getmodule(cls)
+    name = getattr(getattr(mod, "__spec__", None), "name", None) or cls.__module__
 
-    context = TCPServerContext(
+    server_context = TCPServerContext(
         name=name,
         emulator=emulator,
         termination=args.termination.encode(),
@@ -220,11 +217,11 @@ def run(emulator: Emulator) -> int:
     address = (args.host, args.port)
 
     async def main() -> None:
-        server = TCPServer(address, context)
+        server = TCPServer(address, server_context)
         await server.start()
 
         host, port = server.server_address
-        context.logger.info("starting... %s:%s", host, port)
+        server_context.logger.info("starting... %s:%s", host, port)
 
         stop_event = asyncio.Event()
 
@@ -232,7 +229,7 @@ def run(emulator: Emulator) -> int:
             if stop_event.is_set():
                 return
 
-            context.logger.info("stopping... %s:%s", host, port)
+            server_context.logger.info("stopping... %s:%s", host, port)
             stop_event.set()
 
         loop = asyncio.get_running_loop()

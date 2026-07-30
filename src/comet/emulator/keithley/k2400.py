@@ -1,7 +1,7 @@
 import random
 from typing import ClassVar
 
-from comet.emulator import IEC60488Emulator, message, run
+from comet.emulator import Context, IEC60488Emulator, message, run
 from comet.emulator.utils import Error
 
 
@@ -10,8 +10,11 @@ class K2400Emulator(IEC60488Emulator):
 
     DEFAULT_VOLTAGE_PROTECTION_LEVEL: float = 210.0
 
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, context: Context) -> None:
+        super().__init__(context)
+
+        options = context.options
+
         self.error_queue: list[Error] = []
         self.system_beeper_state: bool = True
         self.system_rsense: bool = False
@@ -35,6 +38,11 @@ class K2400Emulator(IEC60488Emulator):
         self.sense_nplc: float = 1.0
         self.format_elements = FormatElements()
         self.format_elements.update(["VOLT", "CURR", "RES", "TIME", "STAT"])
+
+        self.volt_min = float(options.get("volt.min", 0))
+        self.volt_max = float(options.get("volt.max", 10))
+        self.curr_min = float(options.get("curr.min", 1e-6))
+        self.curr_max = float(options.get("curr.max", 1e-7))
 
     @message(r"\*RST$")
     def set_rst(self) -> None:
@@ -314,17 +322,9 @@ class K2400Emulator(IEC60488Emulator):
     def get_read(self) -> str:
         result = []
         if "VOLT" in self.format_elements._values:
-            curr_min = float(
-                self.options.get("volt.min", self.source_level.get("VOLT", 0))
-            )
-            curr_max = float(
-                self.options.get("volt.max", self.source_level.get("VOLT", 0))
-            )
-            result.append(format(random.uniform(curr_min, curr_max), "E"))
+            result.append(format(random.uniform(self.volt_min, self.volt_max), "E"))
         if "CURR" in self.format_elements._values:
-            curr_min = float(self.options.get("curr.min", 1e-6))
-            curr_max = float(self.options.get("curr.max", 1e-7))
-            result.append(format(random.uniform(curr_min, curr_max), "E"))
+            result.append(format(random.uniform(self.curr_min, self.curr_max), "E"))
         if "RES" in self.format_elements._values:
             result.append(format(float("nan")))
         if "TIME" in self.format_elements._values:
@@ -335,9 +335,7 @@ class K2400Emulator(IEC60488Emulator):
 
     @message(r":?FETC[H]?\?$")
     def get_fetch(self) -> str:
-        curr_min = float(self.options.get("curr.min", 1e-6))
-        curr_max = float(self.options.get("curr.max", 1e-7))
-        return format(random.uniform(curr_min, curr_max), "E")
+        return format(random.uniform(self.curr_min, self.curr_max), "E")
 
     @message(r".*")
     def unknown_message(self) -> None:
@@ -406,4 +404,4 @@ class FormatElements:
 
 
 if __name__ == "__main__":
-    run(K2400Emulator())
+    run(K2400Emulator)

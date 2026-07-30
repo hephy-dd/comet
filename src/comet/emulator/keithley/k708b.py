@@ -1,7 +1,6 @@
 from comet.emulator import run
+from comet.emulator.keithley.k707b import K707BEmulator
 from comet.utils import combine_matrix
-
-from .k707b import K707BEmulator
 
 
 class K708BEmulator(K707BEmulator):
@@ -10,4 +9,4 @@ class K708BEmulator(K707BEmulator):
 
 
 if __name__ == "__main__":
-    run(K708BEmulator())
+    run(K708BEmulator)

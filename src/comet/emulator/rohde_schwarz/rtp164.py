@@ -1,6 +1,6 @@
 """Rohde Schwarz RTP164 oscilloscope emulator"""
 
-from comet.emulator import BinaryResponse, IEC60488Emulator, message, run
+from comet.emulator import BinaryResponse, Context, IEC60488Emulator, message, run
 from comet.emulator.utils import SCPIError, generate_waveform, scpi_parse_bool
 
 __all__ = ["RTP164Emulator"]
@@ -9,8 +9,9 @@ __all__ = ["RTP164Emulator"]
 class RTP164Emulator(IEC60488Emulator):
     IDENTITY: str = "Rohde&Schwarz,RTP,1320.5007k16/123456,5.50.2.0"
 
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, context: Context) -> None:
+        super().__init__(context)
+
         self.error_queue: list[SCPIError] = []
         self.format_border: str = "LSBF"
         self.format_data: str = "ASC,0"
@@ -86,4 +87,4 @@ class RTP164Emulator(IEC60488Emulator):
 
 
 if __name__ == "__main__":
-    run(RTP164Emulator())
+    run(RTP164Emulator)

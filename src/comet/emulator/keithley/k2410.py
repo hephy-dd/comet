@@ -1,4 +1,5 @@
-from comet.emulator.keithley.k2400 import K2400Emulator, run
+from comet.emulator import run
+from comet.emulator.keithley.k2400 import K2400Emulator
 
 
 class K2410Emulator(K2400Emulator):
@@ -8,4 +9,4 @@ class K2410Emulator(K2400Emulator):
 
 
 if __name__ == "__main__":
-    run(K2410Emulator())
+    run(K2410Emulator)

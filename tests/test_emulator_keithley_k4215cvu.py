@@ -2,12 +2,13 @@ import math
 
 import pytest
 
+from comet.emulator import Context
 from comet.emulator.keithley.k4215cvu import K4215CVUEmulator
 
 
 @pytest.fixture
 def emulator():
-    return K4215CVUEmulator()
+    return K4215CVUEmulator(Context())
 
 
 def assert_two_floats_csv(s: str):

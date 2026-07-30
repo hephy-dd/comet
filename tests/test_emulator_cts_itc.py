@@ -2,12 +2,13 @@ import re
 
 import pytest
 
+from comet.emulator import Context
 from comet.emulator.cts.itc import ITCEmulator
 
 
 @pytest.fixture
 def emulator():
-    return ITCEmulator()
+    return ITCEmulator(Context())
 
 
 def test_basic(emulator):

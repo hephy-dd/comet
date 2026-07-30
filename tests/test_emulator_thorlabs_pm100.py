@@ -1,11 +1,12 @@
 import pytest
 
+from comet.emulator import Context
 from comet.emulator.thorlabs.pm100 import PM100Emulator
 
 
 @pytest.fixture
 def emulator():
-    return PM100Emulator()
+    return PM100Emulator(Context())
 
 
 def test_basic(emulator):
@@ -27,7 +28,6 @@ def test_wavelength(emulator):
 
 
 def test_measure_power(emulator):
-
     power = float(emulator("MEASure:SCALar:POWer"))
     assert power >= 1e-9
     assert power <= 2e-9

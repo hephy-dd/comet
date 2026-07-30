@@ -1,10 +1,8 @@
 """Hydra (Venus-3) emulator."""
 
 import random
-from collections.abc import Mapping
-from typing import Any
 
-from comet.emulator import Emulator, message, run
+from comet.emulator import Context, Emulator, message, run
 
 __all__ = ["HydraEmulator"]
 
@@ -12,42 +10,27 @@ __all__ = ["HydraEmulator"]
 class HydraEmulator(Emulator):
     """Hydra (Venus-3) emulator."""
 
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, context: Context) -> None:
+        super().__init__(context)
 
-        self.identity: str = "Hydra 0 0 0 0"
-        self.version: float = 1.0
-        self.mac_address: str = "00:00:00:00:00:00"
-        self.serial_no: str = "01010042"
+        options = context.options
 
-        self.x_pos: float = 0.0
-        self.y_pos: float = 0.0
+        self.identity: str = options.get("identity", "Hydra 0 0 0 0")
+        self.version: float = options.get("version", 1.0)
+        self.mac_address: str = options.get("mac_address", "00:00:00:00:00:00")
+        self.serial_no: str = options.get("serial_no", "01010042")
+
+        position = options.get("position", {})
+
+        self.x_pos: float = position.get("x", 0.0)
+        self.y_pos: float = position.get("y", 0.0)
 
         self.calibrate: dict[str, int] = {"1": 3, "2": 3}
 
         self.axes_moving: int = 0
         self.manual_move: int = 0
 
-        self.cpu_temperature: float = 40.0
-
-    def load_options(self, options: Mapping[str, Any]) -> None:
-        if isinstance(identity := options.get("identity"), str):
-            self.identity = identity
-        if isinstance(version := options.get("version"), float):
-            self.version = version
-        if isinstance(mac_address := options.get("mac_address"), str):
-            self.mac_address = mac_address
-        if isinstance(serial_no := options.get("serial_no"), str):
-            self.serial_no = serial_no
-
-        if isinstance(position := options.get("position"), dict):
-            if isinstance(x := position.get("x"), (int, float)):
-                self.x_pos = float(x)
-            if isinstance(y := position.get("y"), (int, float)):
-                self.y_pos = float(y)
-
-        if isinstance(cpu_temperature := options.get("cpu_temperature"), float):
-            self.cpu_temperature = cpu_temperature
+        self.cpu_temperature: float = float(options.get("cpu_temperature", 40.0))
 
     @message(r"identify$")
     def get_identify(self) -> str:
@@ -133,4 +116,4 @@ class HydraEmulator(Emulator):
 
 
 if __name__ == "__main__":
-    run(HydraEmulator())
+    run(HydraEmulator)

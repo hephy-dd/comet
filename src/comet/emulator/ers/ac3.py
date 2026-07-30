@@ -1,10 +1,12 @@
 """Driver for ECR AC3 thermal chuck"""
 
 import time
+from collections.abc import Mapping
 from dataclasses import dataclass
 from enum import IntEnum
+from typing import Any, Self
 
-from comet.emulator import Emulator, message, run
+from comet.emulator import Context, Emulator, message, run
 
 __all__ = ["AC3Emulator"]
 
@@ -23,7 +25,7 @@ class Status(IntEnum):
     ERROR = 8
 
 
-@dataclass
+@dataclass(slots=True)
 class State:
     temperature: float = 25.0
     target_temperature: float = 25.0
@@ -32,6 +34,17 @@ class State:
     hold_mode: int = 11
     dewpoint_control_status: bool = True
     dewpoint: float = -20.0
+
+    @classmethod
+    def from_mapping(cls, options: Mapping[str, Any]) -> Self:
+        state = cls()
+        if "temperature" in options:
+            state.temperature = float(options["temperature"])
+        if "target_temperature" in options:
+            state.target_temperature = float(options["target_temperature"])
+        if "dewpoint" in options:
+            state.dewpoint = float(options["dewpoint"])
+        return state
 
 
 class Logic:
@@ -78,9 +91,10 @@ class Logic:
 
 
 class AC3Emulator(Emulator):
-    def __init__(self) -> None:
-        super().__init__()
-        self.state = State()
+    def __init__(self, context: Context) -> None:
+        super().__init__(context)
+
+        self.state = State.from_mapping(context.options)
         self.logic = Logic(self.state)
 
     @message(r"RC$")
@@ -143,4 +157,4 @@ class AC3Emulator(Emulator):
 
 
 if __name__ == "__main__":
-    run(AC3Emulator())
+    run(AC3Emulator)

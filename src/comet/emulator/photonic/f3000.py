@@ -1,6 +1,6 @@
 """Photonic F3000 LED light source emulator"""
 
-from comet.emulator import Emulator, message, run
+from comet.emulator import Context, Emulator, message, run
 
 __all__ = ["F3000Emulator"]
 
@@ -8,8 +8,8 @@ __all__ = ["F3000Emulator"]
 class F3000Emulator(Emulator):
     IDENTITY: str = "F3000 v2.09, Emulator"
 
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, context: Context) -> None:
+        super().__init__(context)
 
         self.current_brightness: int = 50
         self.light_enabled: bool = False
@@ -37,4 +37,4 @@ class F3000Emulator(Emulator):
 
 
 if __name__ == "__main__":
-    run(F3000Emulator())
+    run(F3000Emulator)

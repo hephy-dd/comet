@@ -1,11 +1,12 @@
 import pytest
 
+from comet.emulator import Context
 from comet.emulator.itk.hydra import HydraEmulator
 
 
 @pytest.fixture
 def emulator():
-    return HydraEmulator()
+    return HydraEmulator(Context())
 
 
 def test_basic(emulator):

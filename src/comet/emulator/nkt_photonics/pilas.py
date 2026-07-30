@@ -1,6 +1,6 @@
 """NKT Photonics PILAS picosecond pulsed diode laser emulator"""
 
-from comet.emulator import Emulator, TextResponse, message, run
+from comet.emulator import Context, Emulator, TextResponse, message, run
 
 __all__ = ["PILASEmulator"]
 
@@ -17,8 +17,8 @@ class PILASEmulator(Emulator):
         + "laser head hardware version: PiLas_Laser_Head_PCB_Rev.2.0"
     )
 
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, context: Context) -> None:
+        super().__init__(context)
 
         self.tune: float = 0
         self.tune_mode: bool = False
@@ -81,4 +81,4 @@ class PILASEmulator(Emulator):
 
 
 if __name__ == "__main__":
-    run(PILASEmulator())
+    run(PILASEmulator)

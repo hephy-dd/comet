@@ -1,11 +1,12 @@
 import pytest
 
+from comet.emulator import Context
 from comet.emulator.ers.ac3 import AC3Emulator, Mode
 
 
 @pytest.fixture
 def emulator():
-    return AC3Emulator()
+    return AC3Emulator(Context())
 
 
 def test_identify(emulator):

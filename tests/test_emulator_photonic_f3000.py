@@ -1,11 +1,12 @@
 import pytest
 
+from comet.emulator import Context
 from comet.emulator.photonic.f3000 import F3000Emulator
 
 
 @pytest.fixture
 def emulator():
-    return F3000Emulator()
+    return F3000Emulator(Context())
 
 
 def test_identify(emulator):

@@ -1,6 +1,6 @@
 import random
 
-from comet.emulator import IEC60488Emulator, message, run
+from comet.emulator import Context, IEC60488Emulator, message, run
 from comet.emulator.utils import Error, tsp_assign, tsp_print
 
 
@@ -10,9 +10,12 @@ class K2470Emulator(IEC60488Emulator):
 
     DEFAULT_VOLTAGE_PROTECTION_LEVEL: float = 1050.0
 
-    def __init__(self) -> None:
-        super().__init__()
-        self.language: str = str(self.options.get("language", self.LANGUAGE))
+    def __init__(self, context: Context) -> None:
+        super().__init__(context)
+
+        options = context.options
+
+        self.language: str = str(options.get("language", self.LANGUAGE))
         self.error_queue: list[Error] = []
         self.route_terminals: str = "FRON"
         self.output_state: bool = False
@@ -31,10 +34,12 @@ class K2470Emulator(IEC60488Emulator):
         self.sense_average_state: dict[str, bool] = {"VOLT": False, "CURR": False}
         self.sense_nplc: float = 1.0
         self.system_breakdown_protection: str = "OFF"
+        self.output_interlock_tripped = bool(options.get("interlock.tripped", True))
 
-    @property
-    def output_interlock_tripped(self) -> bool:
-        return bool(self.options.get("interlock.tripped", True))
+        self.volt_min = float(options.get("volt.min", 0))
+        self.volt_max = float(options.get("volt.max", 10))
+        self.curr_min = float(options.get("curr.min", 1e-6))
+        self.curr_max = float(options.get("curr.max", 1e-7))
 
     @message(r"\*LANG\?$")
     def get_lang(self) -> str:
@@ -338,15 +343,11 @@ class K2470Emulator(IEC60488Emulator):
         self.error_queue.append(Error(101, "malformed command"))
 
     def _read_voltage(self) -> float:
-        volt_min = float(self.options.get("volt.min", 0))
-        volt_max = float(self.options.get("volt.max", 10))
-        return random.uniform(volt_min, volt_max)
+        return random.uniform(self.volt_min, self.volt_max)
 
     def _read_current(self) -> float:
-        curr_min = float(self.options.get("curr.min", 1e-6))
-        curr_max = float(self.options.get("curr.max", 1e-7))
-        return random.uniform(curr_min, curr_max)
+        return random.uniform(self.curr_min, self.curr_max)
 
 
 if __name__ == "__main__":
-    run(K2470Emulator())
+    run(K2470Emulator)

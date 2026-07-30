@@ -1,11 +1,12 @@
 import pytest
 
+from comet.emulator import Context
 from comet.emulator.rohde_schwarz.sma100b import SMA100BEmulator
 
 
 @pytest.fixture
 def emulator():
-    return SMA100BEmulator()
+    return SMA100BEmulator(Context())
 
 
 def test_basic(emulator):

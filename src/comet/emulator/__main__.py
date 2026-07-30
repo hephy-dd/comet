@@ -35,7 +35,7 @@ import schema
 import yaml
 
 from .. import __version__
-from .emulator import emulator_factory
+from .emulator import Context, emulator_cls_factory
 from .tcpserver import TCPServer, TCPServerContext
 
 logger = logging.getLogger(__name__)
@@ -154,17 +154,18 @@ async def async_main() -> None:
         request_delay = params.get("request_delay")
         options = params.get("options", {})
 
-        emulator = emulator_factory(model)()
-        emulator.load_options(options)
+        context = Context(options=options)
+        cls = emulator_cls_factory(model)
+        emulator = cls(context)
 
-        context = TCPServerContext(
+        server_context = TCPServerContext(
             name=name,
             emulator=emulator,
             termination=termination_bytes,
             request_delay=request_delay,
             logger=logging.getLogger(name),
         )
-        server = TCPServer((host, port), context)
+        server = TCPServer((host, port), server_context)
         await server.start()
         servers.append(server)
 

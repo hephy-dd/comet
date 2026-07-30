@@ -1,4 +1,4 @@
-from comet.emulator import Emulator, message, run
+from comet.emulator import Context, Emulator, message, run
 
 __all__ = ["BrandBoxEmulator"]
 
@@ -23,12 +23,15 @@ class BrandBoxEmulator(Emulator):
     CHANNELS: tuple[str, ...] = ("A1", "A2", "B1", "B2", "C1", "C2")
     MODS: tuple[str, ...] = ("IV", "CV")
 
-    IDENTITY: str = "BrandBox, v2.0 (Emulator)"
     SUCCESS: str = "OK"
     COMMAND_ERROR: str = format_error(99)
 
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, context: Context) -> None:
+        super().__init__(context)
+
+        options = context.options
+
+        self._identity = options.get("identity", "BrandBox, v2.0 (Emulator)")
         self.closed_channels: set[str] = set()
         self.test_state: bool = False
         self.mod: str = "N/A"
@@ -39,7 +42,7 @@ class BrandBoxEmulator(Emulator):
 
     @message(r"\*IDN\?$")
     def get_idn(self) -> str:
-        return self.options.get("identity", self.IDENTITY)
+        return self._identity
 
     @message(r"\*RST$")
     def set_rst(self) -> str:
@@ -188,4 +191,4 @@ class BrandBoxEmulator(Emulator):
 
 
 if __name__ == "__main__":
-    run(BrandBoxEmulator())
+    run(BrandBoxEmulator)
