@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Read combined current and voltage routes for Keithley 2470 emulator.
+- Require a `Context` instance for emulator constructors (#122).
 
 ### Changed
 
