@@ -1,7 +1,8 @@
 from abc import abstractmethod
 from collections.abc import Iterable
 
-from .instrument import Driver, Instrument
+from ..driver import Driver
+from .instrument import Instrument
 
 __all__ = ["MotionController", "MotionControllerAxis"]
 
