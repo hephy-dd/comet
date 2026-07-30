@@ -4,7 +4,7 @@ from typing import Any
 
 import numpy as np
 
-__all__ = ["TextResponse", "BinaryResponse", "RawResponse"]
+__all__ = ["BinaryResponse", "RawResponse", "TextResponse"]
 
 
 @dataclass
@@ -18,6 +18,7 @@ class Response(ABC):
 @dataclass(repr=False)
 class TextResponse(Response):
     """SCPI text response with optional encoding."""
+
     text: str
     encoding: str = "ascii"  # SCPI default is ascii
 
@@ -51,6 +52,7 @@ class TextResponse(Response):
 @dataclass(repr=False)
 class RawResponse(Response):
     """Generic bytes response."""
+
     data: bytes
 
     def __repr__(self) -> str:
@@ -119,9 +121,7 @@ def make_response(response: Any) -> Response:
     """
     if isinstance(response, Response):
         return response
-    elif isinstance(response, int):
-        return TextResponse(format(response))
-    elif isinstance(response, float):
+    elif isinstance(response, (int, float)):
         return TextResponse(format(response))
     elif isinstance(response, str):
         return TextResponse(response)

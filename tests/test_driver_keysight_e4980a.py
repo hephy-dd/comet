@@ -17,11 +17,11 @@ def test_basic(driver, resource):
 
 
 def test_errors(driver, resource):
-    resource.buffer = ["0,\"no error\""]
+    resource.buffer = ['0,"no error"']
     assert driver.next_error() is None
     assert resource.buffer == [":SYST:ERR:NEXT?"]
 
-    resource.buffer = ["42,\"test error\""]
+    resource.buffer = ['42,"test error"']
     error = driver.next_error()
     assert error.code == 42
     assert error.message == "test error"
@@ -76,5 +76,5 @@ def test_correction_length(driver, resource):
 
 def test_measure_impedance(driver, resource):
     resource.buffer = ["1.002000E+00,2.004000E-03"]
-    assert driver.measure_impedance() == (1.002e+0, 2.004e-3)
+    assert driver.measure_impedance() == (1.002e0, 2.004e-3)
     assert resource.buffer == [":FETC:IMP:FORM?"]

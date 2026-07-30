@@ -15,9 +15,9 @@ def test_basic(emulator):
 
 
 def test_error(emulator):
-    assert emulator(":SYST:ERR?") == "+0,\"No error\""
+    assert emulator(":SYST:ERR?") == '+0,"No error"'
     assert emulator("SHRUBBERY?") is None
-    assert emulator(":SYST:ERR?") == "-113,\"Undefined header\""
+    assert emulator(":SYST:ERR?") == '-113,"Undefined header"'
 
 
 def test_correction_method(emulator):
@@ -32,10 +32,19 @@ def test_fetch_impedance_format(emulator):
     def get_types(result):
         tokens = result.split(",")
         assert len(tokens) == 3
-        a, b, c = tokens
-        float(a), float(b)
+        a, b, _ = tokens
+        a = float(a)
+        b = float(b)
         return True
-    for command in ("FETC", ":FETC", "FETCH:FORM", ":FETCH:FORM", "FETCH:IMP:FORM", ":FETCH:IMP:FORM"):
+
+    for command in (
+        "FETC",
+        ":FETC",
+        "FETCH:FORM",
+        ":FETCH:FORM",
+        "FETCH:IMP:FORM",
+        ":FETCH:IMP:FORM",
+    ):
         assert get_types(str(emulator(f"{command}?")))
 
 

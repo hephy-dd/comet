@@ -6,13 +6,13 @@ MA=x.xxx,x.xxx,x.xxx - Move absolute [X,Y,Z]
 MR=x.xxx,x - Move relative [StepWidth,Axis]
 """
 
-from typing import Final, Optional, Protocol
+from typing import Final, Protocol
 
 from comet.driver.generic import InstrumentError
 from comet.driver.generic.motion_controller import (
-    Position,
-    MotionControllerAxis,
     MotionController,
+    MotionControllerAxis,
+    Position,
 )
 
 __all__ = ["CorvusController"]
@@ -89,7 +89,7 @@ class CorvusController(MotionController):
 
     def clear(self) -> None: ...  # Not supported
 
-    def next_error(self) -> Optional[InstrumentError]:
+    def next_error(self) -> InstrumentError | None:
         return None  # Not supported
 
     def __getitem__(self, index: int) -> CorvusControllerAxis:

@@ -19,7 +19,7 @@ def test_format_elements(emulator):
     assert emulator(":FORM:ELEM READ") is None
     assert emulator(":FORM:ELEM?") == "READ,,,,,"
     assert emulator(":FORM:ELEM CHAN, CHAN ,UNIT") is None
-    assert emulator(":FORM:ELEM?")  == ",CHAN,UNIT,,,"
+    assert emulator(":FORM:ELEM?") == ",CHAN,UNIT,,,"
     assert emulator(":FORM:ELEM CHAN,TST,READ,UNIT,LIM,LIM,RNUM") is None
     assert emulator(":FORM:ELEM?") == "READ,CHAN,UNIT,RNUM,TST,LIM"
 

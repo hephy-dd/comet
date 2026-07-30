@@ -8,7 +8,7 @@ warnings.warn(
     "'comet.driver.corvus.venus1' is deprecated and will be removed in a future version. "
     "Use 'comet.driver.itk.corvustt' or 'comet.driver.smc.corvus' instead.",
     DeprecationWarning,
-    stacklevel=1
+    stacklevel=1,
 )
 
 

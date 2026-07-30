@@ -71,7 +71,12 @@ def test_source_range_auto(emulator):
 
 
 def test_source_voltage_protection_level(emulator):
-    for command in ("SOUR:VOLT:PROT", ":SOUR:VOLT:PROT", "SOUR:VOLT:PROT:LEV", ":SOUR:VOLT:PROT:LEV"):
+    for command in (
+        "SOUR:VOLT:PROT",
+        ":SOUR:VOLT:PROT",
+        "SOUR:VOLT:PROT:LEV",
+        ":SOUR:VOLT:PROT:LEV",
+    ):
         assert float(emulator(f"{command}?")) == 1050
         assert emulator(f"{command} 60") is None
         assert float(emulator(f"{command}?")) == 60
@@ -80,7 +85,12 @@ def test_source_voltage_protection_level(emulator):
 
 
 def test_source_voltage_ilimit_level(emulator):
-    for command in ("SOUR:VOLT:ILIM", ":SOUR:VOLT:ILIM", "SOUR:VOLT:ILIM:LEV", ":SOUR:VOLT:ILIM:LEV"):
+    for command in (
+        "SOUR:VOLT:ILIM",
+        ":SOUR:VOLT:ILIM",
+        "SOUR:VOLT:ILIM:LEV",
+        ":SOUR:VOLT:ILIM:LEV",
+    ):
         assert float(emulator(f"{command}?")) == 1.05e-4
         assert emulator(f"{command} 2.1E-5") is None
         assert float(emulator(f"{command}?")) == 2.1e-5
@@ -89,12 +99,22 @@ def test_source_voltage_ilimit_level(emulator):
 
 
 def test_source_voltage_ilimit_level_tripped(emulator):
-    for command in ("SOUR:VOLT:ILIM:TRIP", ":SOUR:VOLT:ILIM:TRIP", "SOUR:VOLT:ILIM:LEV:TRIP", ":SOUR:VOLT:ILIM:LEV:TRIP"):
+    for command in (
+        "SOUR:VOLT:ILIM:TRIP",
+        ":SOUR:VOLT:ILIM:TRIP",
+        "SOUR:VOLT:ILIM:LEV:TRIP",
+        ":SOUR:VOLT:ILIM:LEV:TRIP",
+    ):
         assert float(emulator(f"{command}?")) == 0
 
 
 def test_source_current_vlimit_level(emulator):
-    for command in ("SOUR:CURR:VLIM", ":SOUR:CURR:VLIM", "SOUR:CURR:VLIM:LEV", ":SOUR:CURR:VLIM:LEV"):
+    for command in (
+        "SOUR:CURR:VLIM",
+        ":SOUR:CURR:VLIM",
+        "SOUR:CURR:VLIM:LEV",
+        ":SOUR:CURR:VLIM:LEV",
+    ):
         assert float(emulator(f"{command}?")) == 2.1e-1
         assert emulator(f"{command} 0.0001") is None
         assert float(emulator(f"{command}?")) == 0.0001
@@ -103,7 +123,12 @@ def test_source_current_vlimit_level(emulator):
 
 
 def test_source_current_vlimit_level_tripped(emulator):
-    for command in ("SOUR:CURR:VLIM:TRIP", ":SOUR:CURR:VLIM:TRIP", "SOUR:CURR:VLIM:LEV:TRIP", ":SOUR:CURR:VLIM:LEV:TRIP"):
+    for command in (
+        "SOUR:CURR:VLIM:TRIP",
+        ":SOUR:CURR:VLIM:TRIP",
+        "SOUR:CURR:VLIM:LEV:TRIP",
+        ":SOUR:CURR:VLIM:LEV:TRIP",
+    ):
         assert float(emulator(f"{command}?")) == 0
 
 
@@ -121,16 +146,16 @@ def test_read(emulator):
 
 
 def test_read_elements(emulator):
-    result = emulator(":READ? \"defbuffer1\", SOUR, READ")
+    result = emulator(':READ? "defbuffer1", SOUR, READ')
     sour, read = str(result).split(",")
     assert float(sour), float(read)
 
 
 def test_trace_trigger(emulator):
-    assert emulator(":TRAC:TRIG \"defbuffer1\"") is None
+    assert emulator(':TRAC:TRIG "defbuffer1"') is None
 
 
 def test_trace_data(emulator):
-    result = emulator(":TRAC:DATA? 1, 1, \"defbuffer1\", SOUR, READ")
+    result = emulator(':TRAC:DATA? 1, 1, "defbuffer1", SOUR, READ')
     sour, read = str(result).split(",")
     assert float(sour), float(read)

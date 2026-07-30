@@ -1,4 +1,5 @@
 import math
+
 import pytest
 
 from comet.emulator.keithley.k4215cvu import K4215CVUEmulator
@@ -57,12 +58,15 @@ def test_measz_returns_two_floats_output_on(emulator):
     assert_two_floats_csv(s)
 
 
-@pytest.mark.parametrize("cmd,val,query,default", [
-    (":CVU:ACV {}", "1.000000E-01", ":CVU:ACV?", 0.1),
-    (":CVU:FREQ {}", "100000", ":CVU:FREQ?", 100000),
-    (":CVU:DCV {}", "0.000E+00", ":CVU:DCV?", 0.0),
-    (":CVU:DCV:OFFSET {}", "0.000E+00", ":CVU:DCV:OFFSET?", 0.0),
-])
+@pytest.mark.parametrize(
+    "cmd,val,query,default",
+    [
+        (":CVU:ACV {}", "1.000000E-01", ":CVU:ACV?", 0.1),
+        (":CVU:FREQ {}", "100000", ":CVU:FREQ?", 100000),
+        (":CVU:DCV {}", "0.000E+00", ":CVU:DCV?", 0.0),
+        (":CVU:DCV:OFFSET {}", "0.000E+00", ":CVU:DCV:OFFSET?", 0.0),
+    ],
+)
 def test_getters_setters_roundtrip_common(emulator, cmd, val, query, default):
     # check getter exists and returns something parseable
     assert emulator(query) == val

@@ -1,11 +1,11 @@
 from abc import abstractmethod
+
 from .instrument import Instrument
 
 __all__ = ["DigitalMultiMeter"]
 
 
 class DigitalMultiMeter(Instrument):
-
     # Measurements
 
     @abstractmethod

@@ -1,10 +1,10 @@
-from typing import Final, Optional
+from typing import Final
 
 from comet.driver.generic import InstrumentError
 from comet.driver.generic.motion_controller import (
-    Position,
-    MotionControllerAxis,
     MotionController,
+    MotionControllerAxis,
+    Position,
 )
 
 __all__ = ["CorvusTT"]
@@ -27,7 +27,7 @@ ERROR_MESSAGES: dict[int, str] = {
 }
 
 
-def parse_error(response: str) -> Optional[InstrumentError]:
+def parse_error(response: str) -> InstrumentError | None:
     if not response.strip().isnumeric():
         raise ValueError(f"Invalid error response, not a number: {response!r}")
     code = int(response)
@@ -77,7 +77,7 @@ class CorvusTT(MotionController):
 
     def clear(self) -> None: ...
 
-    def next_error(self) -> Optional[InstrumentError]:
+    def next_error(self) -> InstrumentError | None:
         response = self.resource.query("geterror").strip()
         return parse_error(response)
 

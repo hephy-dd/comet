@@ -6,7 +6,6 @@ __all__ = ["LCRMeter"]
 
 
 class LCRMeter(Instrument):
-
     @property
     @abstractmethod
     def function(self) -> str: ...

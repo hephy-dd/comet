@@ -6,7 +6,6 @@ __all__ = ["LightSource"]
 
 
 class LightSource(Driver):
-
     @property
     @abstractmethod
     def brightness(self) -> int: ...

@@ -6,7 +6,7 @@ from comet.driver.keithley import K237
 @pytest.fixture
 def driver(resource):
     driver = K237(resource)
-    driver.WRITE_DELAY = 0.
+    driver.WRITE_DELAY = 0.0
     return driver
 
 
@@ -66,24 +66,24 @@ def test_function(driver, resource):
 
 
 def test_voltage(driver, resource):
-    for level in (-2.5, 0., +2.5):
+    for level in (-2.5, 0.0, +2.5):
         resource.buffer = [format(level, ".3E")]
         assert driver.voltage_level == level
         assert resource.buffer == ["G1,2,0X", "X"]
 
-    for level in (-2.5, 0., +2.5):
+    for level in (-2.5, 0.0, +2.5):
         resource.buffer = []
         driver.voltage_level = level
         assert resource.buffer == [f"B{level:.3E},,X"]
 
 
 def test_current(driver, resource):
-    for level in (-2.5e-06, 0., +2.5e-06):
+    for level in (-2.5e-06, 0.0, +2.5e-06):
         resource.buffer = [format(level, ".3E")]
         assert driver.current_level == level
         assert resource.buffer == ["G1,2,0X", "X"]
 
-    for level in (-2.5e-06, 0., +2.5e-06):
+    for level in (-2.5e-06, 0.0, +2.5e-06):
         resource.buffer = []
         driver.current_level = level
         assert resource.buffer == [f"B{level:.3E},,X"]

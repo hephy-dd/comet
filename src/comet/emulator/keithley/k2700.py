@@ -1,6 +1,5 @@
 import random
 import time
-from typing import Optional
 
 from comet.emulator import IEC60488Emulator, message, run
 from comet.emulator.utils import Error
@@ -17,8 +16,8 @@ class Reading:
 
 
 class FormatElements:
-    VALID_ELEMENTS: list[str] = ["READ", "CHAN", "UNIT", "RNUM", "TST", "LIM"]
-    DEFAULT_ELEMENTS: list[str] = ["READ", "UNIT", "RNUM", "TST"]
+    VALID_ELEMENTS: tuple[str, ...] = ("READ", "CHAN", "UNIT", "RNUM", "TST", "LIM")
+    DEFAULT_ELEMENTS: tuple[str, ...] = ("READ", "UNIT", "RNUM", "TST")
 
     def __init__(self) -> None:
         self.elements: set[str] = set(self.DEFAULT_ELEMENTS)
@@ -29,12 +28,12 @@ class FormatElements:
             elements.append(element if element in self.elements else "")
         return ",".join(elements)
 
-    def from_text(self, text: str) -> Optional[Error]:
-        elements = set([element.strip() for element in text.split(",") if element.strip()])
+    def from_text(self, text: str) -> Error | None:
+        elements = {element.strip() for element in text.split(",") if element.strip()}
         for element in elements:
             if element not in self.VALID_ELEMENTS:
                 return Error(-201, "Syntax error")
-        if elements == set(["UNIT"]):
+        if elements == {"UNIT"}:
             return Error(-101, "Invalid character")
         self.elements = elements
         return None
@@ -68,7 +67,6 @@ class FormatElements:
 
 
 class K2700Emulator(IEC60488Emulator):
-
     IDENTITY: str = "Keithley Inc., Model 2700, 43768438, v1.0 (Emulator)"
 
     def __init__(self) -> None:
@@ -117,11 +115,13 @@ class K2700Emulator(IEC60488Emulator):
 
     @message(r":?SENS(?:E)?:FUNC(?:TION)?\?$")
     def get_sense_function(self) -> str:
-        return f"\"{self.sense_function}\""
+        return f'"{self.sense_function}"'
 
     @message(r":?SENS(?:E)?:FUNC(?:TION)\s+\"(VOLT|CURR|VOLT:DC|CURR:DC|TEMP)\"$")
     def set_sense_function(self, function: str) -> None:
-        self.sense_function = {"VOLT": "VOLT:DC", "CURR": "CURR:DC"}.get(function, function)
+        self.sense_function = {"VOLT": "VOLT:DC", "CURR": "CURR:DC"}.get(
+            function, function
+        )
 
     @message(r":?SENS(?:E)?:VOLT:AVER:TCON\?$")
     def get_sense_average_tcontrol(self) -> str:
@@ -145,7 +145,12 @@ class K2700Emulator(IEC60488Emulator):
 
     @message(r":?SENS(?:E)?:VOLT:AVER(?::STAT[E]?)?\s+(OFF|ON|0|1)$")
     def set_sense_voltage_average_state(self, value) -> None:
-        self.sense_voltage_average_state = {"0": False, "1": True, "OFF": False, "ON": True}[value]
+        self.sense_voltage_average_state = {
+            "0": False,
+            "1": True,
+            "OFF": False,
+            "ON": True,
+        }[value]
 
     @message(r":?SYST:ERR\?$")
     def get_system_error(self) -> str:
@@ -161,13 +166,15 @@ class K2700Emulator(IEC60488Emulator):
 
     @message(r":?SYST:BEEP(?::STAT)? (OFF|ON|0|1)$")
     def set_beeper_state(self, value) -> None:
-        self.system_beeper_state = {'0': False, '1': True, 'OFF': False, 'ON': True}[value]
+        self.system_beeper_state = {"0": False, "1": True, "OFF": False, "ON": True}[
+            value
+        ]
 
     @message(r":?INIT(?::IMM)$")
     def set_init(self) -> None: ...
 
     @message(r":?READ\?$")
-    def get_read(self) -> None:
+    def get_read(self) -> str:
         return self._read()
 
     @message(r":?FETC[H]?\?$")
@@ -199,7 +206,9 @@ class K2700Emulator(IEC60488Emulator):
 
     @message(r":?TRIG:DEL:AUTO\s+(OFF|ON|0|1)$")
     def set_trigger_delay_auto(self, value) -> None:
-        self.trigger_delay_auto = {'0': False, '1': True, 'OFF': False, 'ON': True}[value]
+        self.trigger_delay_auto = {"0": False, "1": True, "OFF": False, "ON": True}[
+            value
+        ]
 
     @message(r":?TRIG:DEL\?$")
     def get_trigger_delay(self) -> str:
@@ -216,7 +225,7 @@ class K2700Emulator(IEC60488Emulator):
     def unknown_message(self) -> None:
         self.error_queue.append(Error(101, "malformed command"))
 
-    def _read(self):
+    def _read(self) -> str:
         """Returns formatted reading."""
         if self.sense_function == "VOLT:DC":
             volt_min = float(self.options.get("volt.min", 0))
@@ -230,11 +239,11 @@ class K2700Emulator(IEC60488Emulator):
             temp_min = float(self.options.get("temp.min", 24))
             temp_max = float(self.options.get("temp.max", 25))
             reading = Reading(random.uniform(temp_min, temp_max), "")  # TEMP
-        time.sleep(random.uniform(.5, 1.0))  # rev B10 ;)
+        time.sleep(random.uniform(0.5, 1.0))  # rev B10 ;)
         reading.reading_number = self.reading_number
         self.reading_number += 1
         return self.format_elements.format_reading(reading)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     run(K2700Emulator())

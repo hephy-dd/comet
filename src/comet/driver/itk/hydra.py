@@ -1,10 +1,10 @@
-from typing import Optional
+from typing import Final
 
 from comet.driver.generic import InstrumentError
 from comet.driver.generic.motion_controller import (
-    Position,
-    MotionControllerAxis,
     MotionController,
+    MotionControllerAxis,
+    Position,
 )
 
 __all__ = ["Hydra"]
@@ -26,7 +26,7 @@ ERROR_MESSAGES: dict[int, str] = {
 }
 
 
-def parse_error(response: str) -> Optional[InstrumentError]:
+def parse_error(response: str) -> InstrumentError | None:
     code = int(response)
     if code:
         message = ERROR_MESSAGES.get(code, "unknown error")
@@ -65,7 +65,7 @@ class HydraAxis(MotionControllerAxis):
 
 
 class Hydra(MotionController):
-    AXES: list[int] = [1, 2]
+    AXES: Final[list[int]] = [1, 2]
 
     def identify(self) -> str:
         return self.resource.query("identify").strip()
@@ -74,7 +74,7 @@ class Hydra(MotionController):
 
     def clear(self) -> None: ...
 
-    def next_error(self) -> Optional[InstrumentError]:
+    def next_error(self) -> InstrumentError | None:
         response = self.resource.query("ge")
         return parse_error(response)
 

@@ -6,7 +6,6 @@ from comet.emulator.utils import Error
 
 
 class K6517BEmulator(IEC60488Emulator):
-
     IDENTITY: str = "Keithley Inc., Model 6517B, 43768438, v1.0 (Emulator)"
 
     def __init__(self) -> None:
@@ -136,7 +135,12 @@ class K6517BEmulator(IEC60488Emulator):
 
     @message(r":?SOUR:VOLT:MCON\s+(OFF|ON|0|1)$")
     def set_source_voltage_mconnect(self, value: str) -> None:
-        self.source_voltage_mconnect = {"0": False, "1": True, "OFF": False, "ON": True}[value]
+        self.source_voltage_mconnect = {
+            "0": False,
+            "1": True,
+            "OFF": False,
+            "ON": True,
+        }[value]
 
     @message(r":?SOUR:VOLT:MCON\?$")
     def get_source_voltage_mconnect(self) -> str:
@@ -227,12 +231,10 @@ class K6517BEmulator(IEC60488Emulator):
         self.sense_current_range_auto = {"OFF": 0, "ON": 1, "0": 0, "1": 1}[state]
 
     @message(r"(?::?SENS)?:CURR:RANG:AUTO:ULIM\s+(.+)$")
-    def set_sense_current_range_auto_ulimit(self, value: str) -> None:
-        ...  # TODO
+    def set_sense_current_range_auto_ulimit(self, value: str) -> None: ...  # TODO
 
     @message(r"(?::?SENS)?:CURR:RANG:AUTO:LLIM\s+(.+)$")
-    def set_sense_current_range_auto_llimit(self, value: str) -> None:
-        ...  # TODO
+    def set_sense_current_range_auto_llimit(self, value: str) -> None: ...  # TODO
 
     # NPLC (coupled commands)
 

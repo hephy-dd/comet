@@ -1,7 +1,5 @@
 """TANGO emulator."""
 
-from typing import Optional
-
 from comet.emulator import Emulator, message, run
 
 __all__ = ["TangoEmulator"]
@@ -41,7 +39,7 @@ class TangoEmulator(Emulator):
     # Calibration
 
     @message(r"\!?cal$")
-    def set_cal(self) -> Optional[str]:
+    def set_cal(self) -> str | None:
         self.calst["x"] |= 0x1
         self.calst["y"] |= 0x1
         self.calst["z"] |= 0x1
@@ -50,14 +48,14 @@ class TangoEmulator(Emulator):
         return None
 
     @message(r"\!?cal\s+(x|y|z)$")
-    def set_cal_xyz(self, axes) -> Optional[str]:
+    def set_cal_xyz(self, axes) -> str | None:
         self.calst[axes] |= 0x1
         if self.autostatus:
             return "A"
         return None
 
     @message(r"\!?rm$")
-    def set_rm(self) -> Optional[str]:
+    def set_rm(self) -> str | None:
         self.calst["x"] |= 0x2
         self.calst["y"] |= 0x2
         self.calst["z"] |= 0x2
@@ -66,7 +64,7 @@ class TangoEmulator(Emulator):
         return None
 
     @message(r"\!?rm\s+(x|y|z)$")
-    def set_rm_xyz(self, axes) -> Optional[str]:
+    def set_rm_xyz(self, axes) -> str | None:
         self.calst[axes] &= 0x1
         if self.autostatus:
             return "D"
@@ -99,7 +97,7 @@ class TangoEmulator(Emulator):
         return f"{value:.3f}"
 
     @message(r"\!?moa\s+([^\sxyza]+)\s+([^\s]+)\s+([^\s]+)$")
-    def set_move_absolute(self, x, y, z) -> Optional[str]:
+    def set_move_absolute(self, x, y, z) -> str | None:
         self.position["x"] = float(x)
         self.position["y"] = float(y)
         self.position["z"] = float(z)
@@ -108,14 +106,14 @@ class TangoEmulator(Emulator):
         return None
 
     @message(r"\!?moa\s+(x|y|z)\s+([^\s]+)$")
-    def set_move_absolute_xyz(self, axis, value) -> Optional[str]:
+    def set_move_absolute_xyz(self, axis, value) -> str | None:
         self.position[axis] = float(value)
         if self.autostatus:
             return "@@@-."
         return None
 
     @message(r"\!?mor\s+([^\sxyza]+)\s+([^\s]+)\s+([^\s]+)$")
-    def set_move_relative(self, x, y, z) -> Optional[str]:
+    def set_move_relative(self, x, y, z) -> str | None:
         self.position["x"] = float(x)
         self.position["y"] = float(y)
         self.position["z"] = float(z)
@@ -124,7 +122,7 @@ class TangoEmulator(Emulator):
         return None
 
     @message(r"\!?mor\s+(x|y|z)\s+([^\s]+)$")
-    def set_move_relative_xyz(self, axis, value) -> Optional[str]:
+    def set_move_relative_xyz(self, axis, value) -> str | None:
         self.position[axis] = float(value)
         if self.autostatus:
             return "@@@-."
@@ -156,7 +154,7 @@ class TangoEmulator(Emulator):
 
     @message(r"!vel\s+(x|y|z)\s+([^\s]+)$")
     def set_vel_xyz(self, axis, value) -> str:
-        self.velocity[axis]= float(value)
+        self.velocity[axis] = float(value)
         return "@@@-."
 
     # System configuration

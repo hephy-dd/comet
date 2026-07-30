@@ -1,7 +1,4 @@
-from typing import Optional
-
-from comet.driver.generic import BeeperMixin
-from comet.driver.generic import InstrumentError
+from comet.driver.generic import BeeperMixin, InstrumentError
 from comet.driver.generic.dmm import DigitalMultiMeter
 
 __all__ = ["K2700"]
@@ -14,10 +11,11 @@ def parse_error(response: str) -> tuple[int, str]:
 
 class K2700(BeeperMixin, DigitalMultiMeter):
     """Driver for Keithley 2700 digital multimeter."""
+
     def __init__(self, resource) -> None:
         super().__init__(resource)
-        self._sense_function: Optional[str] = None
-        self._format_elements: Optional[str] = None
+        self._sense_function: str | None = None
+        self._format_elements: str | None = None
 
     def identify(self) -> str:
         return self._query("*IDN?")
@@ -45,7 +43,7 @@ class K2700(BeeperMixin, DigitalMultiMeter):
 
     # Error queue
 
-    def next_error(self) -> Optional[InstrumentError]:
+    def next_error(self) -> InstrumentError | None:
         code, message = parse_error(self._query(":SYST:ERR:NEXT?"))
         if code:
             return InstrumentError(code, message)

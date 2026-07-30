@@ -6,13 +6,13 @@ from comet.parameter import Parameter
 def test_parameter_empty():
     p = Parameter()
     assert p.default is None
-    assert p.validate(.42) == .42
+    assert p.validate(0.42) == 0.42
 
 
 def test_parameter_default():
     p = Parameter(42)
     assert p.default == 42
-    assert p.validate(.42) == .42
+    assert p.validate(0.42) == 0.42
 
 
 def test_parameter_choice():
@@ -32,15 +32,15 @@ def test_parameter_range():
     assert p.maximum == 42
     assert p.validate(4.2) == 4.2
     with pytest.raises(ValueError):
-        p.validate(100.)
+        p.validate(100.0)
     with pytest.raises(ValueError):
-        p.validate(0.)
+        p.validate(0.0)
 
 
 def test_parameter_unit():
     p = Parameter("25 mV", unit="V")
-    assert p.default == .025
+    assert p.default == 0.025
     assert p.type is None
     assert p.unit == "V"
-    assert p.validate(.100) == .100
-    assert p.validate("1kV") == 1000.
+    assert p.validate(0.100) == 0.100
+    assert p.validate("1kV") == 1000.0

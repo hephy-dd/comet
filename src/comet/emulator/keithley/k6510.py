@@ -7,7 +7,6 @@ __all__ = ["K6510Emulator"]
 
 
 class K6510Emulator(IEC60488Emulator):
-
     IDENTITY: str = "Keithley Inc., Model DAQ6510, 54313645, v1.0 (Emulator)"
 
     def __init__(self) -> None:

@@ -28,7 +28,7 @@ def test_clear(driver, resource):
 
 
 def test_error(driver, resource):
-    resource.buffer = ["0,\"No error\""]
+    resource.buffer = ['0,"No error"']
     assert driver.next_error() is None
     assert resource.buffer == ["SYST:ERR?"]
 

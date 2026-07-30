@@ -4,9 +4,7 @@ import time
 from dataclasses import dataclass
 from enum import IntEnum
 
-
-from comet.emulator import Emulator
-from comet.emulator import message, run
+from comet.emulator import Emulator, message, run
 
 __all__ = ["AC3Emulator"]
 

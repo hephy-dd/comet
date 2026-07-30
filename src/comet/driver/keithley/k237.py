@@ -1,5 +1,5 @@
 import time
-from typing import Optional
+from typing import ClassVar
 
 from comet.driver.generic import InstrumentError
 from comet.driver.generic.source_meter_unit import SourceMeterUnit
@@ -47,7 +47,7 @@ def select_range_index(values: dict[int, float], level: float) -> int:
 class K237(SourceMeterUnit):
     WRITE_DELAY: float = 0.250
 
-    VOLTAGE_RANGES: dict[int, float] = {
+    VOLTAGE_RANGES: ClassVar[dict[int, float]] = {
         0: 0.0,
         1: 1.1,
         2: 11.0,
@@ -55,7 +55,7 @@ class K237(SourceMeterUnit):
         4: 1100.0,
     }
 
-    CURRENT_RANGES: dict[int, float] = {
+    CURRENT_RANGES: ClassVar[dict[int, float]] = {
         0: 0.0,
         1: 1e-09,
         2: 1e-08,
@@ -81,7 +81,7 @@ class K237(SourceMeterUnit):
     def clear(self) -> None:
         self.resource.clear()
 
-    def next_error(self) -> Optional[InstrumentError]:
+    def next_error(self) -> InstrumentError | None:
         values = self.query("U1X")[3:]
         for index, value in enumerate(values):
             if value == "1":

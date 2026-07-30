@@ -1,10 +1,16 @@
 import argparse
+import asyncio
+import inspect
 import logging
 import types
+from dataclasses import dataclass
+from typing import cast
 
 import pytest
 
-from comet.emulator import tcpserver
+from comet.emulator import Emulator, tcpserver
+from comet.emulator.response import Response, TextResponse
+from comet.emulator.tcpserver import TCPRequestHandler, TCPServer, TCPServerContext
 
 
 class FakeResponse:
@@ -75,12 +81,12 @@ def patch_response(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_read_messages_returns_none_on_eof():
-    handler = tcpserver.TCPRequestHandler()
-    reader = FakeStreamReader([b""])
+    handler = TCPRequestHandler()
+    reader = cast(asyncio.StreamReader, FakeStreamReader([b""]))
     context = DummyContext()
     rx_buffer = bytearray()
 
-    result = await handler.read_messages(reader, context, rx_buffer)
+    result = await handler.read_messages(reader, context, rx_buffer)  # type: ignore
 
     assert result is None
     assert rx_buffer == bytearray()
@@ -89,12 +95,12 @@ async def test_read_messages_returns_none_on_eof():
 
 @pytest.mark.asyncio
 async def test_read_messages_splits_complete_messages():
-    handler = tcpserver.TCPRequestHandler()
-    reader = FakeStreamReader([b"CMD1\nCMD2\n"])
+    handler = TCPRequestHandler()
+    reader = cast(asyncio.StreamReader, FakeStreamReader([b"CMD1\nCMD2\n"]))
     context = DummyContext(termination=b"\n")
     rx_buffer = bytearray()
 
-    result = await handler.read_messages(reader, context, rx_buffer)
+    result = await handler.read_messages(reader, context, rx_buffer)  # type: ignore
 
     assert result == [b"CMD1", b"CMD2"]
     assert rx_buffer == bytearray()
@@ -103,12 +109,12 @@ async def test_read_messages_splits_complete_messages():
 
 @pytest.mark.asyncio
 async def test_read_messages_preserves_partial_frame():
-    handler = tcpserver.TCPRequestHandler()
-    context = DummyContext(termination=b"\r\n")
+    handler = TCPRequestHandler()
+    context = cast(TCPServerContext, DummyContext(termination=b"\r\n"))
     rx_buffer = bytearray()
 
     result1 = await handler.read_messages(
-        FakeStreamReader([b"ONE\r\nTWO\r"]),
+        cast(asyncio.StreamReader, FakeStreamReader([b"ONE\r\nTWO\r"])),
         context,
         rx_buffer,
     )
@@ -116,7 +122,7 @@ async def test_read_messages_preserves_partial_frame():
     assert rx_buffer == bytearray(b"TWO\r")
 
     result2 = await handler.read_messages(
-        FakeStreamReader([b"\nTHREE\r\n"]),
+        cast(asyncio.StreamReader, FakeStreamReader([b"\nTHREE\r\n"])),
         context,
         rx_buffer,
     )
@@ -126,11 +132,11 @@ async def test_read_messages_preserves_partial_frame():
 
 @pytest.mark.asyncio
 async def test_send_messages_single_response(patch_response):
-    handler = tcpserver.TCPRequestHandler()
+    handler = TCPRequestHandler()
     writer = FakeStreamWriter()
     context = DummyContext(termination=b"\n")
 
-    await handler.send_messages(writer, context, FakeResponse(b"OK"))
+    await handler.send_messages(writer, context, FakeResponse(b"OK"))  # type: ignore
 
     assert writer.writes == [b"OK\n"]
     assert writer.drained == 1
@@ -139,12 +145,12 @@ async def test_send_messages_single_response(patch_response):
 
 @pytest.mark.asyncio
 async def test_send_messages_multiple_responses(patch_response):
-    handler = tcpserver.TCPRequestHandler()
+    handler = TCPRequestHandler()
     writer = FakeStreamWriter()
     context = DummyContext(termination=b"\r\n")
 
     responses = [FakeResponse(b"A"), FakeResponse(b"B")]
-    await handler.send_messages(writer, context, responses)
+    await handler.send_messages(writer, context, responses)  # type: ignore
 
     assert writer.writes == [b"A\r\nB\r\n"]
     assert writer.drained == 1
@@ -152,18 +158,22 @@ async def test_send_messages_multiple_responses(patch_response):
 
 
 @pytest.mark.asyncio
-async def test_handle_reads_dispatches_sends_and_closes_writer(monkeypatch, patch_response):
-    handler = tcpserver.TCPRequestHandler()
+async def test_handle_reads_dispatches_sends_and_closes_writer(
+    monkeypatch, patch_response
+):
+    handler = TCPRequestHandler()
     context = DummyContext(handle_result=FakeResponse(b"RSP"))
     writer = FakeStreamWriter()
 
+    results = iter(
+        [
+            [b"PING", b"PONG"],
+            None,
+        ]
+    )
+
     async def fake_read_messages(reader, context, rx_buffer):
-        if not hasattr(fake_read_messages, "count"):
-            fake_read_messages.count = 0
-        fake_read_messages.count += 1
-        if fake_read_messages.count == 1:
-            return [b"PING", b"PONG"]
-        return None
+        return next(results)
 
     sent = []
 
@@ -173,7 +183,7 @@ async def test_handle_reads_dispatches_sends_and_closes_writer(monkeypatch, patc
     monkeypatch.setattr(handler, "read_messages", fake_read_messages)
     monkeypatch.setattr(handler, "send_messages", fake_send_messages)
 
-    await handler.handle(object(), writer, context)
+    await handler.handle(object(), writer, context)  # type: ignore
 
     assert context.messages == ["PING", "PONG"]
     assert sent == [b"RSP", b"RSP"]
@@ -183,7 +193,7 @@ async def test_handle_reads_dispatches_sends_and_closes_writer(monkeypatch, patc
 
 @pytest.mark.asyncio
 async def test_handle_closes_writer_even_if_handle_message_raises():
-    handler = tcpserver.TCPRequestHandler()
+    handler = TCPRequestHandler()
     writer = FakeStreamWriter()
 
     class ExplodingContext(DummyContext):
@@ -198,7 +208,7 @@ async def test_handle_closes_writer_even_if_handle_message_raises():
     handler.read_messages = fake_read_messages
 
     with pytest.raises(RuntimeError, match="boom"):
-        await handler.handle(object(), writer, context)
+        await handler.handle(object(), writer, context)  # type: ignore
 
     assert writer.closed is True
     assert writer.wait_closed_called is True
@@ -211,25 +221,26 @@ async def test_context_handle_message_waits_only_when_response(monkeypatch):
     async def fake_sleep(delay):
         sleep_calls.append(delay)
 
-    monkeypatch.setattr(tcpserver.asyncio, "sleep", fake_sleep)
+    monkeypatch.setattr(asyncio, "sleep", fake_sleep)
 
-    class DummyEmulator:
-        def __init__(self, response):
+    class TestEmulator(Emulator):
+        def __init__(self, response: Response | list[Response] | None):
+            super().__init__()
             self.response = response
 
-        def __call__(self, message):
+        def __call__(self, message: str) -> Response | list[Response] | None:
             return self.response
 
-    ctx1 = tcpserver.TCPServerContext(
+    ctx1 = TCPServerContext(
         name="x",
-        emulator=DummyEmulator("ok"),
+        emulator=TestEmulator(TextResponse("ok")),
         termination=b"\n",
         request_delay=0.25,
         logger=logging.getLogger("test1"),
     )
-    ctx2 = tcpserver.TCPServerContext(
+    ctx2 = TCPServerContext(
         name="x",
-        emulator=DummyEmulator(None),
+        emulator=TestEmulator(None),
         termination=b"\n",
         request_delay=0.25,
         logger=logging.getLogger("test2"),
@@ -243,43 +254,44 @@ async def test_context_handle_message_waits_only_when_response(monkeypatch):
 
 
 def test_server_address_returns_configured_address_before_start():
-    ctx = DummyContext()
-    server = tcpserver.TCPServer(("127.0.0.1", 5555), ctx)
+    ctx = cast(TCPServerContext, DummyContext())
+    server = TCPServer(("127.0.0.1", 5555), ctx)
 
     assert server.server_address == ("127.0.0.1", 5555)
 
 
 def test_server_address_returns_bound_socket_address_after_start():
-    ctx = DummyContext()
-    server = tcpserver.TCPServer(("127.0.0.1", 5555), ctx)
+    ctx = cast(TCPServerContext, DummyContext())
+    server = TCPServer(("127.0.0.1", 5555), ctx)
 
     class DummySocket:
         def getsockname(self):
             return ("127.0.0.1", 6000, "ignored")
 
-    server._server = types.SimpleNamespace(sockets=[DummySocket()])
+    server._server = types.SimpleNamespace(sockets=[DummySocket()])  # type: ignore
 
     assert server.server_address == ("127.0.0.1", 6000)
 
 
 @pytest.mark.asyncio
 async def test_server_start_uses_asyncio_start_server(monkeypatch):
-    ctx = DummyContext()
-    server = tcpserver.TCPServer(("localhost", 1234), ctx)
+    ctx = cast(TCPServerContext, DummyContext())
+    server = TCPServer(("localhost", 1234), ctx)
 
     created = {}
 
+    @dataclass
     class DummyAsyncServer:
-        sockets = []
+        sockets: list
 
     async def fake_start_server(callback, host, port, reuse_address):
         created["callback"] = callback
         created["host"] = host
         created["port"] = port
         created["reuse_address"] = reuse_address
-        return DummyAsyncServer()
+        return DummyAsyncServer([])
 
-    monkeypatch.setattr(tcpserver.asyncio, "start_server", fake_start_server)
+    monkeypatch.setattr(asyncio, "start_server", fake_start_server)
 
     await server.start()
 
@@ -293,7 +305,7 @@ async def test_server_start_uses_asyncio_start_server(monkeypatch):
 @pytest.mark.asyncio
 async def test_server_shutdown_closes_server():
     ctx = DummyContext()
-    server = tcpserver.TCPServer(("localhost", 1234), ctx)
+    server = TCPServer(("localhost", 1234), cast(TCPServerContext, ctx))
 
     class DummyAsyncServer:
         def __init__(self):
@@ -307,7 +319,7 @@ async def test_server_shutdown_closes_server():
             self.wait_closed_called = True
 
     dummy = DummyAsyncServer()
-    server._server = dummy
+    server._server = dummy  # type: ignore
 
     await server.shutdown()
 
@@ -326,13 +338,17 @@ def test_option_type_rejects_invalid_key():
 
 
 def test_parse_args_defaults(monkeypatch):
-    monkeypatch.setattr(tcpserver.argparse.ArgumentParser, "parse_args", lambda self: argparse.Namespace(
-        host="localhost",
-        port=10000,
-        termination="\n",
-        request_delay=0.1,
-        option=[],
-    ))
+    monkeypatch.setattr(
+        argparse.ArgumentParser,
+        "parse_args",
+        lambda self: argparse.Namespace(
+            host="localhost",
+            port=10000,
+            termination="\n",
+            request_delay=0.1,
+            option=[],
+        ),
+    )
 
     args = tcpserver.parse_args()
 
@@ -345,7 +361,7 @@ def test_parse_args_defaults(monkeypatch):
 
 def test_run_rejects_non_emulator():
     with pytest.raises(TypeError, match="Emulator must inherit from"):
-        tcpserver.run(object())
+        tcpserver.run(object())  # type: ignore
 
 
 def test_run_configures_options_and_returns_zero(monkeypatch):
@@ -369,7 +385,13 @@ def test_run_configures_options_and_returns_zero(monkeypatch):
         ),
     )
 
-    monkeypatch.setattr(tcpserver.inspect, "getmodule", lambda cls: types.SimpleNamespace(__spec__=types.SimpleNamespace(name="pkg.tcpserver")))
+    monkeypatch.setattr(
+        inspect,
+        "getmodule",
+        lambda cls: types.SimpleNamespace(
+            __spec__=types.SimpleNamespace(name="pkg.tcpserver")
+        ),
+    )
 
     ran = {}
 
@@ -377,9 +399,9 @@ def test_run_configures_options_and_returns_zero(monkeypatch):
         ran["called"] = True
         coro.close()
 
-    monkeypatch.setattr(tcpserver.asyncio, "run", fake_asyncio_run)
+    monkeypatch.setattr(asyncio, "run", fake_asyncio_run)
 
-    rc = tcpserver.run(emulator)
+    rc = tcpserver.run(cast(Emulator, emulator))
 
     assert rc == 0
     assert ran["called"] is True

@@ -1,10 +1,8 @@
-from typing import Optional
-
 from comet.driver.generic import InstrumentError
 from comet.driver.generic.motion_controller import (
-    Position,
-    MotionControllerAxis,
     MotionController,
+    MotionControllerAxis,
+    Position,
 )
 
 __all__ = ["Tango"]
@@ -56,7 +54,7 @@ ERROR_MESSAGES: dict[int, str] = {
 }
 
 
-def parse_error(response: str) -> Optional[InstrumentError]:
+def parse_error(response: str) -> InstrumentError | None:
     code = int(response)
     if code:
         message = ERROR_MESSAGES.get(code, "unknown error")
@@ -111,7 +109,7 @@ class Tango(MotionController):
     def clear(self) -> None:
         self.resource.write("!err")  # clear error state
 
-    def next_error(self) -> Optional[InstrumentError]:
+    def next_error(self) -> InstrumentError | None:
         return parse_error(self.resource.query("?err"))
 
     def __getitem__(self, index: int) -> TangoAxis:

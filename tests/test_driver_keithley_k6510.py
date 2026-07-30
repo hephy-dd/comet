@@ -17,11 +17,11 @@ def test_basic(driver, resource):
 
 
 def test_errors(driver, resource):
-    resource.buffer = ["0,\"no error\""]
+    resource.buffer = ['0,"no error"']
     assert driver.next_error() is None
     assert resource.buffer == [":SYST:ERR:NEXT?"]
 
-    resource.buffer = ["42,\"test error\""]
+    resource.buffer = ['42,"test error"']
     error = driver.next_error()
     assert error.code == 42
     assert error.message == "test error"

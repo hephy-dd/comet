@@ -1,15 +1,14 @@
 import random
 
 from comet.emulator import IEC60488Emulator, message, run
-from comet.emulator.utils import tsp_print, tsp_assign, Error
+from comet.emulator.utils import Error, tsp_assign, tsp_print
 
 
 class K2470Emulator(IEC60488Emulator):
-
     IDENTITY: str = "Keithley Inc., Model 2470, 43768438, v1.0 (Emulator)"
     LANGUAGE: str = "SCPI"
 
-    DEFAULT_VOLTAGE_PROTECTION_LEVEL: float = 1050.
+    DEFAULT_VOLTAGE_PROTECTION_LEVEL: float = 1050.0
 
     def __init__(self) -> None:
         super().__init__()
@@ -18,10 +17,12 @@ class K2470Emulator(IEC60488Emulator):
         self.route_terminals: str = "FRON"
         self.output_state: bool = False
         self.source_function_mode: str = "VOLT"
-        self.source_level: dict[str, float] = {"VOLT": 0., "CURR": 0.}
-        self.source_range: dict[str, float] = {"VOLT": 0., "CURR": 0.}
+        self.source_level: dict[str, float] = {"VOLT": 0.0, "CURR": 0.0}
+        self.source_range: dict[str, float] = {"VOLT": 0.0, "CURR": 0.0}
         self.source_range_auto: dict[str, bool] = {"VOLT": True, "CURR": True}
-        self.source_voltage_protection_level: float = self.DEFAULT_VOLTAGE_PROTECTION_LEVEL
+        self.source_voltage_protection_level: float = (
+            self.DEFAULT_VOLTAGE_PROTECTION_LEVEL
+        )
         self.source_voltage_ilimit_level: float = 1.05e-4
         self.source_current_vlimit_level: float = 2.1e-1
         self.sense_function_on: str = "CURR"
@@ -45,8 +46,8 @@ class K2470Emulator(IEC60488Emulator):
         self.route_terminals = "FRON"
         self.output_state = False
         self.source_function_mode = "VOLT"
-        self.source_level.update({"VOLT": 0., "CURR": 0.})
-        self.source_range.update({"VOLT": 0., "CURR": 0.})
+        self.source_level.update({"VOLT": 0.0, "CURR": 0.0})
+        self.source_range.update({"VOLT": 0.0, "CURR": 0.0})
         self.source_range_auto.update({"VOLT": True, "CURR": True})
         self.source_voltage_protection_level = self.DEFAULT_VOLTAGE_PROTECTION_LEVEL
         self.source_voltage_ilimit_level = 1.05e-4
@@ -154,7 +155,12 @@ class K2470Emulator(IEC60488Emulator):
     @message(r":?SOUR:(VOLT|CURR):RANG:AUTO\s+(.+)$")
     def set_source_range_auto(self, function, state) -> None:
         try:
-            self.source_range_auto[function] = {"ON": True, "OFF": False, "0": False, "1": True}[state]
+            self.source_range_auto[function] = {
+                "ON": True,
+                "OFF": False,
+                "0": False,
+                "1": True,
+            }[state]
         except ValueError:
             self.error_queue.append(Error(101, "malformed command"))
 
@@ -231,7 +237,12 @@ class K2470Emulator(IEC60488Emulator):
 
     @message(r":?SENS:(VOLT|CURR):AVER:STAT[E]?\s+(OFF|ON|0|1)$")
     def set_sense_average_state(self, function: str, state: str) -> None:
-        self.sense_average_state[function] = {"OFF": False, "ON": True, "0": False, "1": True}[state]
+        self.sense_average_state[function] = {
+            "OFF": False,
+            "ON": True,
+            "0": False,
+            "1": True,
+        }[state]
 
     # Integration time
 
@@ -257,8 +268,7 @@ class K2470Emulator(IEC60488Emulator):
         return f"{sour:E},{read:E}"
 
     @message(r":?INIT(?::IMM)?$")
-    def set_init(self) -> None:
-        ...
+    def set_init(self) -> None: ...
 
     @message(r":?MEAS:VOLT\?$")
     def get_measure_voltage(self) -> str:
@@ -271,12 +281,10 @@ class K2470Emulator(IEC60488Emulator):
         return format(curr, "E")
 
     @message(r":?TRAC[E]?:CLE\s+\"([a-zA-Z0-9_]+)\"$")
-    def set_trace_clear(self, _buffer: str) -> None:
-        ...
+    def set_trace_clear(self, _buffer: str) -> None: ...
 
     @message(r":?TRAC[E]?:TRIG\s+\"([a-zA-Z0-9_]+)\"$")
-    def set_trace_trigger(self, _buffer: str) -> None:
-        ...
+    def set_trace_trigger(self, _buffer: str) -> None: ...
 
     @message(r":?TRAC[E]?:DATA\?\s+1,\s+1,\s+\"([a-zA-Z0-9_]+)\",\s+SOUR,\s+READ$")
     def get_trace_data(self, _buffer: str) -> str:
@@ -306,8 +314,8 @@ class K2470Emulator(IEC60488Emulator):
     def get_errorqueue_next(self) -> str:
         if self.error_queue:
             error = self.error_queue.pop(0)
-            return f"{error.code}, \"{error.message}\", 0, 0"
-        return "0, \"Queue is Empty\", 0, 0"
+            return f'{error.code}, "{error.message}", 0, 0'
+        return '0, "Queue is Empty", 0, 0'
 
     @message(tsp_print(r"smu\.source\.output"))
     def get_tsp_source_output(self) -> int:
@@ -317,8 +325,10 @@ class K2470Emulator(IEC60488Emulator):
     def set_tsp_source_output(self, value) -> None:
         try:
             self.smu_source_output = {
-                "smu.ON": True, "smu.OFF": False,
-                "0": False, "1": True
+                "smu.ON": True,
+                "smu.OFF": False,
+                "0": False,
+                "1": True,
             }[value]
         except KeyError:
             self.error_queue.append(Error(101, "malformed command"))

@@ -1,7 +1,4 @@
-from typing import Optional
-
-from comet.driver.generic import BeeperMixin
-from comet.driver.generic import InstrumentError
+from comet.driver.generic import BeeperMixin, InstrumentError
 from comet.driver.generic.source_meter_unit import SourceMeterUnit
 
 __all__ = ["K2657A"]
@@ -29,7 +26,7 @@ class K2657A(BeeperMixin, SourceMeterUnit):
 
     # Error queue
 
-    def next_error(self) -> Optional[InstrumentError]:
+    def next_error(self) -> InstrumentError | None:
         code, message = self.tsp_print("errorqueue.next()").split("\t")[:2]
         if int(float(code)):
             return InstrumentError(int(float(code)), message.strip("\"' "))

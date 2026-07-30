@@ -1,9 +1,7 @@
 """Rohde Schwarz SMA100B signal generator emulator"""
 
-from comet.emulator import Emulator
-from comet.emulator import message, run
+from comet.emulator import Emulator, message, run
 from comet.emulator.utils import Error
-
 
 __all__ = ["SMA100BEmulator"]
 
@@ -54,7 +52,9 @@ class SMA100BEmulator(Emulator):
     def get_frequency(self) -> float:
         return self.frequency
 
-    @message(r"(?:SOUR(?:ce)?1)?:FREQuency:(?:CW|FIX(?:ed)?) ([\d.]+(?:[eE][+-]?\d+)?)$")
+    @message(
+        r"(?:SOUR(?:ce)?1)?:FREQuency:(?:CW|FIX(?:ed)?) ([\d.]+(?:[eE][+-]?\d+)?)$"
+    )
     def set_frequency(self, frequency) -> None:
         frequency = float(frequency)
         if frequency < 8e3 or frequency > 12.75e9:
@@ -80,7 +80,7 @@ class SMA100BEmulator(Emulator):
 
     @message(r"(?:SOUR(?:ce)?1:)?OUTP(?:ut)?:STAT(?:e)?\s+(ON|OFF)$")
     def set_output(self, state) -> None:
-        self.output = True if state == "ON" else False
+        self.output = state == "ON"
 
 
 if __name__ == "__main__":

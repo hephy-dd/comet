@@ -1,10 +1,10 @@
-from typing import Final, Optional
+from typing import Final
 
 from comet.driver.generic import InstrumentError
 from comet.driver.generic.motion_controller import (
-    Position,
-    MotionControllerAxis,
     MotionController,
+    MotionControllerAxis,
+    Position,
 )
 
 __all__ = ["Corvus"]
@@ -27,7 +27,7 @@ ERROR_MESSAGES: dict[int, str] = {
 }
 
 
-def parse_error(response: str) -> Optional[InstrumentError]:
+def parse_error(response: str) -> InstrumentError | None:
     code = int(response)
     if code:
         message = ERROR_MESSAGES.get(code, "unknown error")
@@ -69,6 +69,7 @@ class CorvusAxis(MotionControllerAxis):
 
 class Corvus(MotionController):
     """Driver for SMC Corvus motion controller."""
+
     AXIS_IDS: Final = (1, 2, 3)
 
     def identify(self) -> str:
@@ -78,7 +79,7 @@ class Corvus(MotionController):
 
     def clear(self) -> None: ...
 
-    def next_error(self) -> Optional[InstrumentError]:
+    def next_error(self) -> InstrumentError | None:
         response = self.resource.query("geterror").strip()
         return parse_error(response)
 

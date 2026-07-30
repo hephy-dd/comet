@@ -6,7 +6,6 @@ from comet.emulator.utils import Error
 
 
 class E4980AEmulator(IEC60488Emulator):
-
     IDENTITY: str = "Keysight Inc., Model E4980A, v1.0 (Emulator)"
 
     CORRECTION_OPEN_DELAY: float = 4.0
@@ -20,7 +19,7 @@ class E4980AEmulator(IEC60488Emulator):
         self.correction_method: str = "SING"
         self.correction_channel: int = 0
         self.correction_length: int = 4
-        self.bias_voltage_level: float = 0.
+        self.bias_voltage_level: float = 0.0
         self.bias_state: bool = False
 
     @message(r"\*RST$")
@@ -32,7 +31,7 @@ class E4980AEmulator(IEC60488Emulator):
         self.correction_method = "SING"
         self.correction_channel = 0
         self.correction_length = 4
-        self.bias_voltage_level = 0.
+        self.bias_voltage_level = 0.0
         self.bias_state = False
 
     @message(r"\*CLS$")
@@ -43,7 +42,7 @@ class E4980AEmulator(IEC60488Emulator):
     def get_system_error_next(self) -> str:
         if self.error_queue:
             error = self.error_queue.pop(0)
-            return f"{error.code:+d},\"{error.message}\""
+            return f'{error.code:+d},"{error.message}"'
         return '+0,"No error"'
 
     @message(r":?FUNC:IMP:TYPE\?$")
@@ -61,7 +60,9 @@ class E4980AEmulator(IEC60488Emulator):
 
     @message(r":?CORR:OPEN:STAT\s+(OFF|ON|0|1)$")
     def set_correction_open_state(self, state: str) -> None:
-        self.correction_open_state = {"0": False, "1": True, "OFF": False, "ON": True}[state]
+        self.correction_open_state = {"0": False, "1": True, "OFF": False, "ON": True}[
+            state
+        ]
 
     @message(r":?CORR:OPEN$")
     def get_correction_open(self) -> None:
@@ -105,15 +106,15 @@ class E4980AEmulator(IEC60488Emulator):
         rp_max = float(self.options.get("rp.max", 120))
         prim = random.uniform(cp_min, cp_max)
         sec = random.uniform(rp_min, rp_max)
-        return '{:E},{:E},{:+d}'.format(prim, sec, 0)
+        return f"{prim:E},{sec:E},{0:+d}"
 
     @message(r":?BIAS:POL:CURR(\::LEV)?\?$")
     def get_bias_polarity_current_level(self) -> str:
-        return format(random.random() / 1000., "E")
+        return format(random.random() / 1000.0, "E")
 
     @message(r":?BIAS:POL:VOLT(\::LEV)?\?$")
     def get_bias_polarity_voltage_level(self) -> str:
-        return format(random.random() / 100., "E")
+        return format(random.random() / 100.0, "E")
 
     @message(r":?BIAS:VOLT(?::LEV)?\?$")
     def get_bias_voltage_level(self) -> str:

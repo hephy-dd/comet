@@ -6,7 +6,7 @@ authors = [
 ]
 readme = "README.md"
 license = {text = "GPLv3"}
-requires-python = ">=3.9"
+requires-python = ">=3.11"
 dependencies = [
     "PyVISA",
     "PyVISA-py",
@@ -33,3 +33,6 @@ build-backend = "hatchling.build"
 
 [tool.hatch.version]
 path = "src/comet/__init__.py"
+
+[tool.ruff.lint]
+extend-ignore = ["BLE001", "RUF022"]

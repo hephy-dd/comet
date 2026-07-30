@@ -1,5 +1,4 @@
 from comet.driver.generic import Instrument, InstrumentError
-from typing import Optional
 
 __all__ = ["SMA100B"]
 
@@ -24,7 +23,7 @@ class SMA100B(Instrument):
     def clear(self) -> None:
         self.write("*CLS")
 
-    def next_error(self) -> Optional[InstrumentError]:
+    def next_error(self) -> InstrumentError | None:
         code, message = parse_error(self.query(":SYST:ERR:NEXT?"))
         if code:
             return InstrumentError(code, message)

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import argparse
 import asyncio
 import contextlib
@@ -5,8 +7,8 @@ import inspect
 import logging
 import re
 import signal
+from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Iterable, Optional, Union
 
 from .emulator import Emulator
 from .response import Response
@@ -18,9 +20,9 @@ class TCPRequestHandler:
     async def read_messages(
         self,
         reader: asyncio.StreamReader,
-        context: "TCPServerContext",
+        context: TCPServerContext,
         rx_buffer: bytearray,
-    ) -> Optional[list[bytes]]:
+    ) -> list[bytes] | None:
         data = await reader.read(4096)
         if not data:
             return None
@@ -41,8 +43,8 @@ class TCPRequestHandler:
     async def send_messages(
         self,
         writer: asyncio.StreamWriter,
-        context: "TCPServerContext",
-        response: Union[Response, Iterable[Response]],
+        context: TCPServerContext,
+        response: Response | Iterable[Response],
     ) -> None:
         termination_bytes = context.termination
 
@@ -66,7 +68,7 @@ class TCPRequestHandler:
         self,
         reader: asyncio.StreamReader,
         writer: asyncio.StreamWriter,
-        context: "TCPServerContext",
+        context: TCPServerContext,
     ) -> None:
         rx_buffer = bytearray()
 
@@ -80,8 +82,6 @@ class TCPRequestHandler:
                     response = await context.handle_message(str(message, "utf-8"))
                     if response is not None:
                         await self.send_messages(writer, context, response)
-        except asyncio.CancelledError:
-            raise
         finally:
             writer.close()
             with contextlib.suppress(Exception):
@@ -99,7 +99,7 @@ class TCPServerContext:
     async def handle_message(
         self,
         message: str,
-    ) -> Union[None, Response, Iterable[Response]]:
+    ) -> Response | Iterable[Response] | None:
         response = self.emulator(message)
         if response is not None:
             await asyncio.sleep(self.request_delay)
@@ -110,7 +110,7 @@ class TCPServer:
     def __init__(self, address: tuple[str, int], context: TCPServerContext) -> None:
         self.address = address
         self.context = context
-        self._server: Optional[asyncio.base_events.Server] = None
+        self._server: asyncio.base_events.Server | None = None
         self._handler = TCPRequestHandler()
         self._shutdown_lock = asyncio.Lock()
         self._shutdown_started = False
@@ -163,8 +163,12 @@ def option_type(value: str) -> tuple[str, str]:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--host", default="localhost", help="host, default is 'localhost'")
-    parser.add_argument("-p", "--port", type=int, default=10000, help="port, default is 10000")
+    parser.add_argument(
+        "--host", default="localhost", help="host, default is 'localhost'"
+    )
+    parser.add_argument(
+        "-p", "--port", type=int, default=10000, help="port, default is 10000"
+    )
     parser.add_argument(
         "-t",
         "--termination",

@@ -1,8 +1,8 @@
 """Estimate remaining time."""
 
+from collections.abc import Callable
 from datetime import timedelta
 from time import monotonic
-from typing import Callable
 
 __all__ = ["Estimate"]
 

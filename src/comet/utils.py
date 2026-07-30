@@ -1,27 +1,27 @@
-import datetime
 import re
 import warnings
+from collections.abc import Iterable
+from datetime import UTC, datetime
 from math import log
-from typing import Iterable, Optional, Union
 
-from pint import UnitRegistry, Quantity
+from pint import Quantity, UnitRegistry
 
 __all__ = [
-    "ureg",
-    "to_unit",
     "auto_scale",
     "combine_matrix",
     "inverse_square",
-    "t_dew",
     "make_iso",
-    "safe_filename",
     "parse_model_urn",
+    "safe_filename",
+    "t_dew",
+    "to_unit",
+    "ureg",
 ]
 
 ureg: UnitRegistry = UnitRegistry()
 
 
-def to_unit(value: Union[float, str, Quantity], unit: str) -> float:
+def to_unit(value: float | str | Quantity, unit: str) -> float:
     """Convert value or string representation with or without unit to another
     unit."""
     if isinstance(value, Quantity):
@@ -58,7 +58,7 @@ def auto_scale(value: float) -> tuple[float, str, str]:
 
 
 def combine_matrix(a: Iterable, b: Iterable, *args: Iterable) -> list[str]:
-    c = ["".join((x, y)) for x in a for y in b]
+    c = [f"{x}{y}" for x in a for y in b]
     if args:
         return combine_matrix(c, *args)
     return c
@@ -79,8 +79,8 @@ def t_dew(t: float, rh: float) -> float:
     return (b * m) / (a - m)
 
 
-def make_iso(dt: Optional[Union[float, datetime.datetime]] = None) -> str:
-    """Return filesystem safe ISO date time.
+def make_iso(dt: float | datetime | None = None) -> str:
+    """Return filesystem safe ISO date time (default UTC).
 
     >>> make_iso()
     '2019-12-24T12-21-42'
@@ -89,10 +89,10 @@ def make_iso(dt: Optional[Union[float, datetime.datetime]] = None) -> str:
     '2015-02-09T05-39-49'
     """
     if dt is None:
-        dt = datetime.datetime.now()
-    if not isinstance(dt, datetime.datetime):
-        dt = datetime.datetime.fromtimestamp(dt)
-    return dt.replace(microsecond=0).isoformat().replace(":", "-")
+        dt = datetime.now(tz=UTC)
+    if not isinstance(dt, datetime):
+        dt = datetime.fromtimestamp(dt, tz=UTC)
+    return dt.strftime("%Y-%m-%dT%H-%M-%S")
 
 
 def safe_filename(filename: str) -> str:

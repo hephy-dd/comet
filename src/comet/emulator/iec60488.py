@@ -1,7 +1,6 @@
 import random
 
-from comet.emulator import Emulator
-from comet.emulator import message
+from comet.emulator import Emulator, message
 
 __all__ = ["IEC60488Emulator"]
 

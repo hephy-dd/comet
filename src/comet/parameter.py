@@ -1,30 +1,30 @@
-from typing import Any, Optional, Type
+from __future__ import annotations
+
+from typing import Any
 
 from .utils import to_unit
 
-__all__ = ["inspect_parameters", "Parameter", "ParameterBase"]
+__all__ = ["Parameter", "ParameterBase", "inspect_parameters"]
 
-ParameterBaseType = Type["ParameterBase"]
+ParameterBaseType = type["ParameterBase"]
 ParameterValues = dict[str, Any]
 
 
-def inspect_parameters(cls: ParameterBaseType) -> dict[str, "Parameter"]:
+def inspect_parameters(cls: ParameterBaseType) -> dict[str, Parameter]:
     """Retrun dictionary of assigned class parameters."""
     parameters = {}
     for mro_cls in cls.__mro__:
         for key, value in mro_cls.__dict__.items():
-            if key not in parameters:
-                if isinstance(value, Parameter):
-                    parameters[key] = value
+            if key not in parameters and isinstance(value, Parameter):
+                parameters[key] = value
     return parameters
 
 
 def validate_parameters(cls: ParameterBaseType, values: ParameterValues) -> None:
     """Validates a dictionary containing parameter values."""
     for key, parameter in inspect_parameters(cls).items():
-        if parameter.required:
-            if key not in values:
-                raise KeyError(f"missing required parameter: {key!r}")
+        if parameter.required and key not in values:
+            raise KeyError(f"missing required parameter: {key!r}")
         if key in values:
             parameter.validate(values.get(key))
 
@@ -32,8 +32,17 @@ def validate_parameters(cls: ParameterBaseType, values: ParameterValues) -> None
 class Parameter:
     """Class parameter specification."""
 
-    def __init__(self, default=None, *, type = None, minimum=None, maximum=None,
-                 choice=None, unit=None, constraint=None) -> None:
+    def __init__(
+        self,
+        default=None,
+        *,
+        type=None,
+        minimum=None,
+        maximum=None,
+        choice=None,
+        unit=None,
+        constraint=None,
+    ) -> None:
         self.type = type
         self.minimum = minimum
         self.maximum = maximum
@@ -49,9 +58,10 @@ class Parameter:
         return self.default is None
 
     def validate(self, value: Any) -> Any:
-        if self.choice is not None:
-            if value not in self.choice:
-                raise ValueError(f"value not allowed: {value!r}, musst be one of: {self.choice!r}")
+        if self.choice is not None and value not in self.choice:
+            raise ValueError(
+                f"value not allowed: {value!r}, musst be one of: {self.choice!r}"
+            )
         if self.unit is not None:
             value = to_unit(value, self.unit)
         if self.type is not None:
@@ -68,23 +78,22 @@ class Parameter:
                 maximum = to_unit(maximum, self.unit)
             if value > maximum:
                 raise ValueError(f"value out of bounds: {value!r}")
-        if self.constraint is not None:
-            if not self.constraint(self, value):
-                raise ValueError(f"failed value constraint check: {value!r}")
+        if self.constraint is not None and not self.constraint(self, value):
+            raise ValueError(f"failed value constraint check: {value!r}")
         return value
 
 
 class ParameterBase:
     """Base class for parameters."""
 
-    def __init__(self, values: Optional[ParameterValues] = None) -> None:
+    def __init__(self, values: ParameterValues | None = None) -> None:
         self.__values: dict[str, Any] = {}
         self.update_parameters(values or {})
 
     def __getattribute__(self, name):
         parameters = inspect_parameters(type(self))
         if name in parameters:
-            default = parameters.get(name).default
+            default = parameters[name].default
             return self.__values.get(name, default)
         return super().__getattribute__(name)
 
@@ -97,7 +106,7 @@ class ParameterBase:
     def parameters(self) -> ParameterValues:
         """Retrun dictionary containing all parameter values."""
         values = {}
-        for key, value in inspect_parameters(type(self)).items():
+        for key in inspect_parameters(type(self)):
             values[key] = getattr(self, key)
         return values
 

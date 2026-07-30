@@ -1,4 +1,4 @@
-from typing import Iterable
+from collections.abc import Iterable
 
 import numpy as np
 
@@ -11,10 +11,11 @@ def std_mean_filter(values: Iterable[float], threshold: float) -> bool:
     >>> std_mean_filter([0.250, 0.249], threshold=0.005)
     True
     """
-    mean = np.mean(np.array(values))
+    arr = np.asarray(values)
+    mean = np.mean(arr)
     # Sample standard deviation with ddof=1 (not population standard deviation)
     # http://stackoverflow.com/questions/34050491/ddg#34050706
     # https://www.sharpsightlabs.com/blog/numpy-standard-deviation/
-    sample_std_dev = np.std(np.array(values), ddof=1)
+    sample_std_dev = np.std(arr, ddof=1)
     ratio = sample_std_dev / mean
-    return ratio < threshold
+    return bool(ratio < threshold)

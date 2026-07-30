@@ -34,9 +34,17 @@ def test_position(emulator):
 
 def test_limits(emulator):
     # getlimit returns three lines
-    assert emulator("getlimit") == ['0.000000 0.000000', '0.000000 1000000.000000', '100000.000000 25000.000000']
+    assert emulator("getlimit") == [
+        "0.000000 0.000000",
+        "0.000000 1000000.000000",
+        "100000.000000 25000.000000",
+    ]
     assert emulator("1 2 3 4 5 6 setlimit") is None
-    assert emulator("getlimit") == ['1.000000 2.000000', '3.000000 4.000000', '5.000000 6.000000']
+    assert emulator("getlimit") == [
+        "1.000000 2.000000",
+        "3.000000 4.000000",
+        "5.000000 6.000000",
+    ]
 
 
 def test_calibration(emulator):

@@ -1,8 +1,8 @@
 import math
 import random
 import time
-from dataclasses import dataclass, astuple
-from typing import Optional
+from dataclasses import astuple, dataclass
+from typing import ClassVar
 
 from comet.emulator import IEC60488Emulator, message, run
 from comet.emulator.utils import Error
@@ -18,7 +18,7 @@ class Correction:
 class K4215CVUEmulator(IEC60488Emulator):
     IDENTITY: str = "KEITHLEY INSTRUMENTS,KI4200A,1489223,V1.14 (Emulator)"
 
-    MODEL_MAP = {
+    MODEL_MAP: ClassVar[dict[str, int]] = {
         "ZTHETA": 0,
         "RPLUSJX": 1,
         "CPRP": 2,
@@ -28,7 +28,7 @@ class K4215CVUEmulator(IEC60488Emulator):
         "CSD": 5,
         "YTHETA": 7,
     }
-    MODEL_MAP_INV = {v: k for k, v in MODEL_MAP.items()}
+    MODEL_MAP_INV: ClassVar[dict[int, str]] = {v: k for k, v in MODEL_MAP.items()}
 
     def __init__(self) -> None:
         super().__init__()
@@ -71,14 +71,14 @@ class K4215CVUEmulator(IEC60488Emulator):
     def _push_error(self, code: int, msg: str) -> None:
         self.error_queue.append(Error(code, msg))
 
-    def _parse_float(self, s: str) -> Optional[float]:
+    def _parse_float(self, s: str) -> float | None:
         try:
             return float(s)
         except Exception:
             self._push_error(-104, "Data type error")
             return None
 
-    def _parse_int(self, s: str) -> Optional[int]:
+    def _parse_int(self, s: str) -> int | None:
         try:
             return int(s)
         except Exception:
@@ -86,7 +86,7 @@ class K4215CVUEmulator(IEC60488Emulator):
             return None
 
     def _clamp(self, x: float, lo: float, hi: float) -> float:
-        return lo if x < lo else hi if x > hi else x
+        return lo if x < lo else min(x, hi)
 
     def _noise(self, scale: float) -> float:
         # scale is approximate RMS-ish; keep it simple
@@ -139,8 +139,7 @@ class K4215CVUEmulator(IEC60488Emulator):
         self.error_queue.clear()
 
     @message(r"BC$")
-    def set_buffer_clear(self) -> None:
-        ...
+    def set_buffer_clear(self) -> None: ...
 
     @message(r":?ERROR:LAST:GET$")
     def get_last_error(self) -> str:
@@ -257,7 +256,7 @@ class K4215CVUEmulator(IEC60488Emulator):
         if not (1e3 <= v <= 1e7):
             self._push_error(-222, "Data out of range")
             return
-        self.freq_hz = int(round(v))
+        self.freq_hz = round(v)
 
     @message(r":CVU:FREQ\?$")
     def get_freq(self) -> str:
@@ -292,7 +291,9 @@ class K4215CVUEmulator(IEC60488Emulator):
         return f"{self.dcv_offset:.3E}"
 
     @message(r":CVU:SPEED\s+(\d+),(.+),(.+),(.+)$")
-    def set_speed(self, mode: str, delay_factor: str, filter_factor: str, aperture: str) -> None:
+    def set_speed(
+        self, mode: str, delay_factor: str, filter_factor: str, aperture: str
+    ) -> None:
         m = self._parse_int(mode)
         d = self._parse_float(delay_factor)
         f = self._parse_float(filter_factor)
@@ -364,8 +365,12 @@ class K4215CVUEmulator(IEC60488Emulator):
         # Base capacitance ~ 100 pF, mild frequency dependence + bias dependence
         bias = self._effective_bias()
         c0 = 100e-12
-        c_bias = c0 * (1.0 + 0.002 * self._clamp(bias, -30.0, 30.0))  # ~ +/-6% across range
-        c_freq = c_bias * (1.0 - 0.01 * math.log10(max(f, 1.0) / 1e5))  # slight slope vs freq
+        c_bias = c0 * (
+            1.0 + 0.002 * self._clamp(bias, -30.0, 30.0)
+        )  # ~ +/-6% across range
+        c_freq = c_bias * (
+            1.0 - 0.01 * math.log10(max(f, 1.0) / 1e5)
+        )  # slight slope vs freq
 
         # Loss tangent / dissipation factor (small)
         d0 = 0.01 + 0.002 * abs(bias) / 30.0  # 0.01..~0.012
@@ -388,13 +393,19 @@ class K4215CVUEmulator(IEC60488Emulator):
         x = x_l + x_c
 
         # Add some noise + drift
-        r_meas = r * (1.0 + 0.01 * self._drift()) + self._noise(abs(r) * 0.02 + noise_scale)
-        x_meas = x * (1.0 + 0.01 * self._drift()) + self._noise(abs(x) * 0.02 + noise_scale)
+        r_meas = r * (1.0 + 0.01 * self._drift()) + self._noise(
+            abs(r) * 0.02 + noise_scale
+        )
+        x_meas = x * (1.0 + 0.01 * self._drift()) + self._noise(
+            abs(x) * 0.02 + noise_scale
+        )
 
         # Apply "corrections" in a naive way:
         # if open/short/load enabled, reduce systematic error a bit.
         open_val, short_val, load_val = astuple(self.cvu_correction)
-        corr_strength = 1.0 - 0.03 * (open_val + short_val + load_val)  # up to ~9% improvement
+        corr_strength = 1.0 - 0.03 * (
+            open_val + short_val + load_val
+        )  # up to ~9% improvement
         r_meas *= corr_strength
         x_meas *= corr_strength
 
@@ -413,7 +424,7 @@ class K4215CVUEmulator(IEC60488Emulator):
         elif model in (self.MODEL_MAP["CPRP"], self.MODEL_MAP["CPGP"]):
             # Parallel capacitance / parallel resistance approximation:
             # From admittance Y = 1/Z = G + jB, C_p = B / w, R_p = 1/G
-            denom = (r_meas * r_meas + x_meas * x_meas)
+            denom = r_meas * r_meas + x_meas * x_meas
             g = r_meas / max(denom, 1e-30)
             b = -x_meas / max(denom, 1e-30)
             c_p = b / max(w, 1e-30)
@@ -428,7 +439,7 @@ class K4215CVUEmulator(IEC60488Emulator):
 
         elif model == self.MODEL_MAP["CPD"]:
             # Cp, D  (D ~ ESR*w*C for series -> rough; for parallel, D ~ G/B)
-            denom = (r_meas * r_meas + x_meas * x_meas)
+            denom = r_meas * r_meas + x_meas * x_meas
             g = r_meas / max(denom, 1e-30)
             bb = -x_meas / max(denom, 1e-30)
             c_p = bb / max(w, 1e-30)
@@ -443,7 +454,7 @@ class K4215CVUEmulator(IEC60488Emulator):
 
         elif model == self.MODEL_MAP["YTHETA"]:
             # Y magnitude and phase (degrees)
-            denom = (r_meas * r_meas + x_meas * x_meas)
+            denom = r_meas * r_meas + x_meas * x_meas
             g = r_meas / max(denom, 1e-30)
             bb = -x_meas / max(denom, 1e-30)
             y = math.hypot(g, bb)

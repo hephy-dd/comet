@@ -1,6 +1,6 @@
-import datetime
 from collections import namedtuple
-from typing import Union
+from datetime import UTC, datetime
+from typing import ClassVar
 
 from comet.driver import Driver
 
@@ -10,7 +10,7 @@ __all__ = ["ITC"]
 class ITCDriver(Driver):
     """ITC driver base class."""
 
-    def query_bytes(self, message: Union[str, bytes], count: int) -> str:
+    def query_bytes(self, message: str | bytes, count: int) -> str:
         """Raw query for bytes.
 
         >>> instr.query_bytes("P", 4)
@@ -23,7 +23,7 @@ class ITCDriver(Driver):
 
 
 class AnalogChannel(ITCDriver):
-    CHANNELS: dict[int, bytes] = {
+    CHANNELS: ClassVar[dict[int, bytes]] = {
         1: b"A0",
         2: b"A1",
         3: b"A2",
@@ -63,7 +63,9 @@ class AnalogChannel(ITCDriver):
         """
         if not 1 <= index <= 7:
             raise ValueError(f"invalid channel number: {index}")
-        code = type(self).CHANNELS[index].lower().decode()  # write requires lower case 'a'
+        code = (
+            type(self).CHANNELS[index].lower().decode()
+        )  # write requires lower case 'a'
         result = self.query_bytes(f"{code} {value:05.1f}", 1)
         if result != "a":
             raise RuntimeError(f"failed to set target for channel {index}")
@@ -72,7 +74,7 @@ class AnalogChannel(ITCDriver):
 class ITC(ITCDriver):
     """Interface for CTS Climate Chambers."""
 
-    WARNING_MESSAGES: dict[str, str] = {
+    WARNING_MESSAGES: ClassVar[dict[str, str]] = {
         "\x01": "Wassernachfüllen",
         "\x02": "Temp. Toleranzband Oben",
         "\x03": "Temp. Toleranzband Unten",
@@ -82,7 +84,7 @@ class ITC(ITCDriver):
     }
     """Warning messages."""
 
-    ERROR_MESSAGES: dict[str, str] = {
+    ERROR_MESSAGES: ClassVar[dict[str, str]] = {
         "\x31": "Temperatur Grenze Min 08-B1",
         "\x32": "Temperatur Grenze Max 08-B1",
         "\x33": "Temp. Begrenzer Pruefr. 01-F1.1",
@@ -119,28 +121,28 @@ class ITC(ITCDriver):
 
     def identify(self) -> str:
         """Returns instrument identification."""
-        self.time  # perform device access
+        _ = self.time  # perform device access
         return "ITC climate chamber"
 
     @property
-    def time(self) -> datetime.datetime:
+    def time(self) -> datetime:
         """Returns current date and time of device as datetime object.
 
         >>> instr.time
         datetime.datetime(2019, 6, 12, 13, 01, 21)
         """
         result = self.query_bytes("T", 13)
-        return datetime.datetime.strptime(result, "T%d%m%y%H%M%S")
+        return datetime.strptime(result, "T%d%m%y%H%M%S").replace(tzinfo=UTC)
 
     @time.setter
-    def time(self, dt: datetime.datetime) -> None:
+    def time(self, dt: datetime) -> None:
         """Update device date and time, returns updated data and time as datetime object.
 
         >>> instr.time = datetime.datetime.now()
         """
         datetime_format = "t%d%m%y%H%M%S"
         result = self.query_bytes(dt.strftime(datetime_format), 13)
-        if dt != datetime.datetime.strptime(result, datetime_format):
+        if dt != datetime.strptime(result, datetime_format).replace(tzinfo=UTC):
             raise RuntimeError("failed to set date and time")
 
     @property
@@ -155,10 +157,20 @@ class ITC(ITCDriver):
         result = self.query_bytes("S", 10)
         running = bool(int(result[1]))
         is_error = bool(int(result[2]))
-        channels = {channel: bool(int(state)) for channel, state in enumerate(result[3:9])}
+        channels = {
+            channel: bool(int(state)) for channel, state in enumerate(result[3:9])
+        }
         error_nr = result[9]
-        warning = type(self).WARNING_MESSAGES[error_nr] if is_error and error_nr in type(self).WARNING_MESSAGES else None
-        error = type(self).ERROR_MESSAGES[error_nr] if is_error and error_nr in type(self).ERROR_MESSAGES else None
+        warning = (
+            type(self).WARNING_MESSAGES[error_nr]
+            if is_error and error_nr in type(self).WARNING_MESSAGES
+            else None
+        )
+        error = (
+            type(self).ERROR_MESSAGES[error_nr]
+            if is_error and error_nr in type(self).ERROR_MESSAGES
+            else None
+        )
         return type(self).Status(running, warning, error, channels)
 
     @property

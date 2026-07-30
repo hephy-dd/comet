@@ -38,6 +38,8 @@ from .. import __version__
 from .emulator import emulator_factory
 from .tcpserver import TCPServer, TCPServerContext
 
+logger = logging.getLogger(__name__)
+
 default_config_filenames: list[str] = ["emulators.yaml", "emulators.yml"]
 default_host: str = "localhost"
 default_termination: str = "\n"
@@ -67,7 +69,7 @@ config_schema = schema.Schema(
         schema.Optional("version"): str,
         "emulators": {
             str: {
-                schema.Optional(schema.Or("model", "module")): str,
+                schema.Optional(schema.Or("model", "module")): str,  # type: ignore
                 schema.Optional("host"): str,
                 "port": schema.And(
                     int,
@@ -76,7 +78,9 @@ config_schema = schema.Schema(
                 ),
                 schema.Optional("termination"): schema.And(str, normalize_termination),
                 schema.Optional("request_delay"): schema.And(
-                    schema.Use(float), lambda d: d >= 0, error="request_delay must be >= 0"
+                    schema.Use(float),  # type: ignore
+                    lambda d: d >= 0,
+                    error="request_delay must be >= 0",
                 ),
                 schema.Optional("options"): dict,
             }
@@ -93,7 +97,7 @@ def load_config(filename: str) -> dict[str, Any]:
         if "model" in params and "module" in params:
             raise KeyError("keys 'model' and 'module' are exclusive")
         if "module" in params:
-            logging.warning(
+            logger.warning(
                 "Emulator %r uses deprecated config key 'module'; "
                 "use 'model' instead. Support exists only for backward compatibility.",
                 name,

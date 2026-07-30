@@ -1,5 +1,5 @@
 import re
-from typing import Optional
+from collections.abc import Iterable
 
 from comet.driver.generic import InstrumentError
 from comet.driver.generic.switching_matrix import SwitchingMatrix
@@ -14,11 +14,11 @@ def split_channels(channels: str) -> list[str]:
     return [channel.strip() for channel in channels.split(",") if channel.strip()]
 
 
-def join_channels(channels: list[str]) -> str:
+def join_channels(channels: Iterable[str]) -> str:
     return ",".join([format(channel).strip() for channel in channels])
 
 
-def parse_error(response: str) -> Optional[InstrumentError]:
+def parse_error(response: str) -> InstrumentError | None:
     m = re.match(r"^err(\d+)", response.lower())
     if m:
         code = int(m.group(1))
@@ -28,9 +28,11 @@ def parse_error(response: str) -> Optional[InstrumentError]:
 
 
 class BrandBox(SwitchingMatrix):
-    CHANNELS: list[str] = combine_matrix("ABC", "12")
+    CHANNELS = tuple(combine_matrix("ABC", "12"))
 
-    _error_queue: list[InstrumentError] = []
+    def __init__(self, resource) -> None:
+        super().__init__(resource)
+        self._error_queue: list[InstrumentError] = []
 
     def identify(self) -> str:
         return self.query("*IDN?")
@@ -45,7 +47,7 @@ class BrandBox(SwitchingMatrix):
 
     # Error queue
 
-    def next_error(self) -> Optional[InstrumentError]:
+    def next_error(self) -> InstrumentError | None:
         if self._error_queue:
             return self._error_queue.pop(0)
         return None

@@ -1,4 +1,4 @@
-from typing import Optional, Iterator
+from collections.abc import Iterator
 
 from comet.driver.generic import InstrumentError
 from comet.driver.generic.power_supply import PowerSupply, PowerSupplyChannel
@@ -77,7 +77,7 @@ class NGE100(PowerSupply):
     def clear(self) -> None:
         self.write("*CLS")
 
-    def next_error(self) -> Optional[InstrumentError]:
+    def next_error(self) -> InstrumentError | None:
         code, message = self.query("SYSTem:ERRor?").split(", ")
         if int(code):
             return InstrumentError(int(code), message.strip("'"))
@@ -98,7 +98,12 @@ class NGE100(PowerSupply):
         return NGE100Channel(self.resource, channel)
 
     def __iter__(self) -> Iterator[NGE100Channel]:
-        return iter([NGE100Channel(self.resource, channel) for channel in range(type(self).N_CHANNELS)])
+        return iter(
+            [
+                NGE100Channel(self.resource, channel)
+                for channel in range(type(self).N_CHANNELS)
+            ]
+        )
 
     def __len__(self) -> int:
         return type(self).N_CHANNELS

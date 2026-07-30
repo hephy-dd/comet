@@ -2,9 +2,9 @@
 
 import random
 import time
-from dataclasses import dataclass, astuple
 from collections.abc import Mapping
-from typing import Any, Optional
+from dataclasses import astuple, dataclass
+from typing import Any
 
 from comet.emulator import Emulator, message, run
 
@@ -119,7 +119,7 @@ class CorvusTTEmulator(Emulator):
 
     @message(r"pos|p$")
     def get_pos(self) -> str:
-        return f'{self.x_pos:.6f} {self.y_pos:.6f} {self.z_pos:.6f}'
+        return f"{self.x_pos:.6f} {self.y_pos:.6f} {self.z_pos:.6f}"
 
     @message(r"(.+)\s+setlimit$")
     def set_limit(self, value) -> None:
@@ -131,13 +131,17 @@ class CorvusTTEmulator(Emulator):
         a1, b1, c1, a2, b2, c2 = astuple(self.table_limits)
         return f"{a1:.6f} {b1:.6f}", f"{c1:.6f} {a2:.6f}", f"{b2:.6f} {c2:.6f}"
 
-    @message(r"([+-]?\d+(?:\.\d+)?)\s+([+-]?\d+(?:\.\d+)?)\s+([+-]?\d+(?:\.\d+)?)\s+(?:move|m)$")
+    @message(
+        r"([+-]?\d+(?:\.\d+)?)\s+([+-]?\d+(?:\.\d+)?)\s+([+-]?\d+(?:\.\d+)?)\s+(?:move|m)$"
+    )
     def set_move(self, x, y, z) -> None:
         self.x_pos = max(0.0, float(x))
         self.y_pos = max(0.0, float(y))
         self.z_pos = max(0.0, float(z))
 
-    @message(r"([+-]?\d+(?:\.\d+)?)\s+([+-]?\d+(?:\.\d+)?)\s+([+-]?\d+(?:\.\d+)?)\s+(?:rmove|r)$")
+    @message(
+        r"([+-]?\d+(?:\.\d+)?)\s+([+-]?\d+(?:\.\d+)?)\s+([+-]?\d+(?:\.\d+)?)\s+(?:rmove|r)$"
+    )
     def set_rmove(self, x, y, z) -> None:
         self.x_pos = max(0.0, self.x_pos + float(x))
         self.y_pos = max(0.0, self.y_pos + float(y))
@@ -151,7 +155,7 @@ class CorvusTTEmulator(Emulator):
         self.z_pos = random.uniform(c1, c2)
 
     @message(r"(1|2|3)\s+getcaldone$")
-    def get_caldone(self, axis) -> Optional[str]:
+    def get_caldone(self, axis) -> str | None:
         if axis == "1":
             return f"{self.getcaldone[0]}"
         if axis == "2":
@@ -161,7 +165,7 @@ class CorvusTTEmulator(Emulator):
         return None
 
     @message(r"(-1|1|2|3)\s+getaxis$")
-    def get_axis(self, axis) -> Optional[str]:
+    def get_axis(self, axis) -> str | None:
         if axis == "-1":
             a1, a2, a3 = self.getaxis
             return f"{a1} {a2} {a3}"
@@ -190,7 +194,7 @@ class CorvusTTEmulator(Emulator):
         return f"{self.joystick:d}"
 
     @message(r"(-1|1|2|3)\s+getunit$")
-    def get_unit(self, axis) -> Optional[str]:
+    def get_unit(self, axis) -> str | None:
         if axis == "-1":
             return f"{self.x_unit} {self.y_unit} {self.z_unit} 1"
         if axis == "1":

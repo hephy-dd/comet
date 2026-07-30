@@ -6,7 +6,6 @@ from comet.emulator.utils import Error
 
 
 class K6514Emulator(IEC60488Emulator):
-
     IDENTITY: str = "Keithley Inc., Model 5614, 43768438, v1.0 (Emulator)"
 
     def __init__(self) -> None:
@@ -60,7 +59,7 @@ class K6514Emulator(IEC60488Emulator):
 
     @message(r":?INIT(?::IMM)?$")
     def set_init(self) -> None:
-        time.sleep(random.uniform(.5, 1.0))
+        time.sleep(random.uniform(0.5, 1.0))
 
     def _reading(self) -> float:
         if self.sense_function == "CURR":
@@ -79,7 +78,7 @@ class K6514Emulator(IEC60488Emulator):
 
     @message(r":?READ\?$")
     def get_read(self) -> str:
-        time.sleep(random.uniform(.25, 1.0))
+        time.sleep(random.uniform(0.25, 1.0))
         return format(self._reading(), "E")
 
     @message(r":?SYST:ZCH\s+(0|1|ON|OFF)$")
@@ -104,7 +103,7 @@ class K6514Emulator(IEC60488Emulator):
 
     @message(r":?SENS:FUNC\?$")
     def get_sense_function(self) -> str:
-        return f"\"{self.sense_function}:DC\""
+        return f'"{self.sense_function}:DC"'
 
     # Average
 
@@ -154,12 +153,10 @@ class K6514Emulator(IEC60488Emulator):
         self.sense_current_range_auto = {"OFF": 0, "ON": 1, "0": 0, "1": 1}[state]
 
     @message(r"(?::?SENS)?:CURR:RANG:AUTO:ULIM\s+(.+)$")
-    def set_sense_current_range_auto_ulimit(self, value: str) -> None:
-        ...  # TODO
+    def set_sense_current_range_auto_ulimit(self, value: str) -> None: ...  # TODO
 
     @message(r"(?::?SENS)?:CURR:RANG:AUTO:LLIM\s+(.+)$")
-    def set_sense_current_range_auto_llimit(self, value: str) -> None:
-        ...  # TODO
+    def set_sense_current_range_auto_llimit(self, value: str) -> None: ...  # TODO
 
     # NPLC (coupled commands)
 

@@ -1,7 +1,8 @@
 """Driver for ECR AC3 thermal chuck"""
 
+from typing import ClassVar
+
 from comet.driver.generic import Instrument, InstrumentError
-from typing import Optional
 
 __all__ = ["AC3"]
 
@@ -20,7 +21,7 @@ class AC3(Instrument):
     STATUS_COOLING: int = 2
     STATUS_ERROR: int = 8
 
-    ERROR_MESSAGES = {
+    ERROR_MESSAGES: ClassVar[dict[int, str]] = {
         1: "OVERTEMP: The Chuck temperature has passed the maximum temperature limit by more than 2°C.",
         3: "CHUCKCABLE: Analog-digital-converter error",
         4: "CHUCKCABLE: The Chuck's sensor cable or the Chuck sensor is defective.",
@@ -55,7 +56,7 @@ class AC3(Instrument):
 
     def clear(self) -> None: ...  # not supported
 
-    def next_error(self) -> Optional[InstrumentError]:
+    def next_error(self) -> InstrumentError | None:
         code = int(self._query("RE")[1:])
 
         if code:
@@ -100,7 +101,7 @@ class AC3(Instrument):
         """Set temperature setpoint in °C."""
 
         if value > 300 or value < -70:
-            raise ValueError("Temperature {} is out of range -70 to 300C".format(value))
+            raise ValueError(f"Temperature {value} is out of range -70 to 300C")
 
         # Convert to 1/10°C with sign
         temp = int(value * 10)
@@ -120,7 +121,7 @@ class AC3(Instrument):
     @operating_mode.setter
     def operating_mode(self, mode: int) -> None:
         if mode not in range(1, 5):
-            raise ValueError("Invalid mode: {}".format(mode))
+            raise ValueError(f"Invalid mode: {mode}")
         """Set operating mode."""
         self._query(f"SO{mode}")
 
