@@ -23,7 +23,7 @@ applications. Inspired by
 Install from GitHub using pip
 
 ```bash
-pip install https://github.com/hephy-dd/comet/archive/refs/tags/v1.5.1.tar.gz
+pip install https://github.com/hephy-dd/comet/archive/refs/tags/v1.6.0.tar.gz
 ```
 
 ## Quick Example
@@ -71,7 +71,6 @@ config = {"instruments": {
 ```
 
 See [Emulators](https://hephy-dd.github.io/comet/emulators/) for more.
-
 
 ## Documentation
 
