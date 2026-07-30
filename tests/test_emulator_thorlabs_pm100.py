@@ -28,6 +28,6 @@ def test_wavelength(emulator):
 
 
 def test_measure_power(emulator):
-    power = float(emulator("MEASure:SCALar:POWer"))
+    power = float(emulator("MEASure:SCALar:POWer?"))
     assert power >= 1e-9
     assert power <= 2e-9
