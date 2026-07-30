@@ -1,5 +1,6 @@
-import pytest
 import re
+
+import pytest
 
 from comet.emulator.hephy.environbox import EnvironBoxEmulator
 
@@ -7,7 +8,8 @@ from comet.emulator.hephy.environbox import EnvironBoxEmulator
 @pytest.fixture
 def emulator():
     emulator = EnvironBoxEmulator()
-    emulator.options.update({
+    emulator.options.update(
+        {
             "box_temperature.min": 24.0,
             "box_temperature.max": 24.0,
             "box_humidity.min": 40.0,
@@ -16,7 +18,8 @@ def emulator():
             "pt100_1.max": 21.5,
             "pt100_2.min": 22.5,
             "pt100_2.max": 22.5,
-        })
+        }
+    )
     return emulator
 
 
@@ -184,7 +187,7 @@ def test_env(emulator):
 
 
 def test_uptime(emulator):
-    assert re.match(r'^\d\d,\d\d,\d\d,\d\d$', str(emulator("GET:UPTIME ?"))) is not None
+    assert re.match(r"^\d\d,\d\d,\d\d,\d\d$", str(emulator("GET:UPTIME ?"))) is not None
 
 
 def test_version(emulator):
@@ -192,4 +195,7 @@ def test_version(emulator):
 
 
 def test_pc_data(emulator):
-    assert emulator("GET:PC_DATA ?") == "2,40.0,24.0,9.58,0,30.0,9.2,49.00,0.250000,0.010000,1.230000,1700.00,10.00,1,22.400000,1.250000,3.560000,1,25.50,0,0.00,2.25,1,0,0,0,0,0,0,0,0,1000,0.0,21.50,NAN,100,0,1,0"
+    assert (
+        emulator("GET:PC_DATA ?")
+        == "2,40.0,24.0,9.58,0,30.0,9.2,49.00,0.250000,0.010000,1.230000,1700.00,10.00,1,22.400000,1.250000,3.560000,1,25.50,0,0.00,2.25,1,0,0,0,0,0,0,0,0,1000,0.0,21.50,NAN,100,0,1,0"
+    )

@@ -1,4 +1,5 @@
 from abc import abstractmethod
+from typing import ClassVar
 
 from .instrument import Instrument
 
@@ -6,7 +7,7 @@ __all__ = ["SwitchingMatrix"]
 
 
 class SwitchingMatrix(Instrument):
-    CHANNELS: list[str] = []
+    CHANNELS: ClassVar[tuple[str, ...]] = ()
 
     @property
     @abstractmethod

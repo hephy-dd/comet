@@ -2,8 +2,7 @@
 
 import random
 
-from comet.emulator import Emulator
-from comet.emulator import message, run
+from comet.emulator import Emulator, message, run
 from comet.emulator.utils import Error
 
 __all__ = ["PM100Emulator"]

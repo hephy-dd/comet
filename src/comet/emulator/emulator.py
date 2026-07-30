@@ -1,21 +1,23 @@
+from __future__ import annotations
+
 import importlib
 import inspect
 import logging
 import re
-from collections.abc import Mapping
-from typing import Any, Callable, Optional, Union
+from collections.abc import Callable, Mapping
+from typing import Any
 
 from ..utils import parse_model_urn
 from .response import Response, make_response
 
-__all__ = ["emulator_factory", "message", "Emulator"]
+__all__ = ["Emulator", "emulator_factory", "message"]
 
 logger = logging.getLogger(__name__)
 
-emulator_registry: dict[str, type["Emulator"]] = {}
+emulator_registry: dict[str, type[Emulator]] = {}
 
 
-def emulator_factory(model_urn: str) -> type["Emulator"]:
+def emulator_factory(model_urn: str) -> type[Emulator]:
     """Returns emulator class from model specified by URN."""
     module_name: str = parse_model_urn(model_urn)
     key: str = module_name
@@ -32,11 +34,14 @@ def emulator_factory(model_urn: str) -> type["Emulator"]:
             module = importlib.import_module(key)
         # Iterate over all module class members (local and imported).
         for _, cls in inspect.getmembers(module, inspect.isclass):
-            if issubclass(cls, Emulator) and cls is not Emulator:
+            if (
+                issubclass(cls, Emulator)
+                and cls is not Emulator
                 # Make sure class is from module, not an imported one.
-                if key == cls.__module__:
-                    emulator_registry[key] = cls
-                    break
+                and key == cls.__module__
+            ):
+                emulator_registry[key] = cls
+                break
     if key not in emulator_registry:
         raise RuntimeError(f"Unable to locate emulator module: {module_name}")
     return emulator_registry[key]
@@ -51,7 +56,8 @@ def normalize_route(pattern: str) -> str:
 
 class Route:
     """Route wrapper for message routing."""
-    __slots__ = ["route", "pattern", "method"]
+
+    __slots__ = ["method", "pattern", "route"]
 
     def __init__(self, route: str, method: Callable[..., Any]) -> None:
         self.route: str = normalize_route(route)
@@ -61,7 +67,7 @@ class Route:
     def __call__(self, *args, **kwargs) -> Any:
         return self.method(*args, **kwargs)
 
-    def match(self, message: str) -> Optional[tuple[str, ...]]:
+    def match(self, message: str) -> tuple[str, ...] | None:
         m = self.pattern.match(message)
         return m.groups() if m else None
 
@@ -100,7 +106,7 @@ class Emulator:
     def load_options(self, options: Mapping[str, Any]) -> None:
         self.options.update(options)
 
-    def __call__(self, message: str) -> Union[None, Response, list[Response]]:
+    def __call__(self, message: str) -> Response | list[Response] | None:
         logger.debug("handle message: %s", message)
         for route in get_routes(type(self)):
             args = route.match(message)

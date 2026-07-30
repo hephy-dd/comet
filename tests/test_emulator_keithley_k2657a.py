@@ -51,7 +51,7 @@ def test_source_levelv(emulator):
 def test_source_leveli(emulator):
     assert float(emulator("print(smua.source.leveli)")) == 0
     assert emulator("smua.source.leveli = 2.5E-6") is None
-    assert float(emulator("print(smua.source.leveli)")) == 2.5E-6
+    assert float(emulator("print(smua.source.leveli)")) == 2.5e-6
     assert emulator("smua.source.leveli = 0") is None
     assert float(emulator("print(smua.source.leveli)")) == 0
 
@@ -67,7 +67,7 @@ def test_source_rangev(emulator):
 def test_source_rangei(emulator):
     assert float(emulator("print(smua.source.rangei)")) == 0
     assert emulator("smua.source.rangei = 2.0E-3") is None
-    assert float(emulator("print(smua.source.rangei)")) == 2.0E-3
+    assert float(emulator("print(smua.source.rangei)")) == 2.0e-3
     assert emulator("smua.source.rangei = 0") is None
     assert float(emulator("print(smua.source.rangei)")) == 0
 

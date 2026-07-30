@@ -79,12 +79,12 @@ class HydraEmulator(Emulator):
     @message(r"status|st$")
     def get_status(self) -> int:
         status = 0
-        all_cal = int(all([value & 0x1 for value in self.calibrate.values()]))
-        all_rm = int(all([value & 0x2 for value in self.calibrate.values()]))
-        status |= ((self.axes_moving & 0x1) << 0)
-        status |= ((self.manual_move & 0x1) << 1)
-        status |= ((all_cal & 0x1) << 3)
-        status |= ((all_rm & 0x1) << 4)
+        all_cal = int(all(value & 0x1 for value in self.calibrate.values()))
+        all_rm = int(all(value & 0x2 for value in self.calibrate.values()))
+        status |= (self.axes_moving & 0x1) << 0
+        status |= (self.manual_move & 0x1) << 1
+        status |= (all_cal & 0x1) << 3
+        status |= (all_rm & 0x1) << 4
         return status
 
     @message(r"(1|2)\s+(?:nstatus|nst|est|ast)$")
@@ -92,10 +92,10 @@ class HydraEmulator(Emulator):
         status = 0
         cal = int(self.calibrate[axis] & 0x1 == 0x1)
         rm = int(self.calibrate[axis] & 0x2 == 0x2)
-        status |= ((self.axes_moving & 0x1) << 0)
-        status |= ((self.manual_move & 0x1) << 1)
-        status |= ((cal & 0x1) << 3)
-        status |= ((rm & 0x1) << 4)
+        status |= (self.axes_moving & 0x1) << 0
+        status |= (self.manual_move & 0x1) << 1
+        status |= (cal & 0x1) << 3
+        status |= (rm & 0x1) << 4
         return status
 
     @message(r"(1|2)\s+np$")

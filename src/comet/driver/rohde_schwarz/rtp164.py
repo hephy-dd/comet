@@ -1,4 +1,4 @@
-from typing import Optional, Iterator
+from collections.abc import Iterator
 
 import numpy as np
 
@@ -33,7 +33,9 @@ class RTP164Channel(OscilloscopeChannel):
         self.resource.query("*OPC?")
 
         source = f"CHAN{self.channel + 1}"
-        values = self.resource.query_binary_values(f":{source}:DATA?", datatype="f", is_big_endian=False)
+        values = self.resource.query_binary_values(
+            f":{source}:DATA?", datatype="f", is_big_endian=False
+        )
         return values
 
 
@@ -52,10 +54,10 @@ class RTP164(Oscilloscope):
         self.resource.write("*CLS")
         self.resource.query("*OPC?")
 
-    def next_error(self) -> Optional[InstrumentError]:
+    def next_error(self) -> InstrumentError | None:
         code, message = self.resource.query("SYST:ERR?").split(",")
         if int(code):
-            return InstrumentError(int(code), message.strip().strip("\""))
+            return InstrumentError(int(code), message.strip().strip('"'))
         return None
 
     def configure(self) -> None:
@@ -76,7 +78,12 @@ class RTP164(Oscilloscope):
         return RTP164Channel(self.resource, channel)
 
     def __iter__(self) -> Iterator[RTP164Channel]:
-        return iter([RTP164Channel(self.resource, channel) for channel in range(type(self).N_CHANNELS)])
+        return iter(
+            [
+                RTP164Channel(self.resource, channel)
+                for channel in range(type(self).N_CHANNELS)
+            ]
+        )
 
     def __len__(self) -> int:
         return type(self).N_CHANNELS

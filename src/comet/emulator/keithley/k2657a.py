@@ -1,11 +1,10 @@
 import random
 
 from comet.emulator import IEC60488Emulator, message, run
-from comet.emulator.utils import tsp_print, tsp_assign, Error
+from comet.emulator.utils import Error, tsp_assign, tsp_print
 
 
 class K2657AEmulator(IEC60488Emulator):
-
     IDENTITY: str = "Keithley Inc., Model 2657A, 43768438, v1.0 (Emulator)"
 
     def __init__(self) -> None:
@@ -15,15 +14,15 @@ class K2657AEmulator(IEC60488Emulator):
         self.display_measure_function: int = 1
         self.smua_source_output: bool = False
         self.smua_source_function = "DCVOLTS"
-        self.smua_source_level: dict[str, float] = {"v": 0., "i": 0.}
-        self.smua_source_range: dict[str, float] = {"v": 0., "i": 0.}
+        self.smua_source_level: dict[str, float] = {"v": 0.0, "i": 0.0}
+        self.smua_source_range: dict[str, float] = {"v": 0.0, "i": 0.0}
         self.smua_source_autorange: dict[str, bool] = {"v": True, "i": True}
-        self.smua_source_limit: dict[str, float] = {"v": 0., "i": 0.}
+        self.smua_source_limit: dict[str, float] = {"v": 0.0, "i": 0.0}
         self.smua_measure_filter_enable: bool = False
         self.smua_measure_filter_count: int = 1
         self.smua_measure_filter_type: int = 1
         self.smua_measure_nplc: float = 1.0
-        self.source_protectv: float = 0.
+        self.source_protectv: float = 0.0
 
     @message(r"reset\(\)$")
     def set_reset(self):
@@ -32,15 +31,15 @@ class K2657AEmulator(IEC60488Emulator):
         self.display_measure_function = 1
         self.smua_source_output = False
         self.smua_source_function = "DCVOLTS"
-        self.smua_source_level.update({"v": 0., "i": 0.})
-        self.smua_source_range.update({"v": 0., "i": 0.})
+        self.smua_source_level.update({"v": 0.0, "i": 0.0})
+        self.smua_source_range.update({"v": 0.0, "i": 0.0})
         self.smua_source_autorange.update({"v": True, "i": True})
-        self.smua_source_limit.update({"v": 0., "i": 0.})
+        self.smua_source_limit.update({"v": 0.0, "i": 0.0})
         self.smua_measure_filter_enable = False
         self.smua_measure_filter_count = 1
         self.smua_measure_filter_type = 1
         self.smua_measure_nplc = 1.0
-        self.source_protectv = 0.
+        self.source_protectv = 0.0
 
     @message(r"status.reset\(\)$")
     def set_status_reset(self) -> None:
@@ -64,7 +63,7 @@ class K2657AEmulator(IEC60488Emulator):
             error = self.error_queue.pop(0)
         else:
             error = Error(0, "Queue Is Empty")
-        return f"{error.code}\t\"{error.message}\"\t0\t0"
+        return f'{error.code}\t"{error.message}"\t0\t0'
 
     # Beeper
 
@@ -76,8 +75,10 @@ class K2657AEmulator(IEC60488Emulator):
     def set_beeper_enable(self, enable: str) -> None:
         try:
             self.beeper_enable = {
-                "beeper.ON": True, "beeper.OFF": False,
-                "0": False, "1": True
+                "beeper.ON": True,
+                "beeper.OFF": False,
+                "0": False,
+                "1": True,
             }[enable]
         except KeyError:
             self.error_queue.append(Error(110, "malformed command"))
@@ -92,10 +93,14 @@ class K2657AEmulator(IEC60488Emulator):
     def set_display_measure_function(self, func) -> None:
         try:
             self.display_measure_function = {
-                "display.MEASURE_DCAMPS": 0, "0": 0,
-                "display.MEASURE_DCVOLTS": 1, "1": 1,
-                "display.MEASURE_OHMS": 2, "2": 2,
-                "display.MEASURE_WATTS": 3, "3": 3,
+                "display.MEASURE_DCAMPS": 0,
+                "0": 0,
+                "display.MEASURE_DCVOLTS": 1,
+                "1": 1,
+                "display.MEASURE_OHMS": 2,
+                "2": 2,
+                "display.MEASURE_WATTS": 3,
+                "3": 3,
             }[func]
         except KeyError:
             self.error_queue.append(Error(111, "malformed command"))
@@ -110,8 +115,10 @@ class K2657AEmulator(IEC60488Emulator):
     def set_source_output(self, state) -> None:
         try:
             self.smua_source_output = {
-                "smua.OUTPUT_ON": True, "smua.OUTPUT_OFF": False,
-                "0": False, "1": True
+                "smua.OUTPUT_ON": True,
+                "smua.OUTPUT_OFF": False,
+                "0": False,
+                "1": True,
             }[state]
         except KeyError:
             self.error_queue.append(Error(111, "malformed command"))
@@ -126,8 +133,10 @@ class K2657AEmulator(IEC60488Emulator):
     def set_source_function(self, function) -> None:
         try:
             self.smua_source_function = {
-                "0": "DCAMPS", "smua.OUTPUT_DCAMPS": "DCAMPS",
-                "1": "DCVOLTS", "smua.OUTPUT_DCVOLTS": "DCVOLTS"
+                "0": "DCAMPS",
+                "smua.OUTPUT_DCAMPS": "DCAMPS",
+                "1": "DCVOLTS",
+                "smua.OUTPUT_DCVOLTS": "DCVOLTS",
             }[function]
         except KeyError:
             self.error_queue.append(Error(112, "malformed command"))
@@ -168,8 +177,10 @@ class K2657AEmulator(IEC60488Emulator):
     def set_source_autorange(self, function, state) -> None:
         try:
             self.smua_source_autorange[function] = {
-                "0": False, "smua.AUTORANGE_OFF": False,
-                "1": True, "smua.AUTORANGE_ON": True
+                "0": False,
+                "smua.AUTORANGE_OFF": False,
+                "1": True,
+                "smua.AUTORANGE_ON": True,
             }[state]
         except KeyError:
             self.error_queue.append(Error(115, "malformed command"))
@@ -212,7 +223,9 @@ class K2657AEmulator(IEC60488Emulator):
 
     @message(tsp_print(r"smua\.measure\.v\(\)"))
     def get_measure_v(self) -> str:
-        return format(self.smua_source_level.get("v", 0) + random.uniform(-.25, +.25), "E")
+        return format(
+            self.smua_source_level.get("v", 0) + random.uniform(-0.25, +0.25), "E"
+        )
 
     # Average
 
@@ -224,8 +237,10 @@ class K2657AEmulator(IEC60488Emulator):
     def set_measure_filter_enable(self, enable: str) -> None:
         try:
             self.smua_measure_filter_enable = {
-                "0": False, "smua.FILTER_OFF": False,
-                "1": True, "smua.FILTER_ON": True
+                "0": False,
+                "smua.FILTER_OFF": False,
+                "1": True,
+                "smua.FILTER_ON": True,
             }[enable]
         except KeyError:
             self.error_queue.append(Error(118, "malformed command"))
@@ -249,9 +264,12 @@ class K2657AEmulator(IEC60488Emulator):
     def set_measure_filter_type(self, enable: str) -> None:
         try:
             self.smua_measure_filter_type = {
-                "0": 0, "smua.FILTER_MOVING_AVG": 0,
-                "1": 1, "smua.FILTER_REPEAT_AVG": 1,
-                "2": 2, "smua.FILTER_MEDIAN": 2
+                "0": 0,
+                "smua.FILTER_MOVING_AVG": 0,
+                "1": 1,
+                "smua.FILTER_REPEAT_AVG": 1,
+                "2": 2,
+                "smua.FILTER_MEDIAN": 2,
             }[enable]
         except KeyError:
             self.error_queue.append(Error(120, "malformed command"))

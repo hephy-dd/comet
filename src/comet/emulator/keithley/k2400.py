@@ -1,14 +1,14 @@
 import random
+from typing import ClassVar
 
 from comet.emulator import IEC60488Emulator, message, run
 from comet.emulator.utils import Error
 
 
 class K2400Emulator(IEC60488Emulator):
-
     IDENTITY: str = "Keithley Inc., Model 2400, 43768438, v1.0 (Emulator)"
 
-    DEFAULT_VOLTAGE_PROTECTION_LEVEL: float = 210.
+    DEFAULT_VOLTAGE_PROTECTION_LEVEL: float = 210.0
 
     def __init__(self) -> None:
         super().__init__()
@@ -18,11 +18,13 @@ class K2400Emulator(IEC60488Emulator):
         self.route_terminals: str = "FRON"
         self.output_state: bool = False
         self.source_function_mode: str = "VOLT"
-        self.source_level: dict[str, float] = {"VOLT": 0., "CURR": 0.}
-        self.source_range: dict[str, float] = {"VOLT": 0., "CURR": 0.}
+        self.source_level: dict[str, float] = {"VOLT": 0.0, "CURR": 0.0}
+        self.source_range: dict[str, float] = {"VOLT": 0.0, "CURR": 0.0}
         self.source_range_auto: dict[str, bool] = {"VOLT": True, "CURR": True}
-        self.source_voltage_protection_level: float = self.DEFAULT_VOLTAGE_PROTECTION_LEVEL
-        self.sense_voltage_protection_level: float = 2.1e+1
+        self.source_voltage_protection_level: float = (
+            self.DEFAULT_VOLTAGE_PROTECTION_LEVEL
+        )
+        self.sense_voltage_protection_level: float = 2.1e1
         self.sense_current_protection_level: float = 1.05e-5
         self.sense_function = SenseFunction()
         self.sense_function.add("CURR")
@@ -42,8 +44,8 @@ class K2400Emulator(IEC60488Emulator):
         self.route_terminals = "FRON"
         self.output_state = False
         self.source_function_mode = "VOLT"
-        self.source_level.update({"VOLT": 0., "CURR": 0.})
-        self.source_range.update({"VOLT": 0., "CURR": 0.})
+        self.source_level.update({"VOLT": 0.0, "CURR": 0.0})
+        self.source_range.update({"VOLT": 0.0, "CURR": 0.0})
         self.source_range_auto.update({"VOLT": True, "CURR": True})
         self.source_voltage_protection_level = self.DEFAULT_VOLTAGE_PROTECTION_LEVEL
         self.sense_function.clear()
@@ -80,7 +82,9 @@ class K2400Emulator(IEC60488Emulator):
 
     @message(r":?SYST(?:em)?:BEEP(?:er)?(?::STAT(?:e)?)?\s+(OFF|ON|0|1)$")
     def set_system_beeper_state(self, state) -> None:
-        self.system_beeper_state = {"OFF": False, "ON": True, "0": False, "1": True}[state]
+        self.system_beeper_state = {"OFF": False, "ON": True, "0": False, "1": True}[
+            state
+        ]
 
     # Remote sensing
 
@@ -90,7 +94,7 @@ class K2400Emulator(IEC60488Emulator):
 
     @message(r":?SYST(?:em)?:RSEN(?:se)?\s+(OFF|ON|0|1)$")
     def set_system_rsense(self, enabled) -> None:
-        self.system_rsense = {'OFF': False, 'ON': True, '0': False, '1': True}[enabled]
+        self.system_rsense = {"OFF": False, "ON": True, "0": False, "1": True}[enabled]
 
     # Route terminal
 
@@ -106,7 +110,7 @@ class K2400Emulator(IEC60488Emulator):
 
     @message(r":?OUTP(?:ut)?(?::STAT(?:e)?)?\?$")
     def get_output_state(self) -> str:
-        return {False: '0', True: '1'}[self.output_state]
+        return {False: "0", True: "1"}[self.output_state]
 
     @message(r":?OUTP(?:ut)?(?::STAT(?:e)?)?\s+(.+)$")
     def set_output_state(self, state) -> None:
@@ -132,7 +136,7 @@ class K2400Emulator(IEC60488Emulator):
 
     @message(r":?SOUR:(VOLT|CURR)(?::LEV)?\?$")
     def get_source_level(self, function) -> str:
-        return format(self.source_level[function], 'E')
+        return format(self.source_level[function], "E")
 
     @message(r":?SOUR:(VOLT|CURR)(?::LEV)?\s+(.+)$")
     def set_source_level(self, function, level) -> None:
@@ -164,7 +168,12 @@ class K2400Emulator(IEC60488Emulator):
     @message(r":?SOUR:(VOLT|CURR):RANG:AUTO\s+(.+)$")
     def set_source_range_auto(self, function, state) -> None:
         try:
-            self.source_range_auto[function] = {"ON": True, "OFF": False, "0": False, "1": True}[state]
+            self.source_range_auto[function] = {
+                "ON": True,
+                "OFF": False,
+                "0": False,
+                "1": True,
+            }[state]
         except ValueError:
             self.error_queue.append(Error(101, "malformed command"))
 
@@ -237,7 +246,12 @@ class K2400Emulator(IEC60488Emulator):
 
     @message(r"(?::?SENS)?:FUNC:CONC\s+(OFF|ON|0|1)$")
     def set_sense_function_concurrent(self, state) -> None:
-        self.sense_function_concurrent = {"OFF": False, "ON": True, "0": False, "1": True}[state]
+        self.sense_function_concurrent = {
+            "OFF": False,
+            "ON": True,
+            "0": False,
+            "1": True,
+        }[state]
 
     # Average
 
@@ -263,7 +277,9 @@ class K2400Emulator(IEC60488Emulator):
 
     @message(r"(?::?SENS)?:AVER(?::STAT)?\s+(OFF|ON|0|1)$")
     def set_sense_average_state(self, state) -> None:
-        self.sense_average_state = {"OFF": False, "ON": True, "0": False, "1": True}[state]
+        self.sense_average_state = {"OFF": False, "ON": True, "0": False, "1": True}[
+            state
+        ]
 
     # Integration time
 
@@ -283,7 +299,9 @@ class K2400Emulator(IEC60488Emulator):
 
     @message(r":?FORM:ELEM\s+(.+)$")
     def set_format_elements(self, elements) -> None:
-        elements = [element.strip() for element in elements.split(",") if element.strip()]
+        elements = [
+            element.strip() for element in elements.split(",") if element.strip()
+        ]
         self.format_elements.clear()
         self.format_elements.update(elements)
 
@@ -296,8 +314,12 @@ class K2400Emulator(IEC60488Emulator):
     def get_read(self) -> str:
         result = []
         if "VOLT" in self.format_elements._values:
-            curr_min = float(self.options.get("volt.min", self.source_level.get("VOLT", 0)))
-            curr_max = float(self.options.get("volt.max", self.source_level.get("VOLT", 0)))
+            curr_min = float(
+                self.options.get("volt.min", self.source_level.get("VOLT", 0))
+            )
+            curr_max = float(
+                self.options.get("volt.max", self.source_level.get("VOLT", 0))
+            )
             result.append(format(random.uniform(curr_min, curr_max), "E"))
         if "CURR" in self.format_elements._values:
             curr_min = float(self.options.get("curr.min", 1e-6))
@@ -323,9 +345,8 @@ class K2400Emulator(IEC60488Emulator):
 
 
 class SenseFunction:
-
-    ALLOWED_VALUES = ["VOLT:DC", "CURR:DC", "RES"]
-    ALIAS_VALUES = {"VOLT": "VOLT:DC", "CURR": "CURR:DC"}
+    ALLOWED_VALUES = ("VOLT:DC", "CURR:DC", "RES")
+    ALIAS_VALUES: ClassVar = {"VOLT": "VOLT:DC", "CURR": "CURR:DC"}
 
     def __init__(self) -> None:
         self._values: set[str] = set()
@@ -350,13 +371,14 @@ class SenseFunction:
             self.add(value)
 
     def __str__(self) -> str:
-        values = sorted(self._values, key=lambda value: self.ALLOWED_VALUES.index(value))
+        values = sorted(
+            self._values, key=lambda value: self.ALLOWED_VALUES.index(value)
+        )
         return ",".join([f"'{value}'" for value in values])
 
 
 class FormatElements:
-
-    ALLOWED_VALUES = ["VOLT", "CURR", "RES", "TIME", "STAT"]
+    ALLOWED_VALUES = ("VOLT", "CURR", "RES", "TIME", "STAT")
 
     def __init__(self) -> None:
         self._values: set[str] = set()
@@ -377,7 +399,9 @@ class FormatElements:
             self.add(value)
 
     def __str__(self) -> str:
-        values = sorted(self._values, key=lambda value: self.ALLOWED_VALUES.index(value))
+        values = sorted(
+            self._values, key=lambda value: self.ALLOWED_VALUES.index(value)
+        )
         return ",".join(values)
 
 

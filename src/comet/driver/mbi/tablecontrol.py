@@ -1,10 +1,10 @@
-from typing import Final, Optional
+from typing import Final
 
 from comet.driver.generic import InstrumentError
 from comet.driver.generic.motion_controller import (
-    Position,
-    MotionControllerAxis,
     MotionController,
+    MotionControllerAxis,
+    Position,
 )
 
 __all__ = ["TableControl"]
@@ -71,7 +71,7 @@ class TableControl(MotionController):
     def clear(self) -> None:
         self.resource.query("*CLS")
 
-    def next_error(self) -> Optional[InstrumentError]:
+    def next_error(self) -> InstrumentError | None:
         response = self.resource.query("SYS:ERR?").strip()
         code, message = parse_error(response)
         if code:

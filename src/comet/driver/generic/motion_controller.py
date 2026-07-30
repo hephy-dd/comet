@@ -1,15 +1,15 @@
 from abc import abstractmethod
-from typing import Iterable
+from collections.abc import Iterable
 
-from .instrument import Driver, Instrument
+from ..driver import Driver
+from .instrument import Instrument
 
-__all__ = ["MotionControllerAxis", "MotionController"]
+__all__ = ["MotionController", "MotionControllerAxis"]
 
 Position = Iterable[float]
 
 
 class MotionControllerAxis(Driver):
-
     def __init__(self, resource, index: int) -> None:
         super().__init__(resource)
         self.index: int = index
@@ -40,7 +40,6 @@ class MotionControllerAxis(Driver):
 
 
 class MotionController(Instrument):
-
     @abstractmethod
     def __getitem__(self, index: int) -> MotionControllerAxis: ...
 

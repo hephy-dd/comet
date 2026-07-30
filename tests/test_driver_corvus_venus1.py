@@ -98,7 +98,7 @@ def test_ipadr(driver, resource):
 
 
 def test_vel(driver, resource):
-    for value in 0., 60., 90.:
+    for value in 0.0, 60.0, 90.0:
         resource.buffer = [f"{value:.6f}"]
         assert driver.vel == value
         assert resource.buffer == ["getvel"]
@@ -109,7 +109,7 @@ def test_vel(driver, resource):
 
 
 def test_accel(driver, resource):
-    for value in 0., 120., 200.:
+    for value in 0.0, 120.0, 200.0:
         resource.buffer = [f"{value:.6f}"]
         assert driver.accel == value
         assert resource.buffer == ["getaccel"]
@@ -131,7 +131,7 @@ def test_accelfunc(driver, resource):
 
 
 def test_manaccel(driver, resource):
-    for value in 0., 100., 2400.:
+    for value in 0.0, 100.0, 2400.0:
         resource.buffer = [f"{value:.6f}"]
         assert driver.manaccel == value
         assert resource.buffer == ["getmanaccel"]
@@ -208,7 +208,9 @@ def test_limit(driver, resource):
 
     resource.buffer = []
     driver.limit = (1, 2), (3, 4), (5, 6)
-    assert resource.buffer == ["1.000000 3.000000 5.000000 2.000000 4.000000 6.000000 setlimit"]
+    assert resource.buffer == [
+        "1.000000 3.000000 5.000000 2.000000 4.000000 6.000000 setlimit"
+    ]
 
 
 def test_abort(driver, resource):
@@ -310,26 +312,30 @@ def test_joyspeed(driver, resource):
 
 def test_joybspeed(driver, resource):
     resource.buffer = ["0.123456"]
-    assert driver.joybspeed == .123456
+    assert driver.joybspeed == 0.123456
     assert resource.buffer == ["getjoybspeed"]
 
     resource.buffer = []
-    driver.joybspeed = .123456
+    driver.joybspeed = 0.123456
     assert resource.buffer == ["0.123456 setjoybspeed"]
 
 
 def test_axis_pitch(driver, resource):
     resource.buffer = ["0.1", "0.2", "0.3"]
-    assert driver.x.pitch == .1
-    assert driver.y.pitch == .2
-    assert driver.z.pitch == .3
+    assert driver.x.pitch == 0.1
+    assert driver.y.pitch == 0.2
+    assert driver.z.pitch == 0.3
     assert resource.buffer == ["1 getpitch", "2 getpitch", "3 getpitch"]
 
     resource.buffer = []
-    driver.x.pitch = .3
-    driver.y.pitch = .2
-    driver.z.pitch = .1
-    assert resource.buffer == ["0.300000 1 setpitch", "0.200000 2 setpitch", "0.100000 3 setpitch"]
+    driver.x.pitch = 0.3
+    driver.y.pitch = 0.2
+    driver.z.pitch = 0.1
+    assert resource.buffer == [
+        "0.300000 1 setpitch",
+        "0.200000 2 setpitch",
+        "0.100000 3 setpitch",
+    ]
 
 
 def test_axis_unit(driver, resource):
@@ -344,7 +350,11 @@ def test_axis_unit(driver, resource):
         driver.x.unit = value
         driver.y.unit = value
         driver.z.unit = value
-        assert resource.buffer == [f"{value:d} 1 setunit", f"{value:d} 2 setunit", f"{value:d} 3 setunit"]
+        assert resource.buffer == [
+            f"{value:d} 1 setunit",
+            f"{value:d} 2 setunit",
+            f"{value:d} 3 setunit",
+        ]
 
 
 def test_axis_umotmin(driver, resource):
@@ -359,7 +369,11 @@ def test_axis_umotmin(driver, resource):
         driver.x.umotmin = value
         driver.y.umotmin = value
         driver.z.umotmin = value
-        assert resource.buffer == [f"{value:d} 1 setumotmin", f"{value:d} 2 setumotmin", f"{value:d} 3 setumotmin"]
+        assert resource.buffer == [
+            f"{value:d} 1 setumotmin",
+            f"{value:d} 2 setumotmin",
+            f"{value:d} 3 setumotmin",
+        ]
 
 
 def test_axis_umotgrad(driver, resource):
@@ -374,7 +388,11 @@ def test_axis_umotgrad(driver, resource):
         driver.x.umotgrad = value
         driver.y.umotgrad = value
         driver.z.umotgrad = value
-        assert resource.buffer == [f"{value:d} 1 setumotgrad", f"{value:d} 2 setumotgrad", f"{value:d} 3 setumotgrad"]
+        assert resource.buffer == [
+            f"{value:d} 1 setumotgrad",
+            f"{value:d} 2 setumotgrad",
+            f"{value:d} 3 setumotgrad",
+        ]
 
 
 def test_axis_polepairs(driver, resource):
@@ -389,7 +407,11 @@ def test_axis_polepairs(driver, resource):
         driver.x.polepairs = value
         driver.y.polepairs = value
         driver.z.polepairs = value
-        assert resource.buffer == [f"{value:d} 1 setpolepairs", f"{value:d} 2 setpolepairs", f"{value:d} 3 setpolepairs"]
+        assert resource.buffer == [
+            f"{value:d} 1 setpolepairs",
+            f"{value:d} 2 setpolepairs",
+            f"{value:d} 3 setpolepairs",
+        ]
 
 
 def test_axis_enabled(driver, resource):
@@ -404,7 +426,11 @@ def test_axis_enabled(driver, resource):
         driver.x.enabled = value
         driver.y.enabled = value
         driver.z.enabled = value
-        assert resource.buffer == [f"{value:d} 1 setaxis", f"{value:d} 2 setaxis", f"{value:d} 3 setaxis"]
+        assert resource.buffer == [
+            f"{value:d} 1 setaxis",
+            f"{value:d} 2 setaxis",
+            f"{value:d} 3 setaxis",
+        ]
 
 
 def test_axis_phaseares(driver, resource):
@@ -419,7 +445,11 @@ def test_axis_phaseares(driver, resource):
         driver.x.phaseares = value
         driver.y.phaseares = value
         driver.z.phaseares = value
-        assert resource.buffer == [f"{value:d} 1 setphaseares", f"{value:d} 2 setphaseares", f"{value:d} 3 setphaseares"]
+        assert resource.buffer == [
+            f"{value:d} 1 setphaseares",
+            f"{value:d} 2 setphaseares",
+            f"{value:d} 3 setphaseares",
+        ]
 
 
 def test_axis_motiondir(driver, resource):
@@ -434,7 +464,11 @@ def test_axis_motiondir(driver, resource):
         driver.x.motiondir = value
         driver.y.motiondir = value
         driver.z.motiondir = value
-        assert resource.buffer == [f"{value:d} 1 setmotiondir", f"{value:d} 2 setmotiondir", f"{value:d} 3 setmotiondir"]
+        assert resource.buffer == [
+            f"{value:d} 1 setmotiondir",
+            f"{value:d} 2 setmotiondir",
+            f"{value:d} 3 setmotiondir",
+        ]
 
 
 def test_axis_speed(driver, resource):
@@ -442,7 +476,11 @@ def test_axis_speed(driver, resource):
     driver.x.speed(-0.1)
     driver.y.speed(-0.2)
     driver.z.speed(-0.3)
-    assert resource.buffer == [f"{-.1:.6f} 1 speed", f"{-.2:.6f} 2 speed", f"{-.3:.6f} 3 speed"]
+    assert resource.buffer == [
+        f"{-0.1:.6f} 1 speed",
+        f"{-0.2:.6f} 2 speed",
+        f"{-0.3:.6f} 3 speed",
+    ]
 
 
 def test_axis_test(driver, resource):
@@ -450,7 +488,11 @@ def test_axis_test(driver, resource):
     driver.x.test(10)
     driver.y.test(11)
     driver.z.test(12)
-    assert resource.buffer == [f"{10:.6f} 1 test", f"{11:.6f} 2 test", f"{12:.6f} 3 test"]
+    assert resource.buffer == [
+        f"{10:.6f} 1 test",
+        f"{11:.6f} 2 test",
+        f"{12:.6f} 3 test",
+    ]
 
 
 def test_axis_caldone(driver, resource):
@@ -470,7 +512,7 @@ def test_axis_sw(driver, resource):
 
 
 def test_calswdist(driver, resource):
-    for value in 0., 1.:
+    for value in 0.0, 1.0:
         resource.buffer = [f"{value:.6f}", f"{value:.6f}", f"{value:.6f}"]
         assert driver.x.calswdist == value
         assert driver.y.calswdist == value
@@ -481,7 +523,11 @@ def test_calswdist(driver, resource):
         driver.x.calswdist = value
         driver.y.calswdist = value
         driver.z.calswdist = value
-        assert resource.buffer == [f"{value:.6f} 1 setcalswdist", f"{value:.6f} 2 setcalswdist", f"{value:.6f} 3 setcalswdist"]
+        assert resource.buffer == [
+            f"{value:.6f} 1 setcalswdist",
+            f"{value:.6f} 2 setcalswdist",
+            f"{value:.6f} 3 setcalswdist",
+        ]
 
 
 def test_ncal(driver, resource):
@@ -502,9 +548,9 @@ def test_nrm(driver, resource):
 
 def test_nlimit(driver, resource):
     resource.buffer = ["0 1", "2 3", "4 5"]
-    assert driver.x.nlimit == (0., 1.)
-    assert driver.y.nlimit == (2., 3.)
-    assert driver.z.nlimit == (4., 5.)
+    assert driver.x.nlimit == (0.0, 1.0)
+    assert driver.y.nlimit == (2.0, 3.0)
+    assert driver.z.nlimit == (4.0, 5.0)
     assert resource.buffer == ["1 getnlimit", "2 getnlimit", "3 getnlimit"]
 
 
@@ -520,7 +566,11 @@ def test_axis_mp(driver, resource):
         driver.x.mp = value
         driver.y.mp = value
         driver.z.mp = value
-        assert resource.buffer == [f"{value:d} 1 setmp", f"{value:d} 2 setmp", f"{value:d} 3 setmp"]
+        assert resource.buffer == [
+            f"{value:d} 1 setmp",
+            f"{value:d} 2 setmp",
+            f"{value:d} 3 setmp",
+        ]
 
 
 def test_axis_joyspeed(driver, resource):
@@ -535,7 +585,11 @@ def test_axis_joyspeed(driver, resource):
     driver.x.joyspeed = value
     driver.y.joyspeed = value
     driver.z.joyspeed = value
-    assert resource.buffer == [f"{value:.6f} 1 setnjoyspeed", f"{value:.6f} 2 setnjoyspeed", f"{value:.6f} 3 setnjoyspeed"]
+    assert resource.buffer == [
+        f"{value:.6f} 1 setnjoyspeed",
+        f"{value:.6f} 2 setnjoyspeed",
+        f"{value:.6f} 3 setnjoyspeed",
+    ]
 
 
 def test_system(driver, resource):

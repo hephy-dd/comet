@@ -1,15 +1,13 @@
 import re
-from typing import Optional
 
-from comet.driver.generic import Instrument
-from comet.driver.generic import InstrumentError
+from comet.driver.generic import Instrument, InstrumentError
 
 __all__ = ["ShuntBox"]
 
 ERROR_MESSAGES: dict[int, str] = {99: "Unknown command"}
 
 
-def parse_error(response: str) -> Optional[InstrumentError]:
+def parse_error(response: str) -> InstrumentError | None:
     m = re.match(r"^err(\d+)", response.lower())
     if m:
         code = int(m.group(1))
@@ -19,7 +17,9 @@ def parse_error(response: str) -> Optional[InstrumentError]:
 
 
 class ShuntBox(Instrument):
-    _error_queue: list[InstrumentError] = []
+    def __init__(self, resource) -> None:
+        super().__init__(resource)
+        self._error_queue: list[InstrumentError] = []
 
     def identify(self) -> str:
         return self.query("*IDN?")
@@ -34,7 +34,7 @@ class ShuntBox(Instrument):
 
     # Error queue
 
-    def next_error(self) -> Optional[InstrumentError]:
+    def next_error(self) -> InstrumentError | None:
         if self._error_queue:
             return self._error_queue.pop(0)
         return None

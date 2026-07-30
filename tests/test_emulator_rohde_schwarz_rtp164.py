@@ -14,7 +14,7 @@ def test_identify(emulator):
 
 def test_error(emulator):
     assert emulator("SHRUBBERY?") is None
-    assert emulator("SYST:ERR?") == "-113,\"Undefined header\""
+    assert emulator("SYST:ERR?") == '-113,"Undefined header"'
 
 
 def test_channe_waveform_data_header(emulator):

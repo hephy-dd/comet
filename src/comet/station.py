@@ -1,35 +1,40 @@
-import os
+from __future__ import annotations
+
 import logging
-from collections.abc import Mapping
-from contextlib import ExitStack
-from typing import Any, Callable, ContextManager, Optional, TextIO, Union
+import os
+from collections.abc import Callable, Mapping
+from contextlib import AbstractContextManager, ExitStack
+from pathlib import Path
+from typing import Any, Self, TextIO
 
 import pyvisa
 import yaml
-from pathlib import Path
-from schema import Schema, SchemaError, And, Optional as Opt, Use
+from pyvisa.resources.resource import Resource
+from schema import And, Optional, Schema, SchemaError, Use
 
-from comet.driver import driver_factory, Driver
+from comet.driver import Driver, driver_factory
 
 __all__ = ["Station"]
 
 Config = dict[str, Any]
-ResourceFactory = Callable[[Config], ContextManager[Any]]
+ResourceFactory = Callable[[Config], AbstractContextManager[Any]]
 
 logger = logging.getLogger(__name__)
 
-INSTRUMENT_SCHEMA: Schema = Schema({
-    Opt("model"): And(str, lambda s: len(s) > 0),
-    "resource_name": And(str, lambda s: len(s) > 0),
-    Opt("termination"): And(str, lambda s: len(s) > 0),
-    Opt("timeout"): And(Use(float), lambda t: t > 0),
-    Opt("visa_library"): str,
-})
+INSTRUMENT_SCHEMA: Schema = Schema(
+    {
+        Optional("model"): And(str, lambda s: len(s) > 0),
+        "resource_name": And(str, lambda s: len(s) > 0),
+        Optional("termination"): And(str, lambda s: len(s) > 0),
+        Optional("timeout"): And(Use(float), lambda t: t > 0),  # type: ignore
+        Optional("visa_library"): str,
+    }
+)
 
 DEFAULT_CONFIG_FILES: list[str] = ["station.yaml", "station.yml", "station.json"]
 
 
-def default_resource_factory(config: Config) -> pyvisa.Resource:
+def default_resource_factory(config: Config) -> Resource:
     visa_library = config.get("visa_library", "@py")
     rm = pyvisa.ResourceManager(visa_library)
     resource_name = config["resource_name"]
@@ -39,25 +44,33 @@ def default_resource_factory(config: Config) -> pyvisa.Resource:
         resource_name,
         read_termination=termination,
         write_termination=termination,
-        timeout=timeout_ms
+        timeout=timeout_ms,
     )
 
 
 def find_filenames(default_filenames: list[str]) -> list[str]:
     """Lookup an orderd list of files and return absolut paths to existing ones."""
-    return [os.path.abspath(filename) for filename in default_filenames if os.path.isfile(filename)]
+    return [
+        os.path.abspath(filename)
+        for filename in default_filenames
+        if os.path.isfile(filename)
+    ]
 
 
 class Station(Mapping):
-    def __init__(self, *, resource_factory: Optional[ResourceFactory] = None) -> None:
+    def __init__(self, *, resource_factory: ResourceFactory | None = None) -> None:
         """Create an empty Station instance."""
         self.instruments_config: Config = {}
         self._instruments: dict[str, Any] = {}
-        self._stack: Optional[ExitStack] = None
-        self.resource_factory: ResourceFactory = resource_factory or default_resource_factory
+        self._stack: ExitStack | None = None
+        self.resource_factory: ResourceFactory = (
+            resource_factory or default_resource_factory
+        )
 
     @classmethod
-    def from_config(cls, config: Config, *, resource_factory: Optional[ResourceFactory] = None) -> "Station":
+    def from_config(
+        cls, config: Config, *, resource_factory: ResourceFactory | None = None
+    ) -> Station:
         """
         Create a Station instance from a config dictionary.
 
@@ -81,14 +94,21 @@ class Station(Mapping):
                 validated = INSTRUMENT_SCHEMA.validate(conf)
                 validated_configs[name] = validated
             except SchemaError as exc:
-                raise ValueError(f"Invalid configuration for instrument {name!r}: {exc}")
+                raise ValueError(
+                    f"Invalid configuration for instrument {name!r}: {exc}"
+                )
 
         station = cls(resource_factory=resource_factory)
         station.instruments_config = validated_configs
         return station
 
     @classmethod
-    def from_file(cls, config_file: Optional[Union[str, Path, TextIO]] = None, *, resource_factory: Optional[Callable[[dict[str, Any]], Any]] = None) -> "Station":
+    def from_file(
+        cls,
+        config_file: str | Path | TextIO | None = None,
+        *,
+        resource_factory: Callable[[dict[str, Any]], Any] | None = None,
+    ) -> Station:
         """
         Create a Station instance from a config file.
 
@@ -103,16 +123,25 @@ class Station(Mapping):
             if found_config_files:
                 config_file = found_config_files[0]
                 if len(found_config_files) > 1:
-                    logger.warning("Found multiple config files with supported names: %s", ", ".join(found_config_files))
+                    logger.warning(
+                        "Found multiple config files with supported names: %s",
+                        ", ".join(found_config_files),
+                    )
                     logger.warning("Using %s", config_file)
 
         if config_file is None:
-            default_file_list = ", ".join([f"{file_name!r}" for file_name in DEFAULT_CONFIG_FILES])
-            raise ValueError(f"No default config file found, must be one of: {default_file_list}")
+            default_file_list = ", ".join(
+                [f"{file_name!r}" for file_name in DEFAULT_CONFIG_FILES]
+            )
+            raise ValueError(
+                f"No default config file found, must be one of: {default_file_list}"
+            )
 
         with ExitStack() as stack:
             if isinstance(config_file, (str, os.PathLike, Path)):
-                file_obj: Any = stack.enter_context(open(config_file, "r", encoding="utf-8"))
+                file_obj: Any = stack.enter_context(
+                    open(config_file, "r", encoding="utf-8")
+                )
             elif hasattr(config_file, "read"):
                 file_obj = config_file
             else:
@@ -150,36 +179,29 @@ class Station(Mapping):
     def enter_context(self, cm: Any) -> Any:
         """Enter an context manager and attach it to the station's lifecycle."""
         if not self._stack:
-            raise RuntimeError(f"{type(self).__name__!r} context is not active, enter context first.")
+            raise RuntimeError(
+                f"{type(self).__name__!r} context is not active, enter context first."
+            )
         return self._stack.enter_context(cm)
-
-    def __enter__(self) -> "Station":
-        self._stack = ExitStack()
-        for name, config in self.instruments_config.items():
-            # Create resource via factory.
-            res_cm = self.resource_factory(config)
-            # Open the resource and instantiate the driver.
-            res = self._stack.enter_context(res_cm)
-            driver_cls = driver_factory(config["model"]) if "model" in config else Driver
-            self._instruments[name] = driver_cls(res)
-            # Attach as a read-only attribute.
-            object.__setattr__(self, name, self._instruments[name])
-        return self
-
-    def __exit__(self, exc_type, exc_value, traceback) -> None:
-        """Close all instrument resources."""
-        if self._stack:
-            self._stack.close()
-        for name in self._instruments:
-            if hasattr(self, name):
-                object.__delattr__(self, name)
-        self._instruments = {}
 
     def __setattr__(self, name, value):
         """Prevent modifications to instrument attributes once they are set."""
-        if "_instruments" in self.__dict__ and name in self.__dict__.get("_instruments", {}):
-            raise AttributeError(f"Cannot modify read-only instrument attribute {name!r}")
+        if "_instruments" in self.__dict__ and name in self.__dict__.get(
+            "_instruments", {}
+        ):
+            raise AttributeError(
+                f"Cannot modify read-only instrument attribute {name!r}"
+            )
         object.__setattr__(self, name, value)
+
+    def __getattr__(self, name: str) -> Any:
+        instruments = self.__dict__.get("_instruments", {})
+        try:
+            return instruments[name]
+        except KeyError:
+            raise AttributeError(
+                f"{type(self).__name__!r} has no attribute {name!r}"
+            ) from None
 
     def __getitem__(self, name):
         return self._instruments[name]
@@ -192,3 +214,27 @@ class Station(Mapping):
 
     def __len__(self):
         return len(self._instruments)
+
+    def __enter__(self) -> Self:
+        self._stack = ExitStack()
+
+        for name, config in self.instruments_config.items():
+            resource = self._stack.enter_context(self.resource_factory(config))
+            driver_cls = (
+                driver_factory(config["model"]) if "model" in config else Driver
+            )
+            self._instruments[name] = driver_cls(resource)
+
+        return self
+
+    def __exit__(
+        self,
+        exc_type: object,
+        exc_value: object,
+        traceback: object,
+    ) -> None:
+        if self._stack is not None:
+            self._stack.close()
+
+        self._stack = None
+        self._instruments.clear()

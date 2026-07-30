@@ -11,7 +11,8 @@ __all__ = ["driver_factory"]
 def find_drivers(module: types.ModuleType) -> list[type[Driver]]:
     """Return all classes of a module derving from class Driver."""
     return [
-        obj for _, obj in inspect.getmembers(module, inspect.isclass)
+        obj
+        for _, obj in inspect.getmembers(module, inspect.isclass)
         if issubclass(obj, Driver) and obj is not Driver
     ]
 

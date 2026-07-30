@@ -6,15 +6,15 @@
 
 """
 
+from __future__ import annotations
+
 import time
-from typing import Optional, TypeVar
+from typing import Self
 
 from .emulator import Emulator, emulator_factory
 
-T = TypeVar("T")
 
-
-def open_emulator(module_name: str, options: Optional[dict] = None) -> "EmulatorResource":
+def open_emulator(module_name: str, options: dict | None = None) -> EmulatorResource:
     emulator = emulator_factory(module_name)()
     if options:
         emulator.options.update(options)
@@ -32,13 +32,17 @@ class EmulatorResource:
         self.emulator: Emulator = emulator
         self.buffer: list = []
 
-    def __enter__(self: T) -> T:
+    def __enter__(self) -> Self:
         return self
 
-    def __exit__(self, *args) -> None:
-        ...
+    def __exit__(self, *args) -> None: ...
 
-    def write(self, message: str, termination: Optional[str] = None, encoding: Optional[str] = None) -> int:
+    def write(
+        self,
+        message: str,
+        termination: str | None = None,
+        encoding: str | None = None,
+    ) -> int:
         termination = self.termination if termination is None else termination
         response = self.emulator(message)
         if response:
@@ -49,14 +53,18 @@ class EmulatorResource:
                 self.buffer.append(response)
         return len(message + termination)
 
-    def read(self, termination: Optional[str] = None, encoding: Optional[str] = None,) -> str:
+    def read(
+        self,
+        termination: str | None = None,
+        encoding: str | None = None,
+    ) -> str:
         encoding = self.encoding if encoding is None else encoding
         if not self.buffer:
             raise EmptyBufferError("Read buffer is empty.")
         return bytes(self.buffer.pop(0)).decode(encoding)
 
-    def query(self, message: str, delay: Optional[float] = None) -> str:
+    def query(self, message: str, delay: float | None = None) -> str:
         self.write(message)
-        if delay:
+        if delay is not None:
             time.sleep(delay)
         return self.read()

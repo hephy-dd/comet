@@ -1,5 +1,4 @@
 import warnings
-from typing import Optional
 
 from comet.driver.generic import InstrumentError, RouteTerminalMixin
 from comet.driver.generic.dmm import DigitalMultiMeter
@@ -26,7 +25,7 @@ class K6510(RouteTerminalMixin, DigitalMultiMeter):
 
     # Error queue
 
-    def next_error(self) -> Optional[InstrumentError]:
+    def next_error(self) -> InstrumentError | None:
         code, message = parse_error(self.query(":SYST:ERR:NEXT?"))
         if code:
             return InstrumentError(code, message)

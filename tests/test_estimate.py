@@ -2,9 +2,11 @@ from datetime import timedelta
 
 from comet.estimate import Estimate
 
+
 class FakeClock:
     def __init__(self):
         self.t = 0.0
+
     def __call__(self):
         self.t += 1.0
         return self.t

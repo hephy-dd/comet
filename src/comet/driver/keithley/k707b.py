@@ -1,5 +1,3 @@
-from typing import Optional
-
 from comet.driver.generic import InstrumentError
 from comet.driver.generic.switching_matrix import SwitchingMatrix
 from comet.utils import combine_matrix
@@ -16,8 +14,12 @@ def join_channels(channels: list[str]) -> str:
 
 
 class K707B(SwitchingMatrix):
-    CHANNELS: list[str] = combine_matrix(
-        "1234", "ABCDEFG", combine_matrix("0", "123456789") + combine_matrix("1", "12")
+    CHANNELS = tuple(
+        combine_matrix(
+            "1234",
+            "ABCDEFG",
+            combine_matrix("0", "123456789") + combine_matrix("1", "12"),
+        )
     )
 
     def identify(self) -> str:
@@ -41,7 +43,7 @@ class K707B(SwitchingMatrix):
 
     # Error queue
 
-    def next_error(self) -> Optional[InstrumentError]:
+    def next_error(self) -> InstrumentError | None:
         code, message = self.tsp_print("errorqueue.next()").split("\t")[:2]
         if int(code):
             return InstrumentError(int(code), message.strip("\"' "))

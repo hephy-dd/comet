@@ -1,7 +1,6 @@
 """Photonic F3000 LED light source emulator"""
 
-from comet.emulator import Emulator
-from comet.emulator import message, run
+from comet.emulator import Emulator, message, run
 
 __all__ = ["F3000Emulator"]
 

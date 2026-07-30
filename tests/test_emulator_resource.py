@@ -4,7 +4,9 @@ from comet.emulator import open_emulator
 def test_resource():
     with open_emulator("urn:comet:model:keithley:2410") as res:
         assert res.encoding == "ascii"
-        assert res.query("*IDN?") == "Keithley Inc., Model 2410, 43768438, v1.0 (Emulator)"
+        assert (
+            res.query("*IDN?") == "Keithley Inc., Model 2410, 43768438, v1.0 (Emulator)"
+        )
 
 
 def test_resource_latin1():

@@ -1,8 +1,4 @@
-from typing import Optional
-
-from comet.driver.generic import BeeperMixin
-from comet.driver.generic import RouteTerminalMixin
-from comet.driver.generic import InstrumentError
+from comet.driver.generic import BeeperMixin, InstrumentError, RouteTerminalMixin
 from comet.driver.generic.source_meter_unit import SourceMeterUnit
 
 __all__ = ["K2400"]
@@ -37,7 +33,7 @@ class K2400(BeeperMixin, RouteTerminalMixin, SourceMeterUnit):
 
     # Error queue
 
-    def next_error(self) -> Optional[InstrumentError]:
+    def next_error(self) -> InstrumentError | None:
         code, message = parse_error(self.query(":SYST:ERR:NEXT?"))
         if code:
             return InstrumentError(code, message)

@@ -1,22 +1,20 @@
 from abc import ABC, abstractmethod
-from typing import Optional
 
 from ..driver import Driver
 
 __all__ = [
-    "InstrumentError",
-    "IdentifyMixin",
-    "ResetMixin",
+    "BeeperMixin",
     "ClearMixin",
     "ErrorQueueMixin",
-    "BeeperMixin",
-    "RouteTerminalMixin",
+    "IdentifyMixin",
     "Instrument",
+    "InstrumentError",
+    "ResetMixin",
+    "RouteTerminalMixin",
 ]
 
 
 class InstrumentError:
-
     def __init__(self, code: int, message: str) -> None:
         self.code: int = code
         self.message: str = message
@@ -27,31 +25,26 @@ class InstrumentError:
 
 
 class IdentifyMixin(ABC):
-
     @abstractmethod
     def identify(self) -> str: ...
 
 
 class ResetMixin(ABC):
-
     @abstractmethod
     def reset(self) -> None: ...
 
 
 class ClearMixin(ABC):
-
     @abstractmethod
     def clear(self) -> None: ...
 
 
 class ErrorQueueMixin(ABC):
-
     @abstractmethod
-    def next_error(self) -> Optional[InstrumentError]: ...
+    def next_error(self) -> InstrumentError | None: ...
 
 
 class BeeperMixin(ABC):
-
     BEEPER_ON: bool = True
     BEEPER_OFF: bool = False
 
@@ -65,7 +58,6 @@ class BeeperMixin(ABC):
 
 
 class RouteTerminalMixin(ABC):
-
     ROUTE_TERMINAL_FRONT: str = "front"
     ROUTE_TERMINAL_REAR: str = "rear"
 

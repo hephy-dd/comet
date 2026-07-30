@@ -79,7 +79,6 @@ def test_tune(driver, resource):
 
     resource.buffer = ["done", "done"]
     with pytest.raises(ValueError):
-
         driver.tune = 101
 
 

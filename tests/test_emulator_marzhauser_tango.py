@@ -11,7 +11,10 @@ def emulator():
 
 
 def test_basic(emulator):
-    assert emulator("?version") == "TANGO-MINI3-EMULATOR, Version 1.00, Mar 11 2022, 13:51:01"
+    assert (
+        emulator("?version")
+        == "TANGO-MINI3-EMULATOR, Version 1.00, Mar 11 2022, 13:51:01"
+    )
     assert emulator("?pos") == "0.000 0.000 0.000"
     assert emulator("?pos x") == "0.000"
     assert emulator("?pos y") == "0.000"

@@ -2,9 +2,7 @@
 
 import math
 
-from comet.emulator import Emulator
-from comet.emulator import message, run
-
+from comet.emulator import Emulator, message, run
 
 __all__ = ["NGE100Emulator"]
 
@@ -59,21 +57,29 @@ class NGE100Emulator(Emulator):
     def get_enabled(self) -> str:
         return str(int(self.enabled_channels[self.selected_channel]))
 
-    @message(r"(?:SOUR(?:ce)?:)?VOLT(?:age)?(?::LEV(?:el)?)?(?::IMM(?:ediate)?)?(?::AMPL(?:itude)?)?\s+(.+)$")
+    @message(
+        r"(?:SOUR(?:ce)?:)?VOLT(?:age)?(?::LEV(?:el)?)?(?::IMM(?:ediate)?)?(?::AMPL(?:itude)?)?\s+(.+)$"
+    )
     def set_voltage_level(self, voltage_level: float) -> None:
         voltage_level = min(max(0, float(voltage_level)), 32)
         self.voltage_levels[self.selected_channel] = voltage_level
 
-    @message(r"(?:SOUR(?:ce)?:)?VOLT(?:age)?(?::LEV(?:el)?)?(?::IMM(?:ediate)?)?(?::AMPL(?:itude)?)?\?$")
+    @message(
+        r"(?:SOUR(?:ce)?:)?VOLT(?:age)?(?::LEV(?:el)?)?(?::IMM(?:ediate)?)?(?::AMPL(?:itude)?)?\?$"
+    )
     def get_voltage_level(self) -> str:
         return str(self.voltage_levels[self.selected_channel])
 
-    @message(r"(?:SOUR(?:ce)?:)?CURR(?:ent)?(?::LEV(?:el)?)?(?::IMM(?:ediate)?)?(?::AMPL(?:itude)?)?\s+(.+)$")
+    @message(
+        r"(?:SOUR(?:ce)?:)?CURR(?:ent)?(?::LEV(?:el)?)?(?::IMM(?:ediate)?)?(?::AMPL(?:itude)?)?\s+(.+)$"
+    )
     def set_current_limit(self, current_limit: float) -> None:
         current_limit = min(max(0, float(current_limit)), 3)
         self.current_limits[self.selected_channel] = current_limit
 
-    @message(r"(?:SOUR(?:ce)?:)?CURR(?:ent)?(?::LEV(?:el)?)?(?::IMM(?:ediate)?)?(?::AMPL(?:itude)?)?\?$")
+    @message(
+        r"(?:SOUR(?:ce)?:)?CURR(?:ent)?(?::LEV(?:el)?)?(?::IMM(?:ediate)?)?(?::AMPL(?:itude)?)?\?$"
+    )
     def get_current_limit(self) -> str:
         return str(self.current_limits[self.selected_channel])
 

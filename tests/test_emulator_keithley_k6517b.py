@@ -28,7 +28,12 @@ def test_output_state(emulator):
 
 
 def test_source_voltage_level_immediate_amplitude(emulator):
-    for command in ("SOUR:VOLT", ":SOUR:VOLT", ":SOUR:VOLT:LEV", ":SOUR:VOLT:LEV:IMM:AMPL"):
+    for command in (
+        "SOUR:VOLT",
+        ":SOUR:VOLT",
+        ":SOUR:VOLT:LEV",
+        ":SOUR:VOLT:LEV:IMM:AMPL",
+    ):
         assert emulator(f"{command}?") == format(0, "E")
         assert emulator(f"{command} 42.5") is None
         assert emulator(f"{command}?") == format(42.5, "E")
@@ -39,9 +44,9 @@ def test_source_voltage_level_immediate_amplitude(emulator):
 def test_source_voltage_range(emulator):
     for command in ("SOUR:VOLT:RANG", ":SOUR:VOLT:RANG"):
         assert emulator(f"{command}?") == format(100, "E")
-        assert emulator(f"{command} 101")is None
+        assert emulator(f"{command} 101") is None
         assert emulator(f"{command}?") == format(1000, "E")
-        assert emulator(f"{command} 42")is None
+        assert emulator(f"{command} 42") is None
         assert emulator(f"{command}?") == format(100, "E")
 
 

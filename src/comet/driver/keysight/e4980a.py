@@ -1,5 +1,3 @@
-from typing import Optional
-
 from comet.driver.generic import InstrumentError
 from comet.driver.generic.lcr_meter import LCRMeter
 
@@ -53,7 +51,7 @@ class E4980A(LCRMeter):
 
     # Error Queue
 
-    def next_error(self) -> Optional[InstrumentError]:
+    def next_error(self) -> InstrumentError | None:
         code, message = self.query(":SYST:ERR:NEXT?").split(",")[:2]
         if int(code):
             return InstrumentError(int(code), message.strip("\"' "))

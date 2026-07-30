@@ -1,8 +1,7 @@
 import re
-from typing import Any, Optional
+from typing import Any
 
-from comet.driver.generic import Instrument
-from comet.driver.generic import InstrumentError
+from comet.driver.generic import Instrument, InstrumentError
 
 __all__ = ["EnvironBox"]
 
@@ -23,7 +22,7 @@ def test_bit(value: int, index: int) -> bool:
     return bool((value >> index) & 1)
 
 
-def parse_error(response: str) -> Optional[InstrumentError]:
+def parse_error(response: str) -> InstrumentError | None:
     m = re.match(r"^err(\d+)", response.lower())
     if m:
         code = int(m.group(1))
@@ -85,7 +84,9 @@ def parse_pc_data(response: str) -> dict[str, Any]:
 
 
 class EnvironBox(Instrument):
-    _error_queue: list[InstrumentError] = []
+    def __init__(self, resource) -> None:
+        super().__init__(resource)
+        self._error_queue: list[InstrumentError] = []
 
     def identify(self) -> str:
         return self.query("*IDN?")
@@ -100,7 +101,7 @@ class EnvironBox(Instrument):
 
     # Error queue
 
-    def next_error(self) -> Optional[InstrumentError]:
+    def next_error(self) -> InstrumentError | None:
         if self._error_queue:
             return self._error_queue.pop(0)
         return None
@@ -130,7 +131,9 @@ class EnvironBox(Instrument):
         return {1: self.PID_CONTROL_MODE_HUM, 2: self.PID_CONTROL_MODE_DEW}[value]
 
     def set_pid_control_mode(self, mode: str) -> None:
-        value = {self.PID_CONTROL_MODE_HUM: "HUM", self.PID_CONTROL_MODE_DEW: "DEW"}[mode]
+        value = {self.PID_CONTROL_MODE_HUM: "HUM", self.PID_CONTROL_MODE_DEW: "DEW"}[
+            mode
+        ]
         self.write(f"SET:CTRL_MODE {value}")
 
     PID_DOOR_STOP_OFF: bool = False
@@ -138,7 +141,9 @@ class EnvironBox(Instrument):
 
     def get_pid_door_stop(self) -> bool:
         value = self.query("GET:PID_DOOR_STOP ?")
-        return {"1": self.PID_DOOR_STOP_OFF, "2": self.PID_DOOR_STOP_ON}[value]  # [1=OFF,2=ON]
+        return {"1": self.PID_DOOR_STOP_OFF, "2": self.PID_DOOR_STOP_ON}[
+            value
+        ]  # [1=OFF,2=ON]
 
     def set_pid_door_stop(self, state: bool) -> None:
         value = {self.PID_DOOR_STOP_OFF: "OFF", self.PID_DOOR_STOP_ON: "ON"}[state]
@@ -217,7 +222,9 @@ class EnvironBox(Instrument):
     def get_door_auto_light(self) -> bool:
         """Get state of door automatic light switch."""
         value = self.query("GET:DOOR_AUTO_LIGHT ?")
-        return {"1": self.DOOR_AUTO_LIGHT_OFF, "2": self.DOOR_AUTO_LIGHT_ON}[value]  # [1=OFF,2=ON]
+        return {"1": self.DOOR_AUTO_LIGHT_OFF, "2": self.DOOR_AUTO_LIGHT_ON}[
+            value
+        ]  # [1=OFF,2=ON]
 
     def set_door_auto_light(self, state: bool) -> None:
         """Set door automatic light switch state."""
@@ -232,7 +239,9 @@ class EnvironBox(Instrument):
         """Return Arduino uptime in seconds."""
         value = self.query("GET:UPTIME ?")
         days, hours, minutes, seconds = map(int, value.split(","))
-        total_seconds = (days * 24 * 60 * 60) + (hours * 60 * 60) + (minutes * 60) + seconds
+        total_seconds = (
+            (days * 24 * 60 * 60) + (hours * 60 * 60) + (minutes * 60) + seconds
+        )
         return float(total_seconds)
 
     # Helper

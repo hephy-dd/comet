@@ -1,8 +1,7 @@
 import random
 import time
 
-from comet.emulator import Emulator
-from comet.emulator import message, run
+from comet.emulator import Emulator, message, run
 from comet.utils import t_dew
 
 __all__ = ["EnvironBoxEmulator"]
@@ -20,12 +19,11 @@ def split_seconds(delta_seconds: float) -> tuple[int, int, int, int]:
 
 
 class EnvironBoxEmulator(Emulator):
-
     IDENTITY: str = "EnvironBox, v2.0 (Emulator)"
     VERSION: str = "V2.0"
     SUCCESS: str = "OK"
     PC_DATA_SIZE: int = 39
-    SENSOR_ADRESSES: list[int] = [40, 41, 42, 43, 44, 45]
+    SENSOR_ADRESSES: tuple[int, ...] = (40, 41, 42, 43, 44, 45)
 
     def __init__(self) -> None:
         super().__init__()

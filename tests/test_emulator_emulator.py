@@ -2,8 +2,8 @@ import warnings
 
 import pytest
 
+from comet.emulator.emulator import emulator_factory, get_routes
 from comet.emulator.keithley.k2410 import K2410Emulator
-from comet.emulator.emulator import get_routes, emulator_factory
 
 
 def test_emulator_factory():

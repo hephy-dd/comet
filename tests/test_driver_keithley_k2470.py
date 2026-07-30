@@ -17,11 +17,11 @@ def test_basic(driver, resource):
 
 
 def test_errors(driver, resource):
-    resource.buffer = ["0,\"no error\""]
+    resource.buffer = ['0,"no error"']
     assert driver.next_error() is None
     assert resource.buffer == [":SYST:ERR:NEXT?"]
 
-    resource.buffer = ["42,\"test error\""]
+    resource.buffer = ['42,"test error"']
     error = driver.next_error()
     assert error.code == 42
     assert error.message == "test error"
@@ -74,11 +74,21 @@ def test_function(driver, resource):
 
     resource.buffer = ["1", "1"]
     driver.function = driver.FUNCTION_VOLTAGE
-    assert resource.buffer == [":SOUR:FUNC:MODE VOLT", "*OPC?", ":SENS:FUNC 'CURR'", "*OPC?"]
+    assert resource.buffer == [
+        ":SOUR:FUNC:MODE VOLT",
+        "*OPC?",
+        ":SENS:FUNC 'CURR'",
+        "*OPC?",
+    ]
 
     resource.buffer = ["1", "1"]
     driver.function = driver.FUNCTION_CURRENT
-    assert resource.buffer == [":SOUR:FUNC:MODE CURR", "*OPC?", ":SENS:FUNC 'VOLT'", "*OPC?"]
+    assert resource.buffer == [
+        ":SOUR:FUNC:MODE CURR",
+        "*OPC?",
+        ":SENS:FUNC 'VOLT'",
+        "*OPC?",
+    ]
 
 
 def test_measure_voltage(driver, resource):

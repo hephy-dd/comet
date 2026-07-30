@@ -1,9 +1,9 @@
 import numpy as np
 
 from comet.emulator.response import (
-    TextResponse,
     BinaryResponse,
     RawResponse,
+    TextResponse,
     make_response,
 )
 
@@ -12,7 +12,7 @@ def test_text_response():
     res = TextResponse("Ni!")
     assert res == "Ni!"
     assert res == TextResponse("Ni!")
-    assert not res == TextResponse("spam")
+    assert res != TextResponse("spam")
     assert res.text == "Ni!"
     assert res.encoding == "ascii"
     assert bytes(res) == "Ni!".encode("ascii")
@@ -31,18 +31,18 @@ def test_text_response_latin1():
 def test_text_response_utf8():
     res = TextResponse("blancmangé", encoding="utf-8")
     assert res == "blancmangé"
-    assert not res == TextResponse("blancmangé")
+    assert res != TextResponse("blancmangé")
     assert res == TextResponse("blancmangé", encoding="utf-8")
     assert res.text == "blancmangé"
     assert res.encoding == "utf-8"
-    assert bytes(res) == "blancmangé".encode("utf-8")
+    assert bytes(res) == "blancmangé".encode("utf-8")  # noqa: UP012
 
 
 def test_binary_response():
     res = BinaryResponse("shrubbery".encode("ascii"))
     assert res == "#19shrubbery".encode("ascii")
     assert res == BinaryResponse("shrubbery".encode("ascii"))
-    assert not res == BinaryResponse("spam".encode("ascii"))
+    assert res != BinaryResponse("spam".encode("ascii"))
     assert res.data == "shrubbery".encode("ascii")
     assert bytes(res) == "#19shrubbery".encode("ascii")
 
@@ -91,7 +91,7 @@ def test_raw_response():
     res = RawResponse("spam".encode("ascii"))
     assert res == "spam".encode("ascii")
     assert res == RawResponse("spam".encode("ascii"))
-    assert not res == RawResponse("wibble".encode("ascii"))
+    assert res != RawResponse("wibble".encode("ascii"))
     assert res.data == "spam".encode("ascii")
     assert bytes(res) == "spam".encode("ascii")
 

@@ -72,11 +72,15 @@ def test_pid_control_mode(driver, resource):
     assert driver.set_pid_control_mode(driver.PID_CONTROL_MODE_DEW) is None
     assert resource.buffer == ["SET:CTRL_MODE DEW"]
 
-    resource.buffer = ["0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"]
+    resource.buffer = [
+        "0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"
+    ]
     assert driver.get_pid_control_mode() == driver.PID_CONTROL_MODE_HUM
     assert resource.buffer == ["GET:PC_DATA ?"]
 
-    resource.buffer = ["0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"]
+    resource.buffer = [
+        "0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"
+    ]
     assert driver.get_pid_control_mode() == driver.PID_CONTROL_MODE_DEW
     assert resource.buffer == ["GET:PC_DATA ?"]
 
@@ -181,23 +185,23 @@ def test_parse_pc_data():
     assert data["box_temperature"] == 2.34
     assert data["box_dewpoint"] == 11.1
     assert not data["pid_status"]
-    assert data["pid_setpoint"] == 0.
-    assert data["pid_input"] == 0.
-    assert data["pid_output"] == 0.
-    assert data["pid_kp_1"] == 0.
-    assert data["pid_ki_1"] == 0.
-    assert data["pid_kd_1"] == 0.
+    assert data["pid_setpoint"] == 0.0
+    assert data["pid_input"] == 0.0
+    assert data["pid_output"] == 0.0
+    assert data["pid_kp_1"] == 0.0
+    assert data["pid_ki_1"] == 0.0
+    assert data["pid_kd_1"] == 0.0
     assert data["pid_min"] == 0
     assert data["pid_max"] == 0
     assert data["pid_control_mode"] == 1
-    assert data["pid_kp_2"] == 0.
-    assert data["pid_ki_2"] == 0.
-    assert data["pid_kd_2"] == 0.
+    assert data["pid_kp_2"] == 0.0
+    assert data["pid_ki_2"] == 0.0
+    assert data["pid_kd_2"] == 0.0
     assert data["parameter_set"] == 0
-    assert data["parameter_threshold"] == 0.
+    assert data["parameter_threshold"] == 0.0
     assert data["hum_flow_dir"] == 0
-    assert data["pid_threshold"] == 0.
-    assert data["vac_valve_current"] == 0.
+    assert data["pid_threshold"] == 0.0
+    assert data["vac_valve_current"] == 0.0
     assert data["vac_valve_count"] == 0
     assert data["power_microscope_ctrl"]
     assert not data["power_box_light"]
@@ -217,7 +221,7 @@ def test_parse_pc_data():
     assert data["box_lux"] == 0.21
     assert data["pt100_1"] == 0.23
     assert data["pt100_2"] == 0.34
-    assert data["pid_sample_time"] == 0.
+    assert data["pid_sample_time"] == 0.0
     assert data["pid_prop_mode"] == 1
     assert data["pt100_1_enabled"]
     assert not data["pt100_2_enabled"]

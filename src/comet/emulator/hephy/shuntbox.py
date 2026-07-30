@@ -3,8 +3,7 @@
 import random
 import time
 
-from comet.emulator import Emulator
-from comet.emulator import message, run
+from comet.emulator import Emulator, message, run
 
 __all__ = ["ShuntBoxEmulator"]
 
@@ -14,7 +13,6 @@ def format_error(code: int) -> str:
 
 
 class ShuntBoxEmulator(Emulator):
-
     IDENTITY: str = "ShuntBox, v1.0 (Emulator)"
     MEMORY_BYTES: int = 4200
     CHANNELS: int = 10
@@ -26,7 +24,7 @@ class ShuntBoxEmulator(Emulator):
 
     @property
     def uptime(self) -> int:
-        return int(round(time.time() - self.start_time))
+        return round(time.time() - self.start_time)
 
     @message(r"\*IDN\?$")
     def get_idn(self) -> str:

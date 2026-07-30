@@ -5,16 +5,17 @@ import numpy as np
 __all__ = [
     "Error",
     "SCPIError",
-    "tsp_print",
-    "tsp_assign",
-    "scpi_parse_bool",
     "generate_waveform",
+    "scpi_parse_bool",
+    "tsp_assign",
+    "tsp_print",
 ]
 
 
 @dataclass
 class Error:
     """Generic error message container."""
+
     code: int
     message: str
 
@@ -22,8 +23,9 @@ class Error:
 @dataclass
 class SCPIError(Error):
     """Generic SCPI error message container."""
+
     def __str__(self) -> str:
-        return f"{self.code},\"{self.message}\""
+        return f'{self.code},"{self.message}"'
 
 
 def tsp_print(route: str) -> str:
@@ -45,12 +47,12 @@ def scpi_parse_bool(s: str) -> bool:
 
 def generate_waveform(
     n_points=1000,
-    duration=1e-3,         # 1 ms total time
-    baseline=0.0,          # DC baseline level
-    spike_time=0.5e-3,     # spike occurs at 0.5 ms
-    spike_width=5e-6,      # spike duration 5 µs
-    spike_amplitude=2.0,   # spike height
-    noise_std=0.0          # optional Gaussian noise
+    duration=1e-3,  # 1 ms total time
+    baseline=0.0,  # DC baseline level
+    spike_time=0.5e-3,  # spike occurs at 0.5 ms
+    spike_width=5e-6,  # spike duration 5 µs
+    spike_amplitude=2.0,  # spike height
+    noise_std=0.0,  # optional Gaussian noise
 ):
     """Create a waveform with a DC baseline and one spike for testing."""
     # Time axis

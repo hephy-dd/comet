@@ -1,4 +1,5 @@
 import pytest
+
 from comet.driver.ers import AC3
 
 
@@ -175,6 +176,7 @@ def test_next_error(resource):
 
     resource.buffer = ["E001"]
     error = device.next_error()
+    assert error is not None
     assert error.message == AC3.ERROR_MESSAGES[1]
     assert error.code == 1
     assert resource.buffer == ["RE"]

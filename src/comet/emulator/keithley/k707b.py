@@ -1,12 +1,15 @@
+from typing import ClassVar
+
 from comet.emulator import IEC60488Emulator, message, run
-from comet.emulator.utils import tsp_print, Error
+from comet.emulator.utils import Error, tsp_print
 from comet.utils import combine_matrix
 
 
 class K707BEmulator(IEC60488Emulator):
-
     IDENTITY: str = "Keithley Inc., Model 707B, 43768438, v1.0 (Emulator)"
-    CHANNELS: list[str] = combine_matrix("1234", "ABCDEFGH", (format(i, "02d") for i in range(1, 13)))
+    CHANNELS: ClassVar[list[str]] = combine_matrix(
+        "1234", "ABCDEFGH", (format(i, "02d") for i in range(1, 13))
+    )
 
     def __init__(self) -> None:
         super().__init__()
@@ -35,7 +38,7 @@ class K707BEmulator(IEC60488Emulator):
             error = self.error_queue.pop(0)
         else:
             error = Error(0, "Queue is Empty")
-        return f"{error.code}\t\"{error.message}\"\t0\t0"
+        return f'{error.code}\t"{error.message}"\t0\t0'
 
     @message(tsp_print(r"channel\.getclose\(([^\)]+)\)"))
     def get_channel_getclose(self, channels: str) -> str:
@@ -45,12 +48,12 @@ class K707BEmulator(IEC60488Emulator):
 
     @message(r"channel\.close\(([^\)]+)\)$")
     def set_channel_close(self, channels: str) -> None:
-        channels_ = channels.strip('"').split(',')
+        channels_ = channels.strip('"').split(",")
         self.closed_channels.update(channels_)
 
     @message(r"channel\.open\(([^\)]+)\)$")
     def set_channel_open(self, channels: str) -> None:
-        channels_ = channels.strip('"').split(',')
+        channels_ = channels.strip('"').split(",")
         if "allslots" in channels_:
             self.closed_channels.clear()
         else:

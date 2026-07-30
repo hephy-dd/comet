@@ -9,7 +9,9 @@ def emulator():
 
 
 def test_basic(emulator):
-    assert emulator("*IDN?") == "Keithley Inc., Model DAQ6510, 54313645, v1.0 (Emulator)"
+    assert (
+        emulator("*IDN?") == "Keithley Inc., Model DAQ6510, 54313645, v1.0 (Emulator)"
+    )
     assert emulator("*RST") is None
     assert emulator("*OPC?") == "1"
 

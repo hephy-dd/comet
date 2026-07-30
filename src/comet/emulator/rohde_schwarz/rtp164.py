@@ -1,8 +1,7 @@
 """Rohde Schwarz RTP164 oscilloscope emulator"""
 
-from comet.emulator import IEC60488Emulator
-from comet.emulator import BinaryResponse, message, run
-from comet.emulator.utils import SCPIError, scpi_parse_bool, generate_waveform
+from comet.emulator import BinaryResponse, IEC60488Emulator, message, run
+from comet.emulator.utils import SCPIError, generate_waveform, scpi_parse_bool
 
 __all__ = ["RTP164Emulator"]
 
@@ -53,14 +52,13 @@ class RTP164Emulator(IEC60488Emulator):
         return self.format_data
 
     @message(r":?FORM(?:AT)?(?::DATA)?\s+(ASC|ASC,0|REAL,32|INT,8|INT,16)$")
-    def set_format_data(self, format_length) -> None:
+    def set_format_data(self, format_length: str) -> None:
         if format_length == "ASC":
-            format_length == "ASC,0"
+            format_length = "ASC,0"
         self.format_data = format_length
 
     @message(r":?SING(?:LE)?$")
-    def set_single(self) -> None:
-        ...
+    def set_single(self) -> None: ...
 
     @message(r":?CHAN([1-4]):STAT\?$")
     def get_channel_state(self, channel) -> str:
@@ -76,7 +74,9 @@ class RTP164Emulator(IEC60488Emulator):
 
     @message(r":?CHAN([1-4])(?::WAV([1-3]))?:DATA(?::VAL)?\?$")
     def get_channel_waveform_data(self, channel, waveform) -> BinaryResponse:
-        _, y = generate_waveform(self.num_samples, duration=self.duration, noise_std=0.01)  # TODO
+        _, y = generate_waveform(
+            self.num_samples, duration=self.duration, noise_std=0.01
+        )  # TODO
         big_endian = self.format_border == "MSBF"
         return BinaryResponse.pack_real32(y, big_endian=big_endian)
 

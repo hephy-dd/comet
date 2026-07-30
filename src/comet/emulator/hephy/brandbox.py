@@ -1,5 +1,4 @@
-from comet.emulator import Emulator
-from comet.emulator import message, run
+from comet.emulator import Emulator, message, run
 
 __all__ = ["BrandBoxEmulator"]
 
@@ -21,9 +20,8 @@ def format_error(code: int) -> str:
 
 
 class BrandBoxEmulator(Emulator):
-
-    CHANNELS: list[str] = ["A1", "A2", "B1", "B2", "C1", "C2"]
-    MODS: list[str] = ["IV", "CV"]
+    CHANNELS: tuple[str, ...] = ("A1", "A2", "B1", "B2", "C1", "C2")
+    MODS: tuple[str, ...] = ("IV", "CV")
 
     IDENTITY: str = "BrandBox, v2.0 (Emulator)"
     SUCCESS: str = "OK"

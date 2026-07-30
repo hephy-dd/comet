@@ -57,7 +57,7 @@ class PILAS(Driver):
 
         self.tune_mode = self.TUNE_MANUAL
 
-        self.write_and_check(f"tune={int(value*10)}")
+        self.write_and_check(f"tune={int(value * 10)}")
 
     @property
     def frequency(self) -> int:
@@ -84,7 +84,7 @@ class PILAS(Driver):
             "Method 'PILAS.get_laser_head_temperature' is deprecated and will be removed in a future version. "
             "Use property 'PILAS.laser_head_temperature' instead.",
             DeprecationWarning,
-            stacklevel=1
+            stacklevel=1,
         )
         return self.laser_head_temperature
 
@@ -93,7 +93,7 @@ class PILAS(Driver):
             "Method 'PILAS.get_laser_diode_temperature' is deprecated and will be removed in a future version. "
             "Use property 'PILAS.laser_diode_temperature' instead.",
             DeprecationWarning,
-            stacklevel=1
+            stacklevel=1,
         )
         return self.laser_diode_temperature
 
