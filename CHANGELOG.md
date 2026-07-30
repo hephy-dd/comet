@@ -7,9 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-07-30
+
+### Added
+
+- Read combined current and voltage routes for Keithley 2470 emulator.
+
 ### Changed
 
 - Normalized emulator message routes (#120).
+- Dropped support for Python 3.9 and 3.10, requiring Python 3.11+ (#121).
+- Replaced mypy with pyright in the tox configuration (#121).
+- Modernized type annotations for Python 3.11 (#121).
+- Resolved all Ruff and Pyright diagnostics and formatted the codebase with Ruff (#121).
+- Added missing UTC timezones to datetime objects (#121).
 
 ## [1.5.1] - 2026-04-15
 
@@ -171,7 +182,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - ITK CorvusTT emulator.
 
-[unreleased]: https://github.com/hephy-dd/comet/compare/v1.5.1...HEAD
+[unreleased]: https://github.com/hephy-dd/comet/compare/v1.6.0...HEAD
+[1.6.0]: https://github.com/hephy-dd/comet/compare/v1.5.1...v1.6.0
 [1.5.1]: https://github.com/hephy-dd/comet/compare/v1.5.0...v1.5.1
 [1.5.0]: https://github.com/hephy-dd/comet/compare/v1.4.2...v1.5.0
 [1.4.2]: https://github.com/hephy-dd/comet/compare/v1.4.1...v1.4.2
