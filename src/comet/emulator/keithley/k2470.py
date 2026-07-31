@@ -29,6 +29,10 @@ class K2470Emulator(IEC60488Emulator):
         self.source_voltage_ilimit_level: float = 1.05e-4
         self.source_current_vlimit_level: float = 2.1e-1
         self.sense_function_on: str = "CURR"
+        self.sense_curr_range: float = 1.0e-08
+        self.sense_curr_range_auto: bool = True
+        self.sense_curr_range_auto_llimit: float = 1.0e-08
+        self.sense_curr_range_auto_ulimit: float = 1.0  # read only
         self.sense_average_tcontrol: dict[str, str] = {"VOLT": "REP", "CURR": "REP"}
         self.sense_average_count: dict[str, int] = {"VOLT": 10, "CURR": 10}
         self.sense_average_state: dict[str, bool] = {"VOLT": False, "CURR": False}
@@ -58,6 +62,10 @@ class K2470Emulator(IEC60488Emulator):
         self.source_voltage_ilimit_level = 1.05e-4
         self.source_current_vlimit_level = 2.1e-1
         self.sense_function_on = "CURR"
+        self.sense_curr_range: float = 1.0e-08
+        self.sense_curr_range_auto: bool = True
+        self.sense_curr_range_auto_llimit: float = 1.0e-08
+        self.sense_curr_range_auto_ulimit: float = 1.0  # read only
         self.sense_average_tcontrol.update({"VOLT": "REP", "CURR": "REP"})
         self.sense_average_count.update({"VOLT": 10, "CURR": 10})
         self.sense_average_state.update({"VOLT": False, "CURR": False})
@@ -217,6 +225,41 @@ class K2470Emulator(IEC60488Emulator):
     @message(r":?SENS:FUNC(?::ON)?\s+\"(CURR|RES|VOLT)\"$")
     def set_sense_function_on(self, function: str) -> None:
         self.sense_function_on = function
+
+    # Sense range
+
+    @message(r":?SENS:CURR:RANG\?$")
+    def get_sense_curr_range(self) -> str:
+        return format(self.sense_curr_range, "E")
+
+    @message(r":?SENS:CURR:RANG\s+(.+)$")
+    def set_sense_curr_range(self, level: str) -> None:
+        self.sense_curr_range = float(level)
+
+    @message(r":?SENS:CURR:RANG:AUTO\?$")
+    def get_sense_curr_range_auto(self) -> str:
+        return format(self.sense_curr_range_auto, "E")
+
+    @message(r":?SENS:CURR:RANG:AUTO\s+(OFF|ON|0|1)$")
+    def set_sense_curr_range_auto(self, enabled: str) -> None:
+        self.sense_curr_range_auto = {
+            "OFF": False,
+            "ON": True,
+            "0": False,
+            "1": True,
+        }[enabled]
+
+    @message(r":?SENS:CURR:RANG:AUTO:LLIM\?$")
+    def get_sense_curr_range_auto_llimit(self) -> str:
+        return format(self.sense_curr_range_auto_llimit, "E")
+
+    @message(r":?SENS:CURR:RANG:AUTO:LLIM\s+(.+)$")
+    def set_sense_curr_range_auto_llimit(self, level: str) -> None:
+        self.sense_curr_range_auto_llimit = float(level)
+
+    @message(r":?SENS:CURR:RANG:AUTO:ULIM\?$")
+    def get_sense_curr_range_auto_ulimit(self) -> str:
+        return format(self.sense_curr_range_auto_ulimit, "E")
 
     # Average
 

@@ -140,6 +140,34 @@ def test_sense_function_on(emulator):
         assert emulator(f"{command} VOLT") is None
 
 
+def test_sense_curr_range(emulator):
+    assert float(emulator(":SENS:CURR:RANG?")) == 1.0e-08
+    assert emulator(":SENS:CURR:RANG 4.2e-03") is None
+    assert float(emulator("SENS:CURR:RANG?")) == 4.2e-03
+    assert emulator("SENS:CURR:RANG 0.0024") is None
+    assert float(emulator("SENS:CURR:RANG?")) == 2.4e-03
+
+
+def test_sense_curr_range_auto(emulator):
+    assert float(emulator(":SENS:CURR:RANG:AUTO?")) == 1.0
+    assert emulator(":SENS:CURR:RANG:AUTO OFF") is None
+    assert float(emulator("SENS:CURR:RANG:AUTO?")) == 0.0
+    assert emulator("SENS:CURR:RANG:AUTO ON") is None
+    assert float(emulator("SENS:CURR:RANG:AUTO?")) == 1.0
+
+
+def test_sense_curr_range_auto_llim(emulator):
+    assert float(emulator(":SENS:CURR:RANG:AUTO:LLIM?")) == 1.0e-08
+    assert emulator(":SENS:CURR:RANG:AUTO:LLIM 4.2e-03") is None
+    assert float(emulator("SENS:CURR:RANG:AUTO:LLIM?")) == 4.2e-03
+    assert emulator("SENS:CURR:RANG:AUTO:LLIM 0.0024") is None
+    assert float(emulator("SENS:CURR:RANG:AUTO:LLIM?")) == 2.4e-03
+
+
+def test_sense_curr_range_auto_ulim(emulator):
+    assert float(emulator(":SENS:CURR:RANG:AUTO:ULIM?")) == 1.0
+
+
 def test_read(emulator):
     result = emulator(":READ?")
     read = str(result)
