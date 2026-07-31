@@ -141,7 +141,7 @@ class K4215CVUEmulator(IEC60488Emulator):
     def set_cls(self) -> None:
         self.error_queue.clear()
 
-    @message(r"BC$")
+    @message(r"(?:BC)$")  # prevent shorter then catch all
     def set_buffer_clear(self) -> None: ...
 
     @message(r":?ERROR:LAST:GET$")
