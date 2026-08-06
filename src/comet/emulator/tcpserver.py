@@ -31,6 +31,13 @@ class TCPRequestHandler:
         rx_buffer.extend(data)
 
         termination_bytes = context.termination
+
+        # In case of no termination devices
+        if not termination_bytes:
+            message = bytes(rx_buffer)
+            del rx_buffer[:]
+            return [message]
+
         messages: list[bytes] = []
 
         while (pos := rx_buffer.find(termination_bytes)) >= 0:

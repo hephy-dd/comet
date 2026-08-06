@@ -52,6 +52,7 @@ termination_aliases: dict[str, str] = {
     "CR": "\r",
     "LF": "\n",
     "CRLF": "\r\n",
+    "": "",
 }
 
 
@@ -76,7 +77,10 @@ config_schema = schema.Schema(
                     lambda p: 1 <= p <= 65535,
                     error="port must be an integer between 1 and 65535",
                 ),
-                schema.Optional("termination"): schema.And(str, normalize_termination),
+                schema.Optional("termination"): schema.And(
+                    str,
+                    schema.Use(normalize_termination),  # type: ignore
+                ),
                 schema.Optional("request_delay"): schema.And(
                     schema.Use(float),  # type: ignore
                     lambda d: d >= 0,
