@@ -42,9 +42,14 @@ class ITCEmulator(Emulator):
 
     @message(r"(A0)$")
     def get_a0(self, channel) -> str:
-        self.current_temp += random.uniform(-0.25, +0.25)
-        self.current_temp = min(60.0, max(20.0, self.current_temp))
+        self.current_temp = random.uniform(-0.1, +0.1) + self.target_temp
         return f"{channel} {self.current_temp:05.1f} {self.target_temp:05.1f}"
+
+    @message(r"a0\s(\d\d\d\.\d)$")
+    def set_a0(self, value) -> str:
+        self.target_temp = float(value)
+        self.current_temp = float(value)
+        return "a"
 
     @message(r"(A[34])$")
     def get_a3(self, channel) -> str:
@@ -100,7 +105,7 @@ class ITCEmulator(Emulator):
     def set_a15(self, value) -> str:
         return "a"
 
-    @message(r"a[0-6]\s+\d+\.\d+$")
+    @message(r"a[1-6]\s+\d+\.\d+$")
     def set_a(self) -> str:
         return "a"
 
