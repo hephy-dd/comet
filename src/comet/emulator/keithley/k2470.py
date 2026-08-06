@@ -29,6 +29,8 @@ class K2470Emulator(IEC60488Emulator):
         self.source_voltage_ilimit_level: float = 1.05e-4
         self.source_current_vlimit_level: float = 2.1e-1
         self.sense_function_on: str = "CURR"
+        self.source_voltage_delay_auto: bool = True
+        self.sense_curr_azero: bool = True
         self.sense_curr_range: float = 1.0e-08
         self.sense_curr_range_auto: bool = True
         self.sense_curr_range_auto_llimit: float = 1.0e-08
@@ -62,10 +64,12 @@ class K2470Emulator(IEC60488Emulator):
         self.source_voltage_ilimit_level = 1.05e-4
         self.source_current_vlimit_level = 2.1e-1
         self.sense_function_on = "CURR"
-        self.sense_curr_range: float = 1.0e-08
-        self.sense_curr_range_auto: bool = True
-        self.sense_curr_range_auto_llimit: float = 1.0e-08
-        self.sense_curr_range_auto_ulimit: float = 1.0  # read only
+        self.source_voltage_delay_auto = True
+        self.sense_curr_azero = True
+        self.sense_curr_range = 1.0e-08
+        self.sense_curr_range_auto = True
+        self.sense_curr_range_auto_llimit = 1.0e-08
+        self.sense_curr_range_auto_ulimit = 1.0  # read only
         self.sense_average_tcontrol.update({"VOLT": "REP", "CURR": "REP"})
         self.sense_average_count.update({"VOLT": 10, "CURR": 10})
         self.sense_average_state.update({"VOLT": False, "CURR": False})
@@ -131,6 +135,19 @@ class K2470Emulator(IEC60488Emulator):
             self.source_function_mode = function
         except KeyError:
             self.error_queue.append(Error(101, "malformed command"))
+
+    @message(r":?SOUR:VOLT:DEL:AUTO\?$")
+    def get_source_voltage_delay_auto(self) -> str:
+        return format(self.source_voltage_delay_auto, "E")
+
+    @message(r":?SOUR:VOLT:DEL:AUTO\s+(OFF|ON|0|1)$")
+    def set_source_voltage_delay_auto(self, enable) -> None:
+        self.source_voltage_delay_auto = {
+            "ON": True,
+            "OFF": False,
+            "0": False,
+            "1": True,
+        }[enable]
 
     # Source levels
 
@@ -227,6 +244,19 @@ class K2470Emulator(IEC60488Emulator):
         self.sense_function_on = function
 
     # Sense range
+
+    @message(r":?SENS:CURR:AZER\?$")
+    def get_sense_curr_azero(self) -> str:
+        return format(self.sense_curr_azero, "E")
+
+    @message(r":?SENS:CURR:AZER\s+(OFF|ON|0|1)$")
+    def set_sense_curr_azero(self, enable) -> None:
+        self.sense_curr_azero = {
+            "ON": True,
+            "OFF": False,
+            "0": False,
+            "1": True,
+        }[enable]
 
     @message(r":?SENS:CURR:RANG\?$")
     def get_sense_curr_range(self) -> str:
