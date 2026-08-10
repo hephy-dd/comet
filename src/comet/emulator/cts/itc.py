@@ -4,6 +4,7 @@ import random
 from datetime import UTC, datetime
 
 from comet.emulator import Context, Emulator, message, run
+from comet.emulator.utils import TimeGradient
 
 __all__ = ["ITCEmulator"]
 
@@ -23,10 +24,10 @@ class ITCEmulator(Emulator):
 
         options = context.options
 
-        self.current_temp: float = float(options.get("current_temp", 24.0))
+        self.current_temp = TimeGradient(options.get("current_temp", 24.0), rate=1.0)
         self.target_temp: float = float(options.get("target_temp", 24.0))
 
-        self.current_humid: float = float(options.get("current_humid", 55.0))
+        self.current_humid = TimeGradient(options.get("current_humid", 55.0), rate=0.5)
         self.target_humid: float = float(options.get("target_humid", 55.0))
 
         self.program: int = 0
@@ -42,13 +43,14 @@ class ITCEmulator(Emulator):
 
     @message(r"(A0)$")
     def get_a0(self, channel) -> str:
-        self.current_temp = random.uniform(-0.1, +0.1) + self.target_temp
-        return f"{channel} {self.current_temp:05.1f} {self.target_temp:05.1f}"
+        current_temp = self.current_temp.update()
+        current_temp += random.uniform(-0.1, +0.1)
+        return f"{channel} {current_temp:05.1f} {self.target_temp:05.1f}"
 
     @message(r"a0\s(\d\d\d\.\d)$")
     def set_a0(self, value) -> str:
         self.target_temp = float(value)
-        self.current_temp = float(value)
+        self.current_temp.set(float(value))
         return "a"
 
     @message(r"(A[34])$")
@@ -57,9 +59,15 @@ class ITCEmulator(Emulator):
 
     @message(r"(A1)$")
     def get_a1(self, channel) -> str:
-        self.current_humid += random.uniform(-0.25, +0.25)
-        self.current_humid = min(95.0, max(15.0, self.current_humid))
-        return f"{channel} {self.current_humid:05.1f} {self.target_humid:05.1f}"
+        current_humid = self.current_humid.update()
+        current_humid += random.uniform(-0.1, +0.1)
+        return f"{channel} {current_humid:05.1f} {self.target_humid:05.1f}"
+
+    @message(r"a1\s(\d\d\d\.\d)$")
+    def set_a1(self, value) -> str:
+        self.target_humid = float(value)
+        self.current_humid.set(float(value))
+        return "a"
 
     @message(r"(A2)$")
     def get_a2(self, channel) -> str:
@@ -101,11 +109,11 @@ class ITCEmulator(Emulator):
     def get_a14(self, channel) -> str:
         return fake_analog_channel(channel, -80.0, +200.0)
 
-    @message(r"a[1-7]\s(-?\d+.\d)$")
+    @message(r"a[2-7]\s(-?\d+.\d)$")
     def set_a15(self, value) -> str:
         return "a"
 
-    @message(r"a[1-6]\s+\d+\.\d+$")
+    @message(r"a[2-6]\s+\d+\.\d+$")
     def set_a(self) -> str:
         return "a"
 

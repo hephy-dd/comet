@@ -1,3 +1,5 @@
+import time
+from collections.abc import Callable
 from dataclasses import dataclass
 
 import numpy as np
@@ -9,6 +11,7 @@ __all__ = [
     "scpi_parse_bool",
     "tsp_assign",
     "tsp_print",
+    "TimeGradient",
 ]
 
 
@@ -70,3 +73,32 @@ def generate_waveform(
         y += np.random.normal(scale=noise_std, size=t.shape)
 
     return t, y
+
+
+class TimeGradient:
+    def __init__(
+        self,
+        value: float,
+        target: float | None = None,
+        rate: float = 1.0,
+        clock: Callable[[], float] = time.monotonic,
+    ) -> None:
+        self.value = float(value)
+        self.target = self.value if target is None else float(target)
+        self.rate = float(rate)
+
+        self._clock = clock
+        self._time = clock()
+
+    def update(self) -> float:
+        now = self._clock()
+        step = self.rate * (now - self._time)
+        self._time = now
+
+        delta = self.target - self.value
+        self.value += max(-step, min(step, delta))
+        return self.value
+
+    def set(self, target: float) -> None:
+        self.update()
+        self.target = float(target)
