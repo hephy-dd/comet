@@ -52,6 +52,9 @@ class E4980AEmulator(IEC60488Emulator):
             return f'{error.code:+d},"{error.message}"'
         return '+0,"No error"'
 
+    @message(r":?SYST:BEEP:STAT\s+(OFF|ON|0|1)$")
+    def set_system_beeper_state(self, state: str) -> None: ...
+
     @message(r":?FUNC:IMP:TYPE\?$")
     def get_function_impedance_type(self) -> str:
         return self.function_impedance_type
@@ -60,6 +63,18 @@ class E4980AEmulator(IEC60488Emulator):
     def set_function_impedance_type(self, type) -> None:
         # TODO
         self.function_impedance_type = type
+
+    @message(r":?INIT:CONT\s+(OFF|ON|0|1)$")
+    def set_initiate_continuous(self, value: str) -> None: ...
+
+    @message(r":?TRIG:SOUR\s+(HOLD|BUS|INT|EXT)$")
+    def set_trigger_source(self, value: str) -> None: ...
+
+    @message(r":?TRIG:IMM$")
+    def set_trigger_immediate(self) -> None: ...
+
+    @message(r":?AMPL:ALC\s+(OFF|ON|0|1)$")
+    def set_amplitude_alc(self, state: str) -> None: ...
 
     @message(r":?CORR:OPEN:STAT\?$")
     def get_correction_open_state(self) -> str:
@@ -103,6 +118,9 @@ class E4980AEmulator(IEC60488Emulator):
     def set_correction_length(self, length: str) -> None:
         self.correction_length = int(length)
 
+    @message(r":?CORR:SHOR:STAT\s+(OFF|ON|0|1)$")
+    def set_correction_short_state(self, state: str) -> None: ...
+
     @message(r":?FETC[H]?(?:(?::IMP)?:FORM)?\?$")
     def get_fetch(self) -> str:
         prim = random.uniform(self.cp_min, self.cp_max)
@@ -133,7 +151,24 @@ class E4980AEmulator(IEC60488Emulator):
     def set_bias_state(self, value: str) -> None:
         self.bias_state = {"0": False, "1": True, "OFF": False, "ON": True}[value]
 
-    @message(r".*")
+    @message(r":?BIAS:RANG\s+(.+)$")
+    def set_bias_range(self, value: str) -> None: ...
+
+    @message(r":?BIAS:RANG:AUTO\s+(OFF|ON|0|1)$")
+    def set_bias_range_auto(self, value: str) -> None: ...
+
+    # TODO workarounds
+
+    @message(r":?VOLT\s+.+$")
+    def catch_volt(self) -> None: ...
+
+    @message(r":?FREQ\s+.+$")
+    def catch_freq(self) -> None: ...
+
+    @message(r":?APER\s+.+$")
+    def catch_aper(self) -> None: ...
+
+    @message(r"(.*)")
     def undefined_header(self):
         self.error_queue.append(Error(-113, "Undefined header"))
 
