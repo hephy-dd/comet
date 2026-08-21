@@ -168,7 +168,7 @@ class E4980AEmulator(IEC60488Emulator):
     @message(r":?APER\s+.+$")
     def catch_aper(self) -> None: ...
 
-    @message(r"(.*)")
+    @message(r".*")
     def undefined_header(self):
         self.error_queue.append(Error(-113, "Undefined header"))
 
