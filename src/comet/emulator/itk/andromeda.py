@@ -25,7 +25,7 @@ class AndromedaEmulator(Emulator):
 
         options = context.options
 
-        self.identity: str = options.get("identity", "Hydra 0 0 0 0")
+        self.identity: str = options.get("identity", "Andromeda 0 0 0 0")
         self.version: float = options.get("version", 1.0)
         self.mac_address: str = options.get("mac_address", "00:00:00:00:00:00")
         self.serial_no: str = options.get("serial_no", "00770031")
