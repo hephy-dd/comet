@@ -36,3 +36,6 @@ path = "src/comet/__init__.py"
 
 [tool.ruff.lint]
 extend-ignore = ["BLE001", "RUF022"]
+
+[tool.basedpyright]
+typeCheckingMode = "standard"
