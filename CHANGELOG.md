@@ -12,6 +12,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sense current range routes to Keithley 2470 emulator (#123).
 - ITK Andromeda emulator (#124).
 
+### Changed
+
+- Migrated the build backend from Hatchling to `uv_build` (#126).
+
+### Removed
+
+- `parameter` module; use Pydantic or another validation/modeling library instead (#125).
+- `pint` dependency and exposed `ureg`; use `pint` directly when unit handling is required (#125).
+
 ## [1.6.0] - 2026-07-30
 
 ### Added
