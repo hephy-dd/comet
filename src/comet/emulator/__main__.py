@@ -29,12 +29,12 @@ import contextlib
 import logging
 import os
 import signal
+from importlib.metadata import version
 from typing import Any
 
 import schema
 import yaml
 
-from .. import __version__
 from .emulator import Context, emulator_cls_factory
 from .tcpserver import TCPServer, TCPServerContext
 
@@ -128,7 +128,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--version",
         action="version",
-        version=f"%(prog)s version {__version__}",
+        version=f"%(prog)s {version('comet')}",
         help="Print version information and quit",
     )
     return parser.parse_args()

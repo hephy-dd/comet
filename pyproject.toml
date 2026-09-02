@@ -1,5 +1,10 @@
+[build-system]
+requires = ["uv_build>=0.12.9,<0.13"]
+build-backend = "uv_build"
+
 [project]
 name = "comet"
+version = "1.6.0"
 description = "Control and Measurement Toolkit"
 authors = [
   {name = "Bernhard Arnold", email = "bernhard.arnold@oeaw.ac.at"},
@@ -17,7 +22,6 @@ dependencies = [
     "schema",
     "PyYAML",
 ]
-dynamic = ["version"]
 
 [project.urls]
 Homepage = "https://hephy-dd.github.io/comet/"
@@ -25,13 +29,6 @@ Source = "https://github.com/hephy-dd/comet/"
 
 [project.scripts]
 comet-emulator = "comet.emulator.__main__:main"
-
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-
-[tool.hatch.version]
-path = "src/comet/__init__.py"
 
 [tool.ruff.lint]
 extend-ignore = ["BLE001", "RUF022"]
