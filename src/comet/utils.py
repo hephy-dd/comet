@@ -4,8 +4,6 @@ from collections.abc import Iterable
 from datetime import UTC, datetime
 from math import log
 
-from pint import Quantity, UnitRegistry
-
 __all__ = [
     "auto_scale",
     "combine_matrix",
@@ -14,21 +12,7 @@ __all__ = [
     "parse_model_urn",
     "safe_filename",
     "t_dew",
-    "to_unit",
-    "ureg",
 ]
-
-ureg: UnitRegistry = UnitRegistry()
-
-
-def to_unit(value: float | str | Quantity, unit: str) -> float:
-    """Convert value or string representation with or without unit to another
-    unit."""
-    if isinstance(value, Quantity):
-        return value.to(unit).m
-    if isinstance(value, str):
-        return ureg(value).to(unit).m
-    return (ureg(unit) * value).to(unit).m
 
 
 def auto_scale(value: float) -> tuple[float, str, str]:

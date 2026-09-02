@@ -1,9 +1,9 @@
-from comet import functions
+from comet.functions import LinearRange
 
 
 def assert_linear_range(begin, end, step, ref):
     values = []
-    for value in functions.LinearRange(begin, end, step):
+    for value in LinearRange(begin, end, step):
         values.append(value)
         if len(values) > len(ref):
             break
@@ -11,13 +11,13 @@ def assert_linear_range(begin, end, step, ref):
 
 
 def test_linear_range_step():
-    r = functions.LinearRange(0, 2, +1)
+    r = LinearRange(0, 2, +1)
     assert r.step == +1
-    r = functions.LinearRange(0, 2, -1)
+    r = LinearRange(0, 2, -1)
     assert r.step == +1
-    r = functions.LinearRange(-2, 0, -1)
+    r = LinearRange(-2, 0, -1)
     assert r.step == +1
-    r = functions.LinearRange(0, -2, +1)
+    r = LinearRange(0, -2, +1)
     assert r.step == -1
 
 
