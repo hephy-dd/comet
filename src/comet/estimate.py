@@ -10,16 +10,18 @@ __all__ = ["Estimate"]
 class Estimate:
     """Estimate elapsed time, remaining time, and progress.
 
-    >>> e = Estimate(42)
-    >>> for _ in range(42):
-    ...     heavy_operation()
-    ...     e.advance()
-    ...     print(e.elapsed)
-    ...     print(e.remaining)
-    ...     print(e.progress)
+    Examples:
+        >>> eta = Estimate(42)
+        >>> for _ in range(42):
+        ...     heavy_operation()
+        ...     eta.advance()
+        ...     print(eta.elapsed)
+        ...     print(eta.remaining)
+        ...     print(eta.progress)
 
-    Negative totals are treated as zero.
-    Calls to `advance()` after completion are ignored.
+    Notes:
+        Negative totals are treated as zero. Calls to `advance()` after all
+        steps have been completed are ignored.
     """
 
     def __init__(self, total: int, *, clock: Callable[[], float] = monotonic) -> None:
@@ -33,7 +35,7 @@ class Estimate:
     def advance(self) -> None:
         """Record completion of one step.
 
-        If all steps are already completed, this call is ignored.
+        Calls after all steps have been completed are ignored.
         """
         if self._passed >= self._total:
             return
@@ -44,19 +46,19 @@ class Estimate:
 
     @property
     def total(self) -> int:
-        """Total number of steps to be processed."""
+        """Return the total number of steps."""
         return self._total
 
     @property
     def passed(self) -> int:
-        """Number of completed steps."""
+        """Return the number of completed steps."""
         return self._passed
 
     @property
     def average(self) -> timedelta:
-        """Average duration of a completed step.
+        """Return the average duration of completed steps.
 
-        Returns `timedelta(0)` until at least one step has been completed.
+        Returns `timedelta(0)` if no steps have been completed.
         """
         if self._passed == 0:
             return timedelta(0)
@@ -64,14 +66,15 @@ class Estimate:
 
     @property
     def elapsed(self) -> timedelta:
-        """Elapsed time since start."""
+        """Return the elapsed time since initialization."""
         return timedelta(seconds=self._clock() - self._start)
 
     @property
     def remaining(self) -> timedelta:
-        """Estimated remaining time based on completed steps.
+        """Return the estimated duration of the remaining steps.
 
-        Returns `timedelta(0)` until at least one step has been completed.
+        The estimate is based on the average duration of completed steps.
+        Returns `timedelta(0)` if no steps have been completed.
         """
         if self._passed == 0:
             return timedelta(0)
@@ -80,5 +83,5 @@ class Estimate:
 
     @property
     def progress(self) -> tuple[int, int]:
-        """Current progress as `(completed, total)`."""
+        """Return progress as `(completed, total)`."""
         return self._passed, self._total
