@@ -70,17 +70,17 @@ with open_emulator(model_urn) as res:
     print(instr.identify())
 ```
 
-To set emulator specific options either provide an `options` dict to
-`open_emulator` or update the `emulator.options` dict directly.
+To set emulator specific options provide an `options` dict to `open_emulator`.
 
 ```python
 from comet.emulator import open_emulator
 
-options = {"correction_open_delay": 2.0}
+options = {
+    "correction_open_delay": 2.0,
+    "cp.min": 2.5e-10,
+    "cp.max": 2.5e-9,
+}
 
 with open_emulator("urn:comet:model:keysight:e4980a", options=options) as res:
-    res.emulator.options.update({
-        "cp.min": 2.5e-10,
-        "cp.max": 2.5e-9,
-    })
+    ...
 ```
