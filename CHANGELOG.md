@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Migrated the build backend from Hatchling to `uv_build` (#126).
+- Refactored station instrument config (#127).
 
 ### Removed
 
