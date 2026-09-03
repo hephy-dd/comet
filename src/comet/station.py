@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import logging
 import os
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Iterator, Mapping
 from contextlib import AbstractContextManager, ExitStack
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Self, TextIO
 
@@ -15,9 +16,6 @@ from schema import And, Optional, Schema, SchemaError, Use
 from comet.driver import Driver, driver_factory
 
 __all__ = ["Station"]
-
-Config = dict[str, Any]
-ResourceFactory = Callable[[Config], AbstractContextManager[Any]]
 
 logger = logging.getLogger(__name__)
 
@@ -34,16 +32,28 @@ INSTRUMENT_SCHEMA: Schema = Schema(
 DEFAULT_CONFIG_FILES: list[str] = ["station.yaml", "station.yml", "station.json"]
 
 
-def default_resource_factory(config: Config) -> Resource:
-    visa_library = config.get("visa_library", "@py")
-    rm = pyvisa.ResourceManager(visa_library)
-    resource_name = config["resource_name"]
-    termination = config.get("termination", "\r\n")
-    timeout_ms = int(config.get("timeout", 8.0) * 1000)
+@dataclass(slots=True)
+class InstrumentConfig:
+    resource_name: str
+    model: str = ""
+    termination: str = "\r\n"
+    timeout: float = 4.0
+    visa_library: str = "@py"
+
+
+ResourceFactory = Callable[[InstrumentConfig], AbstractContextManager[Any]]
+
+
+def default_resource_factory(config: InstrumentConfig) -> Resource:
+    if not config.visa_library:
+        rm = pyvisa.ResourceManager()
+    else:
+        rm = pyvisa.ResourceManager(config.visa_library)
+    timeout_ms = int(config.timeout * 1000)
     return rm.open_resource(
-        resource_name,
-        read_termination=termination,
-        write_termination=termination,
+        config.resource_name,
+        read_termination=config.termination,
+        write_termination=config.termination,
         timeout=timeout_ms,
     )
 
@@ -60,8 +70,8 @@ def find_filenames(default_filenames: list[str]) -> list[str]:
 class Station(Mapping):
     def __init__(self, *, resource_factory: ResourceFactory | None = None) -> None:
         """Create an empty Station instance."""
-        self.instruments_config: Config = {}
-        self._instruments: dict[str, Any] = {}
+        self.instruments_config: dict[str, InstrumentConfig] = {}
+        self._instruments: dict[str, Driver] = {}
         self._stack: ExitStack | None = None
         self.resource_factory: ResourceFactory = (
             resource_factory or default_resource_factory
@@ -69,7 +79,10 @@ class Station(Mapping):
 
     @classmethod
     def from_config(
-        cls, config: Config, *, resource_factory: ResourceFactory | None = None
+        cls,
+        config: Mapping[str, Any],
+        *,
+        resource_factory: ResourceFactory | None = None,
     ) -> Station:
         """
         Create a Station instance from a config dictionary.
@@ -87,19 +100,19 @@ class Station(Mapping):
             Configured Station instance (not yet entered).
         """
         instruments = config.get("instruments", {})
-        validated_configs = {}
+        validated_configs: dict[str, InstrumentConfig] = {}
 
         for name, conf in instruments.items():
             try:
                 validated = INSTRUMENT_SCHEMA.validate(conf)
-                validated_configs[name] = validated
+                validated_configs[name] = InstrumentConfig(**validated)
             except SchemaError as exc:
                 raise ValueError(
                     f"Invalid configuration for instrument {name!r}: {exc}"
                 )
 
         station = cls(resource_factory=resource_factory)
-        station.instruments_config = validated_configs
+        station.instruments_config.update(validated_configs)
         return station
 
     @classmethod
@@ -107,7 +120,7 @@ class Station(Mapping):
         cls,
         config_file: str | Path | TextIO | None = None,
         *,
-        resource_factory: Callable[[dict[str, Any]], Any] | None = None,
+        resource_factory: ResourceFactory | None = None,
     ) -> Station:
         """
         Create a Station instance from a config file.
@@ -159,32 +172,54 @@ class Station(Mapping):
 
         return cls.from_config(config, resource_factory=resource_factory)
 
-    def add_instrument(self, name: str, /, **kwargs) -> None:
+    def add_instrument(
+        self,
+        name: str,
+        /,
+        resource_name: str,
+        model: str | None = None,
+        termination: str | None = None,
+        timeout: float | None = None,
+        visa_library: str | None = None,
+    ) -> None:
         if name in self.instruments_config:
             raise KeyError(f"Instrument {name!r} already in configuration.")
-        self.instruments_config.setdefault(name, {})
-        self.update_instrument(name, **kwargs)
+        config = InstrumentConfig(resource_name=resource_name)
+        if model is not None:
+            config.model = model
+        if termination is not None:
+            config.termination = termination
+        if timeout is not None:
+            config.timeout = timeout
+        if visa_library is not None:
+            config.visa_library = visa_library
+        self.instruments_config[name] = config
 
-    def update_instrument(self, name: str, /, **kwargs):
+    def update_instrument(
+        self,
+        name: str,
+        /,
+        resource_name: str | None = None,
+        model: str | None = None,
+        termination: str | None = None,
+        timeout: float | None = None,
+        visa_library: str | None = None,
+    ):
         if name not in self.instruments_config:
             raise KeyError(f"Instrument {name!r} not found in configuration.")
-        conf_dict = self.instruments_config[name]
-        conf_dict.update(**kwargs)
-        try:
-            validated = INSTRUMENT_SCHEMA.validate(conf_dict)
-            self.instruments_config[name] = validated
-        except SchemaError as e:
-            raise ValueError(f"Invalid update for instrument {name!r}: {e}")
+        config = self.instruments_config[name]
+        if resource_name is not None:
+            config.resource_name = resource_name
+        if model is not None:
+            config.model = model
+        if termination is not None:
+            config.termination = termination
+        if timeout is not None:
+            config.timeout = timeout
+        if visa_library is not None:
+            config.visa_library = visa_library
 
-    def enter_context(self, cm: Any) -> Any:
-        """Enter an context manager and attach it to the station's lifecycle."""
-        if not self._stack:
-            raise RuntimeError(
-                f"{type(self).__name__!r} context is not active, enter context first."
-            )
-        return self._stack.enter_context(cm)
-
-    def __setattr__(self, name, value):
+    def __setattr__(self, name: str, value: Any) -> None:
         """Prevent modifications to instrument attributes once they are set."""
         if "_instruments" in self.__dict__ and name in self.__dict__.get(
             "_instruments", {}
@@ -203,16 +238,13 @@ class Station(Mapping):
                 f"{type(self).__name__!r} has no attribute {name!r}"
             ) from None
 
-    def __getitem__(self, name):
+    def __getitem__(self, name: str) -> Driver:
         return self._instruments[name]
 
-    def __contains__(self, name):
-        return name in self._instruments
-
-    def __iter__(self):
+    def __iter__(self) -> Iterator[str]:
         return iter(self._instruments)
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self._instruments)
 
     def __enter__(self) -> Self:
@@ -220,9 +252,7 @@ class Station(Mapping):
 
         for name, config in self.instruments_config.items():
             resource = self._stack.enter_context(self.resource_factory(config))
-            driver_cls = (
-                driver_factory(config["model"]) if "model" in config else Driver
-            )
+            driver_cls = driver_factory(config.model) if config.model else Driver
             self._instruments[name] = driver_cls(resource)
 
         return self

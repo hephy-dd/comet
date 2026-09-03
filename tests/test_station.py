@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from comet.station import Station, default_resource_factory
+from comet.station import InstrumentConfig, Station, default_resource_factory
 
 
 @pytest.fixture
@@ -26,12 +26,12 @@ def test_default_resource_factory(mock_rm_cls):
     mock_rm.open_resource.return_value = mock_resource
 
     result = default_resource_factory(
-        {
-            "visa_library": "@sim",
-            "resource_name": "GPIB::1::INSTR",
-            "termination": "\n",
-            "timeout": 5.0,
-        }
+        InstrumentConfig(
+            visa_library="@sim",
+            resource_name="GPIB::1::INSTR",
+            termination="\n",
+            timeout=5.0,
+        )
     )
 
     mock_rm_cls.assert_called_once_with("@sim")
@@ -65,10 +65,10 @@ def test_station_from_config():
         }
     )
     assert station.instruments_config == {
-        "smu": {
-            "resource_name": "GPIB::16::INSTR",
-            "model": "urn:comet:model:keithley:2410",
-        }
+        "smu": InstrumentConfig(
+            resource_name="GPIB::16::INSTR",
+            model="urn:comet:model:keithley:2410",
+        )
     }
 
 
@@ -83,10 +83,10 @@ def test_station_from_file_json():
         )
     )
     assert station.instruments_config == {
-        "smu": {
-            "resource_name": "GPIB::16::INSTR",
-            "model": "urn:comet:model:keithley:2410",
-        }
+        "smu": InstrumentConfig(
+            resource_name="GPIB::16::INSTR",
+            model="urn:comet:model:keithley:2410",
+        ),
     }
 
 
@@ -101,10 +101,10 @@ def test_station_from_file_yaml():
         )
     )
     assert station.instruments_config == {
-        "smu": {
-            "resource_name": "GPIB::16::INSTR",
-            "model": "urn:comet:model:keithley:2410",
-        }
+        "smu": InstrumentConfig(
+            resource_name="GPIB::16::INSTR",
+            model="urn:comet:model:keithley:2410",
+        )
     }
 
 
@@ -146,4 +146,4 @@ def test_add_and_update_instrument(mock_resource_factory):
     station.add_instrument("smu", resource_name="GPIB::2::INSTR")
     assert "smu" in station.instruments_config
     station.update_instrument("smu", termination="\n", timeout=3.0)
-    assert station.instruments_config["smu"]["timeout"] == 3.0
+    assert station.instruments_config["smu"].timeout == 3.0
