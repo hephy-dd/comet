@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="MBI" /><link rel="canonical" href="https://hephy-dd.github.io/comet/helpers/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Helpers - COMET</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../extra.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Helpers";
+        var mkdocs_page_input_path = "helpers.md";
+        var mkdocs_page_url = "/comet/helpers/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> COMET
+        </a>
+        <div class="version">
+          1.7.0
+        </div><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../drivers/">Drivers</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../station/">Station</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../emulators/">Emulators</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="#">Helpers</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#estimate">Estimate</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#estimate_1">Estimate</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#filters">Filters</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#std_mean_filter">std_mean_filter</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#functions">Functions</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#linearrange">LinearRange</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#utils">Utils</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#combine_matrix">combine_matrix</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#inverse_square">inverse_square</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#t_dew">t_dew</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#make_iso">make_iso</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#safe_filename">safe_filename</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#quantity">Quantity</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">COMET</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">Helpers</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/hephy-dd/comet/edit/main/docs/helpers.md" class="icon icon-github"> Edit on GitHub</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="helpers">Helpers</h1>
+<h2 id="estimate">Estimate</h2>
+<h3 id="estimate_1"><code>Estimate</code></h3>
+<p>Track progress and estimate the remaining time of an iterative operation.</p>
+<p>Create an <code>Estimate</code> with the total number of steps and call <code>advance()</code> after each completed step:</p>
+<pre><code class="language-python">from comet.estimate import Estimate
+
+eta = Estimate(42)
+
+for _ in range(42):
+    ...
+    eta.advance()
+
+    print(&quot;progress:&quot;, eta.progress)
+    print(&quot;elapsed:&quot;, eta.elapsed)
+    print(&quot;remaining:&quot;, eta.remaining)
+</code></pre>
+<p><code>Estimate</code> provides the following properties:</p>
+<ul>
+<li><code>total</code> — total number of steps</li>
+<li><code>passed</code> — number of completed steps</li>
+<li><code>progress</code> — completed and total steps as <code>(passed, total)</code></li>
+<li><code>elapsed</code> — time elapsed since the estimate was created</li>
+<li><code>average</code> — average duration of completed steps</li>
+<li><code>remaining</code> — estimated duration of the remaining steps</li>
+</ul>
+<p>Timing values are returned as <code>datetime.timedelta</code> objects.</p>
+<p>The remaining time is calculated from the average duration of the steps recorded by <code>advance()</code>:</p>
+<pre><code class="language-python">eta = Estimate(len(items))
+
+for item in items:
+    process(item)
+    eta.advance()
+
+    passed, total = eta.progress
+    print(f&quot;{passed}/{total} - {eta.remaining} remaining&quot;)
+</code></pre>
+<p>Before the first completed step, <code>average</code> and <code>remaining</code> are <code>timedelta(0)</code>. Calls to <code>advance()</code> after all steps have been completed are ignored.</p>
+<h2 id="filters">Filters</h2>
+<h3 id="std_mean_filter"><code>std_mean_filter</code></h3>
+<p>Test whether a series of values is stable within a given threshold.</p>
+<p>Returns <code>True</code> if the ratio of the sample standard deviation to the mean is below <code>threshold</code>, otherwise <code>False</code>.</p>
+<pre><code class="language-python">from comet.filters import std_mean_filter
+
+readings = [0.250, 0.249]
+
+if std_mean_filter(readings, threshold=0.005):
+    ...
+</code></pre>
+<p>This can be used to determine whether repeated measurements have settled within an acceptable relative variation.</p>
+<h2 id="functions">Functions</h2>
+<h3 id="linearrange"><code>LinearRange</code></h3>
+<p>Generate a linear range of floating-point values. The range includes both the start and end values.</p>
+<pre><code class="language-python">from comet.functions import LinearRange
+
+for voltage in LinearRange(-10, 10, 0.25):
+    ...
+</code></pre>
+<p><code>LinearRange</code> automatically adjusts the direction of <code>step</code> to match the range:</p>
+<pre><code class="language-python">list(LinearRange(0, 10, 2.5))
+# [0.0, 2.5, 5.0, 7.5, 10.0]
+
+list(LinearRange(10, 0, 2.5))
+# [10.0, 7.5, 5.0, 2.5, 0.0]
+</code></pre>
+<p>The end value is always included, even when the step does not divide the range evenly:</p>
+<pre><code class="language-python">list(LinearRange(0, 5, 2))
+# [0.0, 2.0, 4.0, 5.0]
+</code></pre>
+<p>Use <code>distance</code> to get the absolute distance between the start and end values:</p>
+<pre><code class="language-python">LinearRange(-2.5, 2.5, 0.5).distance
+# 5.0
+</code></pre>
+<h2 id="utils">Utils</h2>
+<h3 id="combine_matrix"><code>combine_matrix</code></h3>
+<p>Combine multiple iterables into all possible string combinations.</p>
+<pre><code class="language-python">from comet.utils import combine_matrix
+
+print(combine_matrix([&quot;A&quot;, &quot;B&quot;], [&quot;1&quot;, &quot;2&quot;]))
+# ['A1', 'A2', 'B1', 'B2']
+</code></pre>
+<p>Any number of iterables can be combined:</p>
+<pre><code class="language-python">print(combine_matrix([&quot;A&quot;, &quot;B&quot;], [&quot;1&quot;, &quot;2&quot;], [&quot;x&quot;, &quot;y&quot;]))
+# ['A1x', 'A1y', 'A2x', 'A2y', 'B1x', 'B1y', 'B2x', 'B2y']
+</code></pre>
+<h3 id="inverse_square"><code>inverse_square</code></h3>
+<p>Return the inverse square of a value, (1/x^2).</p>
+<pre><code class="language-python">from comet.utils import inverse_square
+
+print(inverse_square(2))
+# 0.25
+
+print(inverse_square(10))
+# 0.01
+</code></pre>
+<h3 id="t_dew"><code>t_dew</code></h3>
+<p>Calculate the dew point from temperature and relative humidity.</p>
+<pre><code class="language-python">from comet.utils import t_dew
+
+dew_point = t_dew(25.0, 60.0)
+
+print(dew_point)
+# 16.68424959549877
+</code></pre>
+<p><code>t</code> is the temperature in °C and <code>rh</code> is the relative humidity in percent.</p>
+<h3 id="make_iso"><code>make_iso</code></h3>
+<p>Create a filesystem-safe ISO-like UTC timestamp.</p>
+<pre><code class="language-python">from comet.utils import make_iso
+
+print(make_iso(1423456789.8))
+# 2015-02-09T05-39-49
+</code></pre>
+<p>Without an argument, the current UTC time is used:</p>
+<pre><code class="language-python">timestamp = make_iso()
+# e.g. '2026-09-02T15-17-42'
+</code></pre>
+<p>A <code>datetime</code> can also be passed directly:</p>
+<pre><code class="language-python">from datetime import UTC, datetime
+
+dt = datetime(2026, 9, 2, 12, 30, tzinfo=UTC)
+
+print(make_iso(dt))
+# 2026-09-02T12-30-00
+</code></pre>
+<h3 id="safe_filename"><code>safe_filename</code></h3>
+<p>Replace characters that are unsafe or inconvenient in filenames with underscores.</p>
+<pre><code class="language-python">from comet.utils import safe_filename
+
+print(safe_filename(&quot;measurement 25°C.txt&quot;))
+# measurement_25_C.txt
+</code></pre>
+<p>Letters, numbers, underscores, hyphens, periods, and path separators are preserved.</p>
+<pre><code class="language-python">print(safe_filename(&quot;results/run #1/data.csv&quot;))
+# results/run_1/data.csv
+</code></pre>
+<h2 id="quantity">Quantity</h2>
+<p>Use <code>Quantity</code> for physical quantities and SI-prefix conversions.</p>
+<pre><code class="language-python">from comet.quantity import Quantity, convert
+</code></pre>
+<p>Create quantities directly:</p>
+<pre><code class="language-python">q = Quantity(25, &quot;nA&quot;)
+
+print(q.magnitude)
+# 25
+
+print(q.unit)
+# nA
+</code></pre>
+<p>Convert between compatible units with <code>to()</code>:</p>
+<pre><code class="language-python">q = Quantity(25, &quot;nA&quot;).to(&quot;mA&quot;)
+
+print(q.magnitude)
+# 2.5e-05
+</code></pre>
+<pre><code class="language-python">q = Quantity(1200, &quot;V&quot;).to(&quot;kV&quot;)
+
+print(q.magnitude)
+# 1.2
+</code></pre>
+<p>Quantities can also be parsed from strings:</p>
+<pre><code class="language-python">q = Quantity.parse(&quot;25 nA&quot;)
+</code></pre>
+<blockquote>
+<p>Note: quantity strings must follow the supported unit syntax of the parser.</p>
+</blockquote>
+<p>Use <code>convert()</code> when only the converted numeric value is needed:</p>
+<pre><code class="language-python">value = convert(1200, &quot;V&quot;, &quot;kV&quot;)
+
+print(value)
+# 1.2
+</code></pre>
+<p>Basic arithmetic preserves the unit and automatically converts compatible quantities when adding or subtracting:</p>
+<pre><code class="language-python">q = Quantity(1, &quot;V&quot;) + Quantity(500, &quot;mV&quot;)
+
+print(q)
+# 1.5V
+</code></pre>
+<p>Scalar multiplication and division are supported:</p>
+<pre><code class="language-python">q = 2.5 * Quantity(1, &quot;pA&quot;)
+
+print(q.magnitude)
+# 2.5
+</code></pre>
+<p>Common aliases such as <code>Ohm</code> are accepted:</p>
+<pre><code class="language-python">q = Quantity(1, &quot;kOhm&quot;)
+
+print(q.to(&quot;Ω&quot;))
+# 1000Ω
+</code></pre>
+<p>Conversions between incompatible units raise <code>ValueError</code>:</p>
+<pre><code class="language-python">Quantity(1, &quot;V&quot;).to(&quot;A&quot;)
+# ValueError
+</code></pre>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../emulators/" class="btn btn-neutral float-left" title="Emulators"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+      <p>COMET is licensed under the <a href="https://github.com/hephy-dd/comet/LICENSE">GNU General Public License Version 3</a></p>
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/hephy-dd/comet/" class="fa fa-github" style="color: #fcfcfc"> GitHub</a>
+        </span>
+    
+    
+      <span><a href="../emulators/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
