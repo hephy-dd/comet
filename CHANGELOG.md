@@ -7,10 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.7.0] - 2026-09-11
+
 ### Added
 
 - Sense current range routes to Keithley 2470 emulator (#123).
-- ITK Andromeda emulator (#124).
+- ITK Andromeda driver and emulator (#130, #124).
+- Add `Quantity` helper for physical quantities and unit conversions (#129).
 
 ### Changed
 
@@ -21,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `parameter` module; use Pydantic or another validation/modeling library instead (#125).
 - `pint` dependency and exposed `ureg`; use `pint` directly when unit handling is required (#125).
+- Remove obsolete `MANIFEST.in` (#128).
 
 ## [1.6.0] - 2026-07-30
 
@@ -198,7 +202,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - ITK CorvusTT emulator.
 
-[unreleased]: https://github.com/hephy-dd/comet/compare/v1.6.0...HEAD
+[unreleased]: https://github.com/hephy-dd/comet/compare/v1.7.0...HEAD
+[1.7.0]: https://github.com/hephy-dd/comet/compare/v1.7.0...v1.7.0
 [1.6.0]: https://github.com/hephy-dd/comet/compare/v1.5.1...v1.6.0
 [1.5.1]: https://github.com/hephy-dd/comet/compare/v1.5.0...v1.5.1
 [1.5.0]: https://github.com/hephy-dd/comet/compare/v1.4.2...v1.5.0
