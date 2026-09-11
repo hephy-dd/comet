@@ -200,24 +200,89 @@ print(safe_filename("results/run #1/data.csv"))
 # results/run_1/data.csv
 ```
 
-### Unit conversions
+## Quantity
 
-Use [pint](https://pint.readthedocs.io/en/stable/) directly when working with physical quantities and unit conversions.
+Use `Quantity` for physical quantities and SI-prefix conversions.
 
 ```python
-import pint
+from comet.quantity import Quantity, convert
+```
 
-ureg = pint.UnitRegistry()
+Create quantities directly:
 
-q = ureg("25 nA").to("mA")
+```python
+q = Quantity(25, "nA")
+
+print(q.magnitude)
+# 25
+
+print(q.unit)
+# nA
+```
+
+Convert between compatible units with `to()`:
+
+```python
+q = Quantity(25, "nA").to("mA")
+
 print(q.magnitude)
 # 2.5e-05
+```
 
-q = ureg("1200 V").to("kV")
+```python
+q = Quantity(1200, "V").to("kV")
+
 print(q.magnitude)
 # 1.2
+```
 
-q = 2.5 * ureg("pA")
+Quantities can also be parsed from strings:
+
+```python
+q = Quantity.parse("25 nA")
+```
+
+> Note: quantity strings must follow the supported unit syntax of the parser.
+
+Use `convert()` when only the converted numeric value is needed:
+
+```python
+value = convert(1200, "V", "kV")
+
+print(value)
+# 1.2
+```
+
+Basic arithmetic preserves the unit and automatically converts compatible quantities when adding or subtracting:
+
+```python
+q = Quantity(1, "V") + Quantity(500, "mV")
+
+print(q)
+# 1.5V
+```
+
+Scalar multiplication and division are supported:
+
+```python
+q = 2.5 * Quantity(1, "pA")
+
 print(q.magnitude)
 # 2.5
+```
+
+Common aliases such as `Ohm` are accepted:
+
+```python
+q = Quantity(1, "kOhm")
+
+print(q.to("Ω"))
+# 1000Ω
+```
+
+Conversions between incompatible units raise `ValueError`:
+
+```python
+Quantity(1, "V").to("A")
+# ValueError
 ```
