@@ -1,7 +1,0 @@
-include README.md
-include LICENSE
-include tox.ini
-include mkdocs.yml
-
-include docs/extra.css
-recursive-include docs/ *.md
