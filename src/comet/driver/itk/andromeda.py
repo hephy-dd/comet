@@ -7,18 +7,18 @@ from comet.driver.generic.motion_controller import (
     Position,
 )
 
-__all__ = ["Hydra"]
+__all__ = ["Andromeda"]
 
 ERROR_MESSAGES: dict[int, str] = {
     0: "no error",
     4: "internal error",
-    100: "devicenumber out of range",
-    101: "stack underflow or cmd not found at 0",
+    100: "device number out of range",
     102: "undefined symbol",
     1001: "wrong parameter type",
     1002: "stack underflow: too few parameters on stack",
     1003: "parameter out of range",
     1004: "move out of limits requested",
+    1009: "parameter stack overflow",
     2000: "undefined command",
     3000: "no configuration file available",
     3001: "error in configuration file",
@@ -33,8 +33,8 @@ def format_position_arg(value: float) -> str:
 def format_position_args(position: Position) -> str:
     values = [format_position_arg(value) for value in position]
 
-    if len(values) != 2:
-        raise ValueError(f"Expected 2 axis values, got {len(values)}")
+    if not 1 <= len(values) <= 6:
+        raise ValueError(f"Expected 1-6 axis values, got {len(values)}")
 
     return " ".join(values)
 
@@ -47,7 +47,7 @@ def parse_error(response: str) -> InstrumentError | None:
     return None
 
 
-class HydraAxis(MotionControllerAxis):
+class AndromedaAxis(MotionControllerAxis):
     def calibrate(self) -> None:
         self.resource.write(f"{self.index:d} ncal")
 
@@ -77,8 +77,8 @@ class HydraAxis(MotionControllerAxis):
         return bool(int(result) & 0x1)
 
 
-class Hydra(MotionController):
-    AXES: Final[list[int]] = [1, 2]
+class Andromeda(MotionController):
+    AXES: Final[list[int]] = [1, 2, 3, 4, 5, 6]
 
     def identify(self) -> str:
         return self.resource.query("identify").strip()
@@ -91,10 +91,10 @@ class Hydra(MotionController):
         response = self.resource.query("ge")
         return parse_error(response)
 
-    def __getitem__(self, index: int) -> HydraAxis:
+    def __getitem__(self, index: int) -> AndromedaAxis:
         if index not in type(self).AXES:
             raise IndexError(index)
-        return HydraAxis(self.resource, index)
+        return AndromedaAxis(self.resource, index)
 
     def calibrate(self) -> None:
         for index in type(self).AXES:
@@ -125,8 +125,8 @@ class Hydra(MotionController):
 
     @property
     def position(self) -> Position:
-        x, y = self.resource.query("p").split()
-        return [float(x), float(y)]
+        x, y, z, a, b, c = self.resource.query("p").split()
+        return [float(x), float(y), float(z), float(a), float(b), float(c)]
 
     @property
     def is_moving(self) -> bool:

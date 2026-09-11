@@ -27,6 +27,19 @@ ERROR_MESSAGES: dict[int, str] = {
 }
 
 
+def format_position_arg(value: float) -> str:
+    return format(value, ".4f")
+
+
+def format_position_args(position: Position) -> str:
+    values = [format_position_arg(value) for value in position]
+
+    if len(values) != 3:
+        raise ValueError(f"Expected 3 axis values, got {len(values)}")
+
+    return " ".join(values)
+
+
 def parse_error(response: str) -> InstrumentError | None:
     if not response.strip().isnumeric():
         raise ValueError(f"Invalid error response, not a number: {response!r}")
@@ -51,10 +64,10 @@ class CorvusAxis(MotionControllerAxis):
         return int(result) == 0x3
 
     def move_absolute(self, value: float) -> None:
-        self.resource.write(f"{value:.3f} {self.index:d} nmove")
+        self.resource.write(f"{format_position_arg(value)} {self.index:d} nmove")
 
     def move_relative(self, value: float) -> None:
-        self.resource.write(f"{value:.3f} {self.index:d} nrmove")
+        self.resource.write(f"{format_position_arg(value)} {self.index:d} nrmove")
 
     @property
     def position(self) -> float:
@@ -98,12 +111,10 @@ class CorvusTT(MotionController):
         return all(self[axis].is_calibrated for axis in self.AXIS_IDS)
 
     def move_absolute(self, position: Position) -> None:
-        values = " ".join([format(value, ".3f") for value in position])
-        self.resource.write(f"{values} move")
+        self.resource.write(f"{format_position_args(position)} move")
 
     def move_relative(self, position: Position) -> None:
-        values = " ".join([format(value, ".3f") for value in position])
-        self.resource.write(f"{values} rmove")
+        self.resource.write(f"{format_position_args(position)} rmove")
 
     def abort(self) -> None:
         self.resource.write("abort")

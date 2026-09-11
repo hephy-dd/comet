@@ -1,10 +1,10 @@
 import pytest
 
-from comet.driver.itk import CorvusTT
+from comet.driver.itk.corvustt import CorvusTT
 
 
 @pytest.fixture
-def driver(resource):
+def driver(resource) -> CorvusTT:
     return CorvusTT(resource)
 
 
@@ -30,12 +30,12 @@ def test_corvus(driver, resource):
     assert resource.buffer == ["1 getcaldone", "2 getcaldone"]
 
     resource.buffer = []
-    assert driver.move_absolute([0, 4.2]) is None
-    assert resource.buffer == ["0.000 4.200 move"]
+    assert driver.move_absolute([0, 4.2, 1.0]) is None
+    assert resource.buffer == ["0.0000 4.2000 1.0000 move"]
 
     resource.buffer = []
-    assert driver.move_relative([0, 2.1]) is None
-    assert resource.buffer == ["0.000 2.100 rmove"]
+    assert driver.move_relative([0, 2.1, -0.1]) is None
+    assert resource.buffer == ["0.0000 2.1000 -0.1000 rmove"]
 
     resource.buffer = []
     assert driver.abort() is None
@@ -45,8 +45,8 @@ def test_corvus(driver, resource):
     assert driver.force_abort() is None
     assert resource.buffer == ["\x03"]
 
-    resource.buffer = ["2.100 4.200"]
-    assert driver.position == [2.1, 4.2]
+    resource.buffer = ["2.1000 4.2000 0.000"]
+    assert driver.position == [2.1, 4.2, 0.0]
     assert resource.buffer == ["pos"]
 
     resource.buffer = ["3"]
@@ -81,11 +81,11 @@ def test_corvus_axes(driver, resource):
 
     resource.buffer = []
     assert driver[3].move_absolute(2.4) is None
-    assert resource.buffer == ["2.400 3 nmove"]
+    assert resource.buffer == ["2.4000 3 nmove"]
 
     resource.buffer = []
     assert driver[1].move_relative(1.2) is None
-    assert resource.buffer == ["1.200 1 nrmove"]
+    assert resource.buffer == ["1.2000 1 nrmove"]
 
     resource.buffer = ["4.200"]
     assert driver[2].position == 4.2

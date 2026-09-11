@@ -109,6 +109,10 @@ class AndromedaEmulator(Emulator):
 
         return format(self.position[axis], ".6f")
 
+    @message(r"p$")
+    def get_p(self) -> str | None:
+        return " ".join([format(p, ".6f") for p in self.position.values()])
+
     @message(r"(.+)\s+m$")
     def set_move(self, values: str) -> None:
         vector = self._parse_vector(values)

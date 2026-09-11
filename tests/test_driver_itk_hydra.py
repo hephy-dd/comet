@@ -1,10 +1,10 @@
 import pytest
 
-from comet.driver.itk import Hydra
+from comet.driver.itk.hydra import Hydra
 
 
 @pytest.fixture
-def driver(resource):
+def driver(resource) -> Hydra:
     return Hydra(resource)
 
 
@@ -23,11 +23,11 @@ def test_hydra(driver, resource):
 
     resource.buffer = []
     assert driver.move_absolute([0, 4.2]) is None
-    assert resource.buffer == ["0.000 4.200 m"]
+    assert resource.buffer == ["0.0000 4.2000 m"]
 
     resource.buffer = []
     assert driver.move_relative([0, 2.1]) is None
-    assert resource.buffer == ["0.000 2.100 r"]
+    assert resource.buffer == ["0.0000 2.1000 r"]
 
     resource.buffer = []
     assert driver.abort() is None
@@ -37,7 +37,7 @@ def test_hydra(driver, resource):
     assert driver.force_abort() is None
     assert resource.buffer == ["\x03"]
 
-    resource.buffer = ["2.100 4.200"]
+    resource.buffer = ["2.1000 4.2000"]
     assert driver.position == [2.1, 4.2]
     assert resource.buffer == ["p"]
 
@@ -73,11 +73,11 @@ def test_hydra_axes(driver, resource):
 
     resource.buffer = []
     assert driver[2].move_relative(1.2) is None
-    assert resource.buffer == ["1.200 2 nr"]
+    assert resource.buffer == ["1.2000 2 nr"]
 
     resource.buffer = []
     assert driver[1].move_absolute(2.2) is None
-    assert resource.buffer == ["2.200 1 nm"]
+    assert resource.buffer == ["2.2000 1 nm"]
 
     resource.buffer = ["4.200"]
     assert driver[1].position == 4.2
