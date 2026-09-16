@@ -3,6 +3,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 
 __all__ = [
     "Error",
@@ -49,14 +50,14 @@ def scpi_parse_bool(s: str) -> bool:
 
 
 def generate_waveform(
-    n_points=1000,
-    duration=1e-3,  # 1 ms total time
-    baseline=0.0,  # DC baseline level
-    spike_time=0.5e-3,  # spike occurs at 0.5 ms
-    spike_width=5e-6,  # spike duration 5 µs
-    spike_amplitude=2.0,  # spike height
-    noise_std=0.0,  # optional Gaussian noise
-):
+    n_points: int = 1000,
+    duration: float = 1e-3,  # 1 ms total time
+    baseline: float = 0.0,  # DC baseline level
+    spike_time: float = 0.5e-3,  # spike occurs at 0.5 ms
+    spike_width: float = 5e-6,  # spike duration 5 µs
+    spike_amplitude: float = 2.0,  # spike height
+    noise_std: float = 0.0,  # optional Gaussian noise
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     """Create a waveform with a DC baseline and one spike for testing."""
     # Time axis
     t = np.linspace(0, duration, n_points, endpoint=False)
