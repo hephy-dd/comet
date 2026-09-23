@@ -4,7 +4,7 @@ build-backend = "uv_build"
 
 [project]
 name = "comet"
-version = "1.7.0"
+version = "1.7.1"
 description = "Control and Measurement Toolkit"
 authors = [
   {name = "Bernhard Arnold", email = "bernhard.arnold@oeaw.ac.at"},

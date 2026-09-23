@@ -23,7 +23,7 @@ applications. Inspired by
 Install from GitHub using pip
 
 ```bash
-pip install https://github.com/hephy-dd/comet/archive/refs/tags/v1.7.0.tar.gz
+pip install https://github.com/hephy-dd/comet/archive/refs/tags/v1.7.1.tar.gz
 ```
 
 ## Quick Example
