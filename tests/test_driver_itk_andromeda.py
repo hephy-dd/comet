@@ -19,14 +19,11 @@ def test_andromeda(driver, resource):
         "1 ncal",
         "2 ncal",
         "3 ncal",
-        "4 ncal",
-        "5 ncal",
-        "6 ncal",
     ]
 
     resource.buffer = []
     assert driver.range_measure() is None
-    assert resource.buffer == ["1 nrm", "2 nrm", "3 nrm", "4 nrm", "5 nrm", "6 nrm"]
+    assert resource.buffer == ["1 nrm", "2 nrm", "3 nrm"]
 
     resource.buffer = []
     assert driver.move_absolute([0, 4.2, 1.0]) is None
@@ -42,17 +39,14 @@ def test_andromeda(driver, resource):
         "1 nabort",
         "2 nabort",
         "3 nabort",
-        "4 nabort",
-        "5 nabort",
-        "6 nabort",
     ]
 
     resource.buffer = []
     assert driver.force_abort() is None
     assert resource.buffer == ["\x03"]
 
-    resource.buffer = ["2.1000 4.2000 0.1000 0.0000 0.0000 0.0000"]
-    assert driver.position == [2.1, 4.2, 0.1, 0.0, 0.0, 0.0]
+    resource.buffer = ["2.1000 4.2000 0.1000"]
+    assert driver.position == [2.1, 4.2, 0.1]
     assert resource.buffer == ["p"]
 
     resource.buffer = ["3"]
@@ -63,26 +57,24 @@ def test_andromeda(driver, resource):
     assert not driver.is_moving
     assert resource.buffer == ["st"]
 
-    resource.buffer = ["1", "0", "0", "0", "0", "0"]
+    resource.buffer = [
+        "1",
+        "0",
+        "0",
+    ]
     assert driver.joystick_enabled
     assert resource.buffer == [
         "1 getmanctrl",
         "2 getmanctrl",
         "3 getmanctrl",
-        "4 getmanctrl",
-        "5 getmanctrl",
-        "6 getmanctrl",
     ]
 
-    resource.buffer = ["0", "0", "0", "0", "0", "0"]
+    resource.buffer = ["0", "0", "0"]
     assert not driver.joystick_enabled
     assert resource.buffer == [
         "1 getmanctrl",
         "2 getmanctrl",
         "3 getmanctrl",
-        "4 getmanctrl",
-        "5 getmanctrl",
-        "6 getmanctrl",
     ]
 
     resource.buffer = []
@@ -91,9 +83,6 @@ def test_andromeda(driver, resource):
         "15 1 setmanctrl",
         "15 2 setmanctrl",
         "15 3 setmanctrl",
-        "15 4 setmanctrl",
-        "15 5 setmanctrl",
-        "15 6 setmanctrl",
     ]
 
 
