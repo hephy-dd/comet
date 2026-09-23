@@ -19,6 +19,20 @@ class ErrorType(IntEnum):
     UNDEFINED_COMMAND = 2000
 
 
+def parse_version(options: dict) -> float:
+    version = options.get("version")
+    if not isinstance(version, float):
+        return 1.0
+    return float(version)
+
+
+def parse_axis_count(options: dict) -> int:
+    axis_count = options.get("axis_count")
+    if not isinstance(axis_count, int):
+        return 3
+    return max(1, min(6, int(axis_count)))
+
+
 class AndromedaEmulator(Emulator):
     def __init__(self, context: Context) -> None:
         super().__init__(context)
@@ -26,9 +40,10 @@ class AndromedaEmulator(Emulator):
         options = context.options
 
         self.identity: str = options.get("identity", "Andromeda 0 0 0 0")
-        self.version: float = options.get("version", 1.0)
+        self.version: float = parse_version(options)
         self.mac_address: str = options.get("mac_address", "00:00:00:00:00:00")
         self.serial_no: str = options.get("serial_no", "00770031")
+        self.axis_count: int = parse_axis_count(options)
 
         position: dict[str, float] = options.get("position", {})
 
@@ -102,6 +117,10 @@ class AndromedaEmulator(Emulator):
         status |= (rm & 0x1) << 4
         return str(status)
 
+    @message(r"getaxc$")
+    def get_axis_count(self) -> str:
+        return f"{self.axis_count}"
+
     @message(r"(\S+)\s+np$")
     def get_np(self, axis: str) -> str | None:
         if self._parse_axis(axis) is None:
@@ -111,7 +130,9 @@ class AndromedaEmulator(Emulator):
 
     @message(r"p$")
     def get_p(self) -> str | None:
-        return " ".join([format(p, ".6f") for p in self.position.values()])
+        return " ".join(
+            [format(p, ".6f") for p in self.position.values()][: self.axis_count]
+        )
 
     @message(r"(.+)\s+m$")
     def set_move(self, values: str) -> None:
@@ -164,7 +185,7 @@ class AndromedaEmulator(Emulator):
             self.errors.append(ErrorType.WRONG_PARAMETER_TYPE)
             return None
 
-        if not 1 <= axis_num <= 6:
+        if not 1 <= axis_num <= self.axis_count:
             self.errors.append(ErrorType.DEVICE_OUT_OF_RANGE)
             return None
 
@@ -177,7 +198,7 @@ class AndromedaEmulator(Emulator):
             self.errors.append(ErrorType.NOT_ENOUGH_PARAMETERS)
             return None
 
-        if len(values_str) > 6:
+        if len(values_str) > self.axis_count:
             self.errors.append(ErrorType.PARAMETER_OUT_OF_RANGE)
             return None
 

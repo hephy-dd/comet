@@ -33,8 +33,8 @@ def format_position_arg(value: float) -> str:
 def format_position_args(position: Position) -> str:
     values = [format_position_arg(value) for value in position]
 
-    if not 1 <= len(values) <= 6:
-        raise ValueError(f"Expected 1-6 axis values, got {len(values)}")
+    if not 1 <= len(values) <= 3:
+        raise ValueError(f"Expected 1-3 axis values, got {len(values)}")
 
     return " ".join(values)
 
@@ -78,7 +78,9 @@ class AndromedaAxis(MotionControllerAxis):
 
 
 class Andromeda(MotionController):
-    AXES: Final[list[int]] = [1, 2, 3, 4, 5, 6]
+    """Driver for the Andromeda 3RM eco controller."""
+
+    AXES: Final[list[int]] = [1, 2, 3]
 
     def identify(self) -> str:
         return self.resource.query("identify").strip()
@@ -125,8 +127,8 @@ class Andromeda(MotionController):
 
     @property
     def position(self) -> Position:
-        x, y, z, a, b, c = self.resource.query("p").split()
-        return [float(x), float(y), float(z), float(a), float(b), float(c)]
+        x, y, z = self.resource.query("p").split()
+        return [float(x), float(y), float(z)]
 
     @property
     def is_moving(self) -> bool:
