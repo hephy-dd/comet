@@ -1,6 +1,7 @@
 import random
 
-from comet.emulator import Emulator, message
+from comet.emulator import Emulator
+from comet.emulator.router import scpi
 
 __all__ = ["IEC60488Emulator"]
 
@@ -8,41 +9,41 @@ __all__ = ["IEC60488Emulator"]
 class IEC60488Emulator(Emulator):
     IDENTITY: str = "Generic IEC60488 Instrument (Emulator)"
 
-    @message(r"\*IDN\?$")
-    def get_idn(self):
+    @scpi("*IDN?")
+    def get_idn(self) -> str:
         return self.context.options.get("identity", self.IDENTITY)
 
-    @message(r"\*ESR\?$")
-    def get_esr(self):
+    @scpi("*ESR?")
+    def get_esr(self) -> int:
         return random.choice((0, 1))  # emulate operation complete
 
-    @message(r"\*ESE\?$")
-    def get_ese(self):
+    @scpi("*ESE?")
+    def get_ese(self) -> int:
         return 0
 
-    @message(r"\*ESE (\d+)$")
-    def set_ese(self, value): ...
+    @scpi("*ESE")
+    def set_ese(self, value) -> None: ...
 
-    @message(r"\*STB\?$")
-    def get_stb(self):
+    @scpi("*STB?")
+    def get_stb(self) -> int:
         return 0
 
-    @message(r"\*OPC\?$")
-    def get_opc(self):
+    @scpi("*OPC?")
+    def get_opc(self) -> int:
         return 1
 
-    @message(r"\*OPC$")
-    def set_opc(self): ...
+    @scpi("*OPC")
+    def set_opc(self) -> None: ...
 
-    @message(r"\*RST$")
-    def set_rst(self): ...
+    @scpi("*RST")
+    def set_rst(self) -> None: ...
 
-    @message(r"\*CLS$")
-    def set_cls(self): ...
+    @scpi("*CLS")
+    def set_cls(self) -> None: ...
 
-    @message(r"\*TST\?$")
-    def get_tst(self):
+    @scpi("*TST?")
+    def get_tst(self) -> int:
         return 0
 
-    @message(r"\*WAI$")
-    def set_wai(self): ...
+    @scpi("*WAI")
+    def set_wai(self) -> None: ...

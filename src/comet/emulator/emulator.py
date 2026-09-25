@@ -3,13 +3,16 @@ from __future__ import annotations
 import importlib
 import inspect
 import logging
-import re
-from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any
 
 from ..utils import parse_model_urn
 from .response import Response, make_response
+from .router import NoRouteError, Router
+from .router.regex import regex
+
+# Backward-compatible name for existing emulators.
+message = regex
 
 __all__ = ["Emulator", "Context", "emulator_cls_factory", "message"]
 
@@ -48,58 +51,6 @@ def emulator_cls_factory(model_urn: str) -> type[Emulator]:
     return emulator_registry[key]
 
 
-def normalize_route(pattern: str) -> str:
-    """Remove a leading ^ only if it's at the very start of the regex (and not escaped)."""
-    if pattern.startswith("^") and not pattern.startswith(r"\^"):
-        return pattern[1:]
-    return pattern
-
-
-class Route:
-    """Route wrapper for message routing."""
-
-    __slots__ = ["method", "pattern", "route"]
-
-    def __init__(self, route: str, method: Callable[..., Any]) -> None:
-        self.route: str = normalize_route(route)
-        self.pattern = re.compile(self.route)  # precompile for speed
-        self.method: Callable[..., Any] = method
-
-    def __call__(self, *args, **kwargs) -> Any:
-        return self.method(*args, **kwargs)
-
-    def match(self, message: str) -> tuple[str, ...] | None:
-        m = self.pattern.match(message)
-        return m.groups() if m else None
-
-
-def get_routes(cls: type) -> list[Route]:
-    """Return routes with subclass overrides by regex pattern."""
-    by_pattern: dict[tuple[str, int], Route] = {}
-
-    # Subclass first, bases later, so subclass wins.
-    for cls_ in cls.__mro__:
-        for attr in cls_.__dict__.values():
-            if isinstance(attr, Route):
-                key = (attr.pattern.pattern, attr.pattern.flags)
-                # keep the first seen (from the most-derived class)
-                by_pattern.setdefault(key, attr)
-
-    routes = list(by_pattern.values())
-    # Reverse sort by expression length for specificity; tie-breaker: method name.
-    routes.sort(key=lambda r: (-len(r.pattern.pattern), r.method.__name__))
-    return routes
-
-
-def message(route: str) -> Callable[[Callable[..., Any]], Route]:
-    """Decorator to register a regex route for an emulator method."""
-
-    def decorator(method: Callable[..., Any]) -> Route:
-        return Route(route, method)
-
-    return decorator
-
-
 @dataclass
 class Context:
     options: dict[str, Any] = field(default_factory=dict)
@@ -108,16 +59,20 @@ class Context:
 class Emulator:
     def __init__(self, context: Context) -> None:
         self.context = context
+        self.router = Router(self)
 
     def __call__(self, message: str) -> Response | list[Response] | None:
         logger.debug("handle message: %s", message)
-        for route in get_routes(type(self)):
-            args = route.match(message)
-            if args is not None:
-                response = route(self, *args)
-                if response is not None:
-                    if isinstance(response, (list, tuple)):
-                        return [make_response(res) for res in response]
-                    return make_response(response)
-                return response
-        return None
+
+        try:
+            response = self.router.dispatch(message)
+        except NoRouteError:
+            return None
+
+        if response is None:
+            return None
+
+        if isinstance(response, (list, tuple)):
+            return [make_response(res) for res in response]
+
+        return make_response(response)

@@ -72,8 +72,8 @@ class K6517BEmulator(IEC60488Emulator):
         return "READ"
 
     @message(r"\*ESR\?$")
-    def get_esr(self) -> str:
-        return format(random.randint(0, 1))
+    def get_esr(self) -> int:
+        return random.randint(0, 1)
 
     @message(r":?SYST:ERR\?$")
     def get_system_error(self) -> str:
