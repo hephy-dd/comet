@@ -28,9 +28,24 @@ import asyncio
 import logging
 from importlib.metadata import version
 
+from .service import AsyncEmulatorStackService
 from .stack import AsyncEmulatorStack
 
 logger = logging.getLogger(__name__)
+
+
+def port_number(value: str) -> int:
+    port = int(value)
+    if not 1 <= port <= 65535:
+        raise argparse.ArgumentTypeError("port must be between 1 and 65535")
+    return port
+
+
+def positive_float(value: str) -> float:
+    number = float(value)
+    if number <= 0:
+        raise argparse.ArgumentTypeError("value must be greater than zero")
+    return number
 
 
 def parse_args() -> argparse.Namespace:
@@ -40,6 +55,19 @@ def parse_args() -> argparse.Namespace:
         "--file",
         dest="filename",
         metavar="filename",
+    )
+    parser.add_argument(
+        "--service-port",
+        type=port_number,
+        metavar="port",
+        help="Enable the emulator hook JSON-RPC service on localhost",
+    )
+    parser.add_argument(
+        "--service-session-timeout",
+        type=positive_float,
+        default=30.0,
+        metavar="seconds",
+        help="Close inactive service sessions after this many seconds (default: 30)",
     )
     parser.add_argument(
         "--version",
@@ -56,7 +84,15 @@ async def async_main() -> None:
     logging.basicConfig(level=logging.INFO)
 
     async with AsyncEmulatorStack.from_file(args.filename or None) as stack:
-        await stack.serve_forever()
+        if args.service_port is None:
+            await stack.serve_forever()
+        else:
+            async with AsyncEmulatorStackService(
+                stack,
+                args.service_port,
+                args.service_session_timeout,
+            ):
+                await stack.serve_forever()
 
 
 def main() -> None:

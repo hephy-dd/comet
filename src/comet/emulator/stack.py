@@ -12,7 +12,7 @@ import yaml
 from .emulator import Context, Emulator, emulator_cls_factory
 from .tcpserver import TCPServer, TCPServerContext
 
-__all__ = ["AsyncEmulatorStack", "EmulatorStack"]
+__all__ = ["AsyncEmulatorStack"]
 
 DEFAULT_CONFIG_FILES: Final[list[str]] = [
     "emulators.yaml",
@@ -222,34 +222,3 @@ class AsyncEmulatorStack:
 
     async def __aexit__(self, exc_type, exc, tb) -> None:
         await self.shutdown()
-
-
-class EmulatorStack:
-    def __init__(self, stack: AsyncEmulatorStack) -> None:
-        self._stack = stack
-
-    @classmethod
-    def from_config(cls, config: Mapping[str, Any]) -> Self:
-        return cls(AsyncEmulatorStack.from_config(config))
-
-    @classmethod
-    def from_file(
-        cls,
-        config_file: str | Path | TextIO | None = None,
-    ) -> Self:
-        return cls(AsyncEmulatorStack.from_file(config_file))
-
-    def serve_forever(self) -> None:
-        asyncio.run(self._serve_forever())
-
-    async def _serve_forever(self) -> None:
-        async with self._stack:
-            await self._stack.serve_forever()
-
-    def before_message(
-        self, name: str
-    ) -> Callable[[BeforeMessageHook], BeforeMessageHook]:
-        return self._stack.before_message(name)
-
-    def __getitem__(self, name: str) -> Emulator:
-        return self._stack.emulators[name]
