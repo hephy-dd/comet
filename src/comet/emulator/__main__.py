@@ -25,96 +25,27 @@ Hit Ctrl+C to stop all emulator sockets.
 
 import argparse
 import asyncio
-import contextlib
 import logging
-import os
-import signal
 from importlib.metadata import version
-from typing import Any
 
-import schema
-import yaml
-
-from .emulator import Context, emulator_cls_factory
-from .tcpserver import TCPServer, TCPServerContext
+from .service import AsyncEmulatorStackService
+from .stack import AsyncEmulatorStack
 
 logger = logging.getLogger(__name__)
 
-default_config_filenames: list[str] = ["emulators.yaml", "emulators.yml"]
-default_host: str = "localhost"
-default_termination: str = "\n"
-default_request_delay: float = 0.1
 
-termination_aliases: dict[str, str] = {
-    "\r": "\r",
-    "\n": "\n",
-    "\r\n": "\r\n",
-    "CR": "\r",
-    "LF": "\n",
-    "CRLF": "\r\n",
-    "": "",
-}
+def port_number(value: str) -> int:
+    port = int(value)
+    if not 1 <= port <= 65535:
+        raise argparse.ArgumentTypeError("port must be between 1 and 65535")
+    return port
 
 
-def normalize_termination(value: str) -> str:
-    if value not in termination_aliases:
-        raise schema.SchemaError(
-            f"Invalid termination: {value!r}."
-            f" Must be one of {list(termination_aliases)}"
-        )
-    return termination_aliases[value]
-
-
-config_schema = schema.Schema(
-    {
-        schema.Optional("version"): str,
-        "emulators": {
-            str: {
-                schema.Optional(schema.Or("model", "module")): str,  # type: ignore
-                schema.Optional("host"): str,
-                "port": schema.And(
-                    int,
-                    lambda p: 1 <= p <= 65535,
-                    error="port must be an integer between 1 and 65535",
-                ),
-                schema.Optional("termination"): schema.And(
-                    str,
-                    schema.Use(normalize_termination),  # type: ignore
-                ),
-                schema.Optional("request_delay"): schema.And(
-                    schema.Use(float),  # type: ignore
-                    lambda d: d >= 0,
-                    error="request_delay must be >= 0",
-                ),
-                schema.Optional("options"): dict,
-            }
-        },
-    }
-)
-
-
-def load_config(filename: str) -> dict[str, Any]:
-    with open(filename) as fp:
-        data = yaml.safe_load(fp)
-    config = validate_config(data or {})
-    for name, params in config.get("emulators", {}).items():
-        if "model" in params and "module" in params:
-            raise KeyError("keys 'model' and 'module' are exclusive")
-        if "module" in params:
-            logger.warning(
-                "Emulator %r uses deprecated config key 'module'; "
-                "use 'model' instead. Support exists only for backward compatibility.",
-                name,
-            )
-        params.setdefault("host", default_host)
-        params.setdefault("termination", default_termination)
-        params.setdefault("request_delay", default_request_delay)
-        params.setdefault("options", {})
-    return config
-
-
-def validate_config(config: dict[str, Any]) -> dict[str, Any]:
-    return config_schema.validate(config)
+def positive_float(value: str) -> float:
+    number = float(value)
+    if number <= 0:
+        raise argparse.ArgumentTypeError("value must be greater than zero")
+    return number
 
 
 def parse_args() -> argparse.Namespace:
@@ -126,6 +57,19 @@ def parse_args() -> argparse.Namespace:
         metavar="filename",
     )
     parser.add_argument(
+        "--service-port",
+        type=port_number,
+        metavar="port",
+        help="Enable the emulator hook JSON-RPC service on localhost",
+    )
+    parser.add_argument(
+        "--service-session-timeout",
+        type=positive_float,
+        default=30.0,
+        metavar="seconds",
+        help="Close inactive service sessions after this many seconds (default: 30)",
+    )
+    parser.add_argument(
         "--version",
         action="version",
         version=f"%(prog)s {version('comet')}",
@@ -134,81 +78,21 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def locate_config_filename() -> str:
-    for filename in default_config_filenames:
-        if os.path.isfile(filename):
-            return filename
-    raise RuntimeError("No config file found.")
-
-
 async def async_main() -> None:
     args = parse_args()
 
     logging.basicConfig(level=logging.INFO)
 
-    config = load_config(args.filename or locate_config_filename())
-
-    servers: list[TCPServer] = []
-
-    for name, params in config.get("emulators", {}).items():
-        model = params.get("model") or params.get("module")  # fallback for comet<1.5
-        host = params.get("host")
-        port = params.get("port")
-        termination_bytes = params.get("termination").encode()
-        request_delay = params.get("request_delay")
-        options = params.get("options", {})
-
-        context = Context(options=options)
-        cls = emulator_cls_factory(model)
-        emulator = cls(context)
-
-        server_context = TCPServerContext(
-            name=name,
-            emulator=emulator,
-            termination=termination_bytes,
-            request_delay=request_delay,
-            logger=logging.getLogger(name),
-        )
-        server = TCPServer((host, port), server_context)
-        await server.start()
-        servers.append(server)
-
-    for server in servers:
-        host, port = server.server_address
-        server.context.logger.info("starting... %s:%s", host, port)
-
-    stop_event = asyncio.Event()
-
-    def request_shutdown() -> None:
-        if not stop_event.is_set():
-            for server in servers:
-                host, port = server.server_address
-                server.context.logger.info("stopping... %s:%s", host, port)
-            stop_event.set()
-
-    loop = asyncio.get_running_loop()
-
-    for sig in (signal.SIGTERM, signal.SIGINT):
-        try:
-            loop.add_signal_handler(sig, request_shutdown)
-        except NotImplementedError:
-            # Not supported on some platforms (notably parts of Windows).
-            # In that case, asyncio.run() will still surface Ctrl+C as
-            # KeyboardInterrupt, handled outside main().
-            ...
-
-    tasks = [asyncio.create_task(server.serve_forever()) for server in servers]
-
-    try:
-        await stop_event.wait()
-    finally:
-        for server in servers:
-            await server.shutdown()
-        for task in tasks:
-            task.cancel()
-        for task in tasks:
-            with contextlib.suppress(asyncio.CancelledError):
-                await task
+    async with AsyncEmulatorStack.from_file(args.filename or None) as stack:
+        if args.service_port is None:
+            await stack.serve_forever()
+        else:
+            async with AsyncEmulatorStackService(
+                stack,
+                args.service_port,
+                args.service_session_timeout,
+            ):
+                await stack.serve_forever()
 
 
 def main() -> None:
