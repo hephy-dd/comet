@@ -127,7 +127,7 @@ class K2700Emulator(IEC60488Emulator):
     def get_sense_function(self) -> str:
         return f'"{self.sense_function}"'
 
-    @message(r":?SENS(?:E)?:FUNC(?:TION)\s+\"(VOLT|CURR|VOLT:DC|CURR:DC|TEMP)\"$")
+    @message(r":?SENS(?:E)?:FUNC(?:TION)?\s+\"(VOLT|CURR|VOLT:DC|CURR:DC|TEMP)\"$")
     def set_sense_function(self, function: str) -> None:
         self.sense_function = {"VOLT": "VOLT:DC", "CURR": "CURR:DC"}.get(
             function, function
@@ -180,7 +180,7 @@ class K2700Emulator(IEC60488Emulator):
             value
         ]
 
-    @message(r":?INIT(?::IMM)$")
+    @message(r":?INIT(?::IMM)?$")
     def set_init(self) -> None: ...
 
     @message(r":?READ\?$")
