@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.7.2] - 2026-10-02
+
+### Fixed
+
+- Migrate driver for MBI Table-Control v0.15.x (#133).
+- Routes in Keithley 2700 emulator (`SENSe:FUNCtion`, `INIT[:IMM]`).
+
 ## [1.7.1] - 2026-09-23
 
 ### Fixed
@@ -208,7 +215,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - ITK CorvusTT emulator.
 
-[unreleased]: https://github.com/hephy-dd/comet/compare/v1.7.1...HEAD
+[unreleased]: https://github.com/hephy-dd/comet/compare/v1.7.2...HEAD
+[1.7.2]: https://github.com/hephy-dd/comet/compare/v1.7.1...v1.7.2
 [1.7.1]: https://github.com/hephy-dd/comet/compare/v1.7.0...v1.7.1
 [1.7.0]: https://github.com/hephy-dd/comet/compare/v1.6.0...v1.7.0
 [1.6.0]: https://github.com/hephy-dd/comet/compare/v1.5.1...v1.6.0
