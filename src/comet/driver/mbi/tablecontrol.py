@@ -1,3 +1,5 @@
+"""Driver for MBI Table-Control SCPI socket v0.15.1"""
+
 from typing import Final
 
 from comet.driver.generic import InstrumentError
@@ -72,7 +74,7 @@ class TableControl(MotionController):
         self.resource.query("*CLS")
 
     def next_error(self) -> InstrumentError | None:
-        response = self.resource.query("SYS:ERR?").strip()
+        response = self.resource.query("SYST:ERR?").strip()
         code, message = parse_error(response)
         if code:
             return InstrumentError(code, message)

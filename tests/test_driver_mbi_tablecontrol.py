@@ -9,8 +9,8 @@ def driver(resource):
 
 
 def test_table_control(driver, resource):
-    resource.buffer = ["table-control v0.8.0"]
-    assert driver.identify() == "table-control v0.8.0"
+    resource.buffer = ["MBI,Table Control,0,0.15.1"]
+    assert driver.identify() == "MBI,Table Control,0,0.15.1"
     assert resource.buffer == ["*IDN?"]
 
     resource.buffer = []
@@ -64,6 +64,10 @@ def test_table_control(driver, resource):
     resource.buffer = []
     driver.joystick_enabled = True
     assert resource.buffer == []
+
+    resource.buffer = ['0,"No error"']
+    assert driver.next_error() is None
+    assert resource.buffer == ["SYST:ERR?"]
 
 
 def test_table_control_axes(driver, resource):
