@@ -7,7 +7,7 @@ import inspect
 import logging
 import re
 import signal
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 
 from .emulator import Context, Emulator
@@ -102,11 +102,14 @@ class TCPServerContext:
     termination: bytes
     request_delay: float
     logger: logging.Logger
+    before_message: Callable[[str, str], None] | None = None
 
     async def handle_message(
-        self,
-        message: str,
+        self, message: str
     ) -> Response | Iterable[Response] | None:
+        if self.before_message is not None:
+            self.before_message(self.name, message)
+
         response = self.emulator(message)
         if response is not None:
             await asyncio.sleep(self.request_delay)
