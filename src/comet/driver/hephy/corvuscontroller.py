@@ -6,8 +6,9 @@ MA=x.xxx,x.xxx,x.xxx - Move absolute [X,Y,Z]
 MR=x.xxx,x - Move relative [StepWidth,Axis]
 """
 
-from typing import Final, Protocol
+from typing import Final
 
+from comet.driver.driver import MessageResource
 from comet.driver.generic import InstrumentError
 from comet.driver.generic.motion_controller import (
     MotionController,
@@ -18,16 +19,11 @@ from comet.driver.generic.motion_controller import (
 __all__ = ["CorvusController"]
 
 
-class Resource(Protocol):
-    def query(self, message: str) -> str: ...
-    def write(self, message: str) -> None: ...
-
-
 def split_tokens(text: str) -> list[str]:
     return [token.strip() for token in text.split(",")]
 
 
-def get_position_status(resource: Resource) -> tuple[float, float, float, bool]:
+def get_position_status(resource: MessageResource) -> tuple[float, float, float, bool]:
     reply = resource.query("PO?")
     try:
         x, y, z, is_moving = split_tokens(reply)[:4]
@@ -36,11 +32,11 @@ def get_position_status(resource: Resource) -> tuple[float, float, float, bool]:
         raise RuntimeError(f"Failed to parse 'PO?' reply: {reply!r}") from exc
 
 
-def move_absolute(resource: Resource, x: float, y: float, z: float) -> None:
+def move_absolute(resource: MessageResource, x: float, y: float, z: float) -> None:
     resource.write(f"MA={x:.6f},{y:.6f},{z:.6f}")
 
 
-def move_relative(resource: Resource, value: float, axis: int) -> None:
+def move_relative(resource: MessageResource, value: float, axis: int) -> None:
     resource.write(f"MR={value:.6f},{axis:d}")
 
 

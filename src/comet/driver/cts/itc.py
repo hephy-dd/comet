@@ -1,14 +1,25 @@
 from collections import namedtuple
 from datetime import UTC, datetime
-from typing import ClassVar
+from typing import ClassVar, Protocol
 
 from comet.driver import Driver
+from comet.driver.driver import MessageResource
 
 __all__ = ["ITC"]
 
 
+class ITCResource(MessageResource, Protocol):
+    def write_raw(self, message: bytes) -> int: ...
+    def read_bytes(self, count: int) -> bytes: ...
+
+
 class ITCDriver(Driver):
     """ITC driver base class."""
+
+    resource: ITCResource
+
+    def __init__(self, resource: ITCResource) -> None:
+        super().__init__(resource)
 
     def query_bytes(self, message: str | bytes, count: int) -> str:
         """Raw query for bytes.

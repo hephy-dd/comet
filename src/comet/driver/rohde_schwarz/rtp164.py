@@ -1,15 +1,28 @@
-from collections.abc import Iterator
+from collections.abc import Iterator, Sequence
+from typing import Protocol, cast
 
 import numpy as np
 
+from comet.driver.driver import MessageResource
 from comet.driver.generic import InstrumentError
 from comet.driver.generic.oscilloscope import Oscilloscope, OscilloscopeChannel
 
 __all__ = ["RTP164", "RTP164Channel"]
 
 
+class RTPResource(MessageResource, Protocol):
+    def query_binary_values(
+        self, message: str, datatype: str, is_big_endian: bool
+    ) -> Sequence[int | float]: ...
+
+
 class RTP164Channel(OscilloscopeChannel):
     """Single channel of the RTP164 oscilloscope"""
+
+    resource: RTPResource
+
+    def __init__(self, resource: RTPResource, index: int) -> None:
+        super().__init__(resource, index)
 
     @property
     def enabled(self) -> bool:
@@ -33,8 +46,11 @@ class RTP164Channel(OscilloscopeChannel):
         self.resource.query("*OPC?")
 
         source = f"CHAN{self.channel + 1}"
-        values = self.resource.query_binary_values(
-            f":{source}:DATA?", datatype="f", is_big_endian=False
+        values = cast(
+            list[float],
+            self.resource.query_binary_values(
+                f":{source}:DATA?", datatype="f", is_big_endian=False
+            ),
         )
         return values
 
@@ -43,6 +59,11 @@ class RTP164(Oscilloscope):
     """Rohde & Schwarz RTP164 oscilloscope with 4 channels"""
 
     N_CHANNELS: int = 4
+
+    resource: RTPResource
+
+    def __init__(self, resource: RTPResource) -> None:
+        super().__init__(resource)
 
     def identify(self) -> str:
         return self.resource.query("*IDN?")
